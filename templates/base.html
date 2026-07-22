@@ -189,13 +189,22 @@
 <body>
     <nav>
         <a href="/" class="logo">Bomu</a>
+        {% if current_username %}
         <div class="links">
             <a href="/recommend">Make</a>
 <a href="/scan">Scan</a>
 <a href="/add">+ Add</a>
 <a href="/checklist">Checklist</a>
 <a href="/bar">My Bar</a>
+            <form method="POST" action="/logout" style="display: inline; margin: 0;">
+                <button type="submit"
+                        style="background: none; border: none; color: #55557a; cursor: pointer; font-size: 0.95rem; padding: 0;"
+                        title="Logged in as {{ current_username }}">
+                    {{ current_username }} &middot; out
+                </button>
+            </form>
         </div>
+        {% endif %}
     </nav>
 
     <div class="container">

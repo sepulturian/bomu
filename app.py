@@ -3,9 +3,11 @@ import re
 import base64
 import json
 import random
+from functools import wraps
 from io import BytesIO
 from flask import Flask, render_template, request, redirect, url_for, flash, session, send_from_directory
 from werkzeug.utils import secure_filename
+from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
 import anthropic
 from PIL import Image
@@ -14,6 +16,7 @@ from database import (
     delete_bottle, get_all_ingredients, set_all_ingredients_stock,
     get_recipe, set_rating, get_rating, get_all_ratings, get_favorites,
     get_auto_added_ingredients, is_auto_added,
+    create_user, get_user_by_username, get_user,
 )
 from matching import (
     get_recommendations, get_recommendations_grouped, get_one_away_grouped,
@@ -36,6 +39,103 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 init_db()
 
 client = anthropic.Anthropic()
+
+
+# --- Auth ---
+#
+# Session-cookie based. session["user_id"] is set on login/signup and cleared
+# on logout. Every data route is wrapped in @login_required; logged-out
+# visitors get bounced to /login.
+
+def login_required(view):
+    @wraps(view)
+    def wrapped(*args, **kwargs):
+        if not session.get("user_id"):
+            return redirect(url_for("login", next=request.path))
+        return view(*args, **kwargs)
+    return wrapped
+
+
+def uid():
+    """Current logged-in user's id. Only call inside @login_required views."""
+    return session["user_id"]
+
+
+@app.context_processor
+def inject_current_user():
+    """Make current_username available to every template (for the nav)."""
+    return {"current_username": session.get("username")}
+
+
+def _safe_next(target):
+    """Only allow same-site relative redirect targets like '/recommend' --
+    blocks open-redirect tricks like ?next=https://evil.com."""
+    return target if target and target.startswith("/") and not target.startswith("//") else None
+
+
+@app.route("/signup", methods=["GET", "POST"])
+def signup():
+    if session.get("user_id"):
+        return redirect(url_for("home"))
+    if request.method == "POST":
+        invite = request.form.get("invite", "").strip()
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "")
+        confirm = request.form.get("confirm", "")
+
+        expected_invite = os.environ.get("INVITE_CODE", "")
+        if not expected_invite:
+            flash("Signups are disabled right now (no invite code configured).")
+            return render_template("signup.html")
+        if invite.lower() != expected_invite.lower():
+            flash("That invite code isn't right. Ask Aaron for the code!")
+            return render_template("signup.html", username=username)
+        if not re.fullmatch(r"[A-Za-z0-9_.-]{2,30}", username):
+            flash("Username should be 2-30 characters: letters, numbers, . _ -")
+            return render_template("signup.html", username=username)
+        if len(password) < 8:
+            flash("Password needs at least 8 characters.")
+            return render_template("signup.html", username=username)
+        if password != confirm:
+            flash("Passwords don't match.")
+            return render_template("signup.html", username=username)
+
+        user_id = create_user(username, generate_password_hash(password))
+        if user_id is None:
+            flash("That username is taken.")
+            return render_template("signup.html", username=username)
+
+        session["user_id"] = user_id
+        session["username"] = username
+        session.permanent = True
+        flash(f"Welcome to Bomu, {username}! Add some bottles to get started.")
+        return redirect(url_for("home"))
+    return render_template("signup.html")
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if session.get("user_id"):
+        return redirect(url_for("home"))
+    if request.method == "POST":
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "")
+        user = get_user_by_username(username)
+        if user is None or not check_password_hash(user["password_hash"], password):
+            flash("Wrong username or password.")
+            return render_template("login.html", username=username)
+        session["user_id"] = user["id"]
+        session["username"] = user["username"]
+        session.permanent = True
+        return redirect(_safe_next(request.args.get("next")) or url_for("home"))
+    return render_template("login.html")
+
+
+@app.route("/logout", methods=["POST"])
+def logout():
+    session.clear()
+    flash("Logged out. See you at happy hour.")
+    return redirect(url_for("login"))
 
 
 def imperial_to_metric(measure, ingredient_name=""):
@@ -270,26 +370,29 @@ def service_worker():
 
 
 @app.route("/")
+@login_required
 def home():
     # Badge on the Mixers button if recipes have introduced new ingredients
     # the user hasn't reviewed yet.
-    new_ingredient_count = len(get_auto_added_ingredients(only_unstocked=True))
+    new_ingredient_count = len(get_auto_added_ingredients(uid(), only_unstocked=True))
     return render_template("home.html", new_ingredient_count=new_ingredient_count)
 
 
 @app.route("/add", methods=["GET", "POST"])
+@login_required
 def add():
     if request.method == "POST":
         name = request.form["name"]
         bottle_type = request.form["type"]
         brand = request.form.get("brand", "")
-        add_bottle(name, bottle_type, brand)
+        add_bottle(uid(), name, bottle_type, brand)
         flash(f"Added {name} to your bar!")
         return redirect(url_for("bar"))
     return render_template("add_bottle.html")
 
 
 @app.route("/scan", methods=["GET", "POST"])
+@login_required
 def scan():
     if request.method == "POST":
         if "photo" not in request.files:
@@ -323,6 +426,7 @@ def scan():
 
 
 @app.route("/scan-bulk", methods=["GET", "POST"])
+@login_required
 def scan_bulk():
     if request.method == "POST":
         if "photo" not in request.files:
@@ -356,6 +460,7 @@ def scan_bulk():
 
 
 @app.route("/confirm-bulk", methods=["POST"])
+@login_required
 def confirm_bulk():
     added = 0
     i = 0
@@ -366,7 +471,7 @@ def confirm_bulk():
         if request.form.get(f"add_{i}"):
             bottle_type = request.form.get(f"type_{i}", "other")
             brand = request.form.get(f"brand_{i}", "")
-            add_bottle(name, bottle_type, brand)
+            add_bottle(uid(), name, bottle_type, brand)
             added += 1
         i += 1
     flash(f"Added {added} bottle{'s' if added != 1 else ''} to your bar!")
@@ -374,14 +479,15 @@ def confirm_bulk():
 
 
 @app.route("/checklist", methods=["GET", "POST"])
+@login_required
 def checklist():
     if request.method == "POST":
         checked_ids = [int(x) for x in request.form.getlist("ingredient")]
-        set_all_ingredients_stock(checked_ids)
+        set_all_ingredients_stock(uid(), checked_ids)
         flash("Checklist saved!")
         return redirect(url_for("bar"))
-    ingredients = get_all_ingredients()
-    new_ingredients = get_auto_added_ingredients(only_unstocked=True)
+    ingredients = get_all_ingredients(uid())
+    new_ingredients = get_auto_added_ingredients(uid(), only_unstocked=True)
     return render_template(
         "checklist.html",
         ingredients=ingredients,
@@ -390,42 +496,47 @@ def checklist():
 
 
 @app.route("/bar")
+@login_required
 def bar():
-    bottles = get_all_bottles()
-    all_ingredients = get_all_ingredients()
+    bottles = get_all_bottles(uid())
+    all_ingredients = get_all_ingredients(uid())
     stocked = [i for i in all_ingredients if i["in_stock"]]
     return render_template("my_bar.html", bottles=bottles, stocked_ingredients=stocked)
 
 
 @app.route("/recommend")
+@login_required
 def recommend():
     grouped = request.args.get("group") == "spirit"
     if grouped:
-        recs = get_recommendations_grouped(max_per_group=50)
+        recs = get_recommendations_grouped(uid(), max_per_group=50)
     else:
-        recs = get_recommendations(max_makeable=50, max_one_away=5)
+        recs = get_recommendations(uid(), max_makeable=50, max_one_away=5)
     return render_template("recommend.html", recs=recs, grouped=grouped)
 
 
 @app.route("/one-away")
+@login_required
 def one_away():
-    groups = get_one_away_grouped()
+    groups = get_one_away_grouped(uid())
     return render_template("one_away.html", groups=groups)
 
 
 @app.route("/favorites")
+@login_required
 def favorites():
     """Drinks you've thumbed up, most recent first."""
-    favs = get_favorites()
+    favs = get_favorites(uid())
     return render_template("favorites.html", favorites=favs)
 
 
 @app.route("/surprise")
+@login_required
 def surprise():
     """Pick a random makeable drink and send the user straight to its recipe.
     Light bias toward unrated + thumbs-up drinks (skip thumbs-down) so the
     surprise doesn't keep landing on a drink Aaron already said he disliked."""
-    recs = get_recommendations(max_makeable=200, max_one_away=0)
+    recs = get_recommendations(uid(), max_makeable=200, max_one_away=0)
     pool = [r for r in recs["makeable"]
             if recs["ratings"].get(r["recipe"]["id"], 0) != -1]
     if not pool:
@@ -439,13 +550,14 @@ def surprise():
 
 
 @app.route("/recipe/<int:recipe_id>")
+@login_required
 def recipe(recipe_id):
     r = get_recipe(recipe_id)
     if not r:
         flash("Recipe not found.")
         return redirect(url_for("home"))
-    bottles = get_all_bottles()
-    ingredients_db = get_all_ingredients()
+    bottles = get_all_bottles(uid())
+    ingredients_db = get_all_ingredients(uid())
     stocked = {i["name"].lower() for i in ingredients_db if i["in_stock"]}
 
     # For each ingredient, figure out which (if any) of the user's bottles satisfies it
@@ -473,11 +585,12 @@ def recipe(recipe_id):
         bottle_hints=bottle_hints,
         ingredient_have=ingredient_have,
         missing_ids=missing_ids,
-        rating=get_rating(recipe_id),
+        rating=get_rating(uid(), recipe_id),
     )
 
 
 @app.route("/rate/<int:recipe_id>", methods=["POST"])
+@login_required
 def rate(recipe_id):
     """Toggle thumb up or down for a recipe.
     Click the same thumb you already gave -> it clears (back to unrated)."""
@@ -488,17 +601,18 @@ def rate(recipe_id):
     if desired not in (1, -1):
         flash("Invalid rating.")
         return redirect(url_for("recipe", recipe_id=recipe_id))
-    current = get_rating(recipe_id)
+    current = get_rating(uid(), recipe_id)
     if current == desired:
-        set_rating(recipe_id, 0)  # toggle off
+        set_rating(uid(), recipe_id, 0)  # toggle off
     else:
-        set_rating(recipe_id, desired)
+        set_rating(uid(), recipe_id, desired)
     return redirect(url_for("recipe", recipe_id=recipe_id))
 
 
 @app.route("/edit/<int:bottle_id>", methods=["GET", "POST"])
+@login_required
 def edit(bottle_id):
-    bottle = get_bottle(bottle_id)
+    bottle = get_bottle(bottle_id, uid())
     if not bottle:
         flash("Bottle not found.")
         return redirect(url_for("bar"))
@@ -506,17 +620,18 @@ def edit(bottle_id):
         name = request.form["name"]
         bottle_type = request.form["type"]
         brand = request.form.get("brand", "")
-        update_bottle(bottle_id, name, bottle_type, brand)
+        update_bottle(bottle_id, uid(), name, bottle_type, brand)
         flash(f"Updated {name}!")
         return redirect(url_for("bar"))
     return render_template("edit_bottle.html", bottle=bottle)
 
 
 @app.route("/delete/<int:bottle_id>", methods=["POST"])
+@login_required
 def delete(bottle_id):
-    bottle = get_bottle(bottle_id)
+    bottle = get_bottle(bottle_id, uid())
     if bottle:
-        delete_bottle(bottle_id)
+        delete_bottle(bottle_id, uid())
         flash(f"Deleted {bottle['name']}.")
     return redirect(url_for("bar"))
 

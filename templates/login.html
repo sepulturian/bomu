@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="max-width: 400px; margin: 2rem auto 0;">
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <h1 style="font-size: 2.2rem;">Bomu</h1>
+        <p style="color: #8888aa;">your personal bartender</p>
+    </div>
+
+    <form method="POST">
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" required
+                   autocapitalize="none" autocorrect="off" autocomplete="username"
+                   value="{{ username or '' }}">
+        </div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required
+                   autocomplete="current-password"
+                   style="width: 100%; padding: 0.6rem; background: #16213e; border: 1px solid #333; border-radius: 6px; color: #e0e0e0; font-size: 1rem;">
+        </div>
+        <button type="submit" class="btn" style="width: 100%; margin-top: 1rem;">Log in</button>
+    </form>
+
+    <p style="text-align: center; margin-top: 1.5rem; color: #8888aa;">
+        New here? <a href="{{ url_for('signup') }}" style="color: #e94560;">Sign up with your invite code</a>
+    </p>
+</div>
+{% endblock %}

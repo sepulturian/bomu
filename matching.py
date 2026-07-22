@@ -248,11 +248,11 @@ def missing_ingredient_ids(recipe_data, user_bottles, stocked_ingredient_names):
     return missing
 
 
-def get_one_away_grouped():
+def get_one_away_grouped(user_id):
     """For the /one-away page: every recipe that's exactly one ingredient short,
     grouped by the missing item's name. Sorted by group size descending."""
-    bottles = get_all_bottles()
-    ingredients = get_all_ingredients()
+    bottles = get_all_bottles(user_id)
+    ingredients = get_all_ingredients(user_id)
     stocked = {i["name"].lower() for i in ingredients if i["in_stock"]}
 
     groups = {}  # missing.name -> {missing: dict, recipes: [recipe_data]}
@@ -326,10 +326,10 @@ def classify_base_spirit(recipe_data):
     return fallback or "Other"
 
 
-def get_recommendations_grouped(max_per_group=50):
+def get_recommendations_grouped(user_id, max_per_group=50):
     """Like get_recommendations but groups makeable drinks by base spirit.
     One-away list and ratings come along unchanged."""
-    base = get_recommendations(max_makeable=200, max_one_away=25)
+    base = get_recommendations(user_id, max_makeable=200, max_one_away=25)
     groups = {}
     for r in base["makeable"]:
         spirit = classify_base_spirit(r)
@@ -358,13 +358,13 @@ def get_recommendations_grouped(max_per_group=50):
     return base
 
 
-def get_recommendations(max_makeable=50, max_one_away=25):
+def get_recommendations(user_id, max_makeable=50, max_one_away=25):
     """Top-level: read the user's bar, score every recipe, return two lists.
     Makeable drinks are sorted: thumbs-up first, unrated next, thumbs-down last.
     Within each group, alphabetical by name."""
-    bottles = get_all_bottles()
-    ingredients = get_all_ingredients()
-    ratings = get_all_ratings()
+    bottles = get_all_bottles(user_id)
+    ingredients = get_all_ingredients(user_id)
+    ratings = get_all_ratings(user_id)
 
     stocked_ingredients = {
         i["name"].lower() for i in ingredients if i["in_stock"]
