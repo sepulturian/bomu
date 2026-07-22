@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="text-align: center; padding: 3rem 0;">
+    <h1 style="font-size: 3rem; margin-bottom: 0.5rem;">Bomu</h1>
+    <p style="color: #8888aa; font-size: 1.2rem; margin-bottom: 2rem;">your personal bartender</p>
+
+    <div style="display: flex; flex-direction: column; gap: 1rem; max-width: 300px; margin: 0 auto;">
+        <a href="/recommend" class="btn" style="font-size: 1.1rem; padding: 0.9rem 1.2rem;">What can I make?</a>
+        <a href="/surprise" class="btn btn-secondary">&#127922; Surprise me</a>
+        <a href="/favorites" class="btn btn-secondary">&#10084; My Favorites</a>
+        <a href="/scan" class="btn btn-secondary">Scan a Bottle</a>
+        <a href="/scan-bulk" class="btn btn-secondary">Scan Multiple Bottles</a>
+        <a href="/add" class="btn btn-secondary">+ Add Manually</a>
+        <a href="/checklist" class="btn btn-secondary">
+            Mixers & Ingredients
+            {% if new_ingredient_count %}
+                <span style="background: #d6b87e; color: #1a1a2e; font-size: 0.72rem; padding: 0.12rem 0.5rem; border-radius: 999px; margin-left: 0.4rem; font-weight: 700; vertical-align: middle;">{{ new_ingredient_count }} new</span>
+            {% endif %}
+        </a>
+        <a href="/bar" class="btn btn-secondary">View My Bar</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Review Bottles</h1>
+<p style="color: #8888aa; margin-bottom: 1.5rem;">Claude found {{ bottles|length }} bottle{{ 's' if bottles|length != 1 else '' }}. Check the ones you want to add and fix anything that's wrong.</p>
+
+<form method="POST" action="/confirm-bulk">
+    {% for bottle in bottles %}
+        <div class="card" style="margin-bottom: 1rem;">
+            <div style="display: flex; align-items: start; gap: 0.75rem;">
+                <input type="checkbox" name="add_{{ loop.index0 }}" value="1" checked
+                       style="width: 20px; height: 20px; margin-top: 0.3rem; accent-color: #e94560;">
+                <div style="flex: 1;">
+                    <div class="form-group">
+                        <label>Name</label>
+                        <input type="text" name="name_{{ loop.index0 }}" value="{{ bottle.name }}">
+                    </div>
+                    <div class="form-group">
+                        <label>Type</label>
+                        <select name="type_{{ loop.index0 }}">
+                            {% for t in ['gin', 'vodka', 'rum', 'tequila', 'mezcal', 'whiskey', 'bourbon', 'scotch', 'brandy', 'cognac', 'vermouth', 'amaro', 'liqueur', 'other'] %}
+                                <option value="{{ t }}" {% if bottle.type == t %}selected{% endif %}>{{ t|capitalize }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Brand</label>
+                        <input type="text" name="brand_{{ loop.index0 }}" value="{{ bottle.brand }}">
+                    </div>
+                    {% if bottle.confidence == "low" %}
+                        <span style="color: #e94560; font-size: 0.8rem;">Low confidence - double check this one</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+
+    <button type="submit" class="btn">Add Selected Bottles</button>
+</form>
+{% endblock %}

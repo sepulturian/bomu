@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>One ingredient away</h1>
+<p style="color: #8888aa; margin-bottom: 1.5rem;">
+    Grouped by what you need. Buy something near the top to unlock the most drinks.
+</p>
+
+{% if not groups %}
+    <div class="empty-state">
+        <p>Nothing close right now. Add more bottles or stock more mixers.</p>
+    </div>
+{% endif %}
+
+{% for g in groups %}
+    <div class="card" style="margin-bottom: 1rem;">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; margin-bottom: 0.5rem;">
+            <div style="flex: 1;">
+                <div style="font-size: 1.05rem; font-weight: 600; color: #e94560;">
+                    {{ g.missing.name }}
+                </div>
+                <div style="font-size: 0.8rem; color: #8888aa; margin-top: 0.15rem;">
+                    {% if g.missing.type == 'bottle_type' %}
+                        bottle
+                    {% else %}
+                        mixer / ingredient
+                    {% endif %}
+                </div>
+            </div>
+            <div style="font-size: 0.9rem; color: #8888aa;">
+                {{ g.recipes|length }} drink{{ 's' if g.recipes|length != 1 else '' }}
+            </div>
+        </div>
+        {% set sugs = g.missing.name|suggestions %}
+        {% if sugs %}
+            <div style="font-size: 0.85rem; color: #b0b0c8; margin-bottom: 0.75rem; padding: 0.5rem 0.75rem; background: #0f3460; border-radius: 4px;">
+                <span style="color: #8888aa;">Try:</span> {{ sugs|join(' &middot; ')|safe }}
+            </div>
+        {% endif %}
+        <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+            {% for r in g.recipes %}
+                <a href="/recipe/{{ r.recipe.id }}"
+                   style="text-decoration: none; color: #e0e0e0; padding: 0.5rem 0.75rem; background: #1a2a4a; border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
+                    <span>{{ r.recipe.name }}</span>
+                    <span style="color: #8888aa; font-size: 0.85rem;">{{ r.recipe.glass or '' }} &rsaquo;</span>
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+{% endfor %}
+
+<div style="margin-top: 2rem; text-align: center;">
+    <a href="/recommend" class="btn btn-secondary">&larr; Back to recommendations</a>
+</div>
+{% endblock %}

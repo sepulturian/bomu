@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>My Bar</h1>
+
+<h2>Bottles</h2>
+{% if bottles %}
+    {% for bottle in bottles %}
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <strong>{{ bottle.name }}</strong>
+                    <span style="color: #8888aa;"> / {{ bottle.type }}</span>
+                    {% if bottle.brand %}
+                        <span style="color: #666;"> / {{ bottle.brand }}</span>
+                    {% endif %}
+                </div>
+                <div class="card-actions">
+                    <a href="/edit/{{ bottle.id }}" class="btn btn-secondary btn-small">Edit</a>
+                    <form method="POST" action="/delete/{{ bottle.id }}" style="display:inline;">
+                        <button type="submit" class="btn btn-danger btn-small"
+                                onclick="return confirm('Delete {{ bottle.name }}?')">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+{% else %}
+    <div class="empty-state">
+        <p>No bottles yet!</p>
+        <a href="/add" class="btn" style="margin-top: 1rem; display: inline-block;">+ Add Your First Bottle</a>
+    </div>
+{% endif %}
+
+<h2 style="margin-top: 2rem;">Ingredients In Stock</h2>
+{% if stocked_ingredients %}
+    <div class="card">
+        {% for item in stocked_ingredients %}
+            <span style="display: inline-block; background: #0f3460; padding: 0.3rem 0.7rem; border-radius: 20px; margin: 0.2rem; font-size: 0.85rem;">
+                {{ item.name }}
+            </span>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="empty-state">
+        <p>No ingredients checked off yet.</p>
+        <a href="/checklist" class="btn btn-secondary" style="margin-top: 1rem; display: inline-block;">Go to Checklist</a>
+    </div>
+{% endif %}
+{% endblock %}

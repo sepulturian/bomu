@@ -1,0 +1,16 @@
+# Secrets — never commit the API key
+.env
+
+# Python junk
+venv/
+__pycache__/
+*.pyc
+
+# Live data — the database is data, not code. It gets uploaded to the
+# host once, then lives its own life there. Committing it would overwrite
+# server data with laptop data on every deploy.
+bomu.db
+bomu.db.*
+
+# Scratch photo uploads
+uploads/

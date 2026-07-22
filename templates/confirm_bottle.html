@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Confirm Bottle</h1>
+<p style="color: #8888aa; margin-bottom: 1.5rem;">Here's what Claude saw. Edit anything that's wrong, then add it.</p>
+
+<form method="POST" action="/add">
+    <div class="form-group">
+        <label for="name">Bottle Name</label>
+        <input type="text" id="name" name="name" value="{{ bottle.name }}" required>
+    </div>
+
+    <div class="form-group">
+        <label for="type">Type</label>
+        <select id="type" name="type" required>
+            <option value="">Pick a type...</option>
+            {% for t in ['gin', 'vodka', 'rum', 'tequila', 'mezcal', 'whiskey', 'bourbon', 'scotch', 'brandy', 'cognac', 'vermouth', 'amaro', 'liqueur', 'other'] %}
+                <option value="{{ t }}" {% if bottle.type == t %}selected{% endif %}>{{ t|capitalize }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="brand">Brand</label>
+        <input type="text" id="brand" name="brand" value="{{ bottle.brand }}">
+    </div>
+
+    <div style="display: flex; gap: 1rem;">
+        <button type="submit" class="btn">Add to My Bar</button>
+        <a href="/scan" class="btn btn-secondary">Scan Again</a>
+    </div>
+</form>
+{% endblock %}

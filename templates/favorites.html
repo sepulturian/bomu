@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Your favorites</h1>
+
+{% if favorites %}
+    <p style="color: #8888aa; margin-bottom: 1rem;">
+        {{ favorites|length }} drink{{ 's' if favorites|length != 1 else '' }} you've thumbed up.
+    </p>
+    {% for r in favorites %}
+        <a href="/recipe/{{ r.id }}" style="text-decoration: none; color: inherit;">
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-size: 1.15rem; font-weight: 600;">
+                            <span style="color: #7ed6a5; font-size: 0.95rem;">&#128077;</span>
+                            {{ r.name }}
+                        </div>
+                        <div style="color: #8888aa; font-size: 0.9rem; margin-top: 0.2rem;">
+                            {{ r.glass or '' }}
+                        </div>
+                    </div>
+                    <div style="color: #8888aa;">&rsaquo;</div>
+                </div>
+            </div>
+        </a>
+    {% endfor %}
+{% else %}
+    <div class="empty-state">
+        <p style="margin-bottom: 1rem;">No favorites yet.</p>
+        <p style="font-size: 0.9rem;">Tap the &#128077; on a recipe to save it here.</p>
+    </div>
+{% endif %}
+
+<div style="margin-top: 2.5rem; text-align: center;">
+    <a href="/" class="btn btn-secondary">&larr; Home</a>
+</div>
+{% endblock %}

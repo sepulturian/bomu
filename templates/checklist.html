@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Mixers & Ingredients</h1>
+<p style="color: #8888aa; margin-bottom: 1.5rem;">Check off what you have at home.</p>
+
+<form method="POST">
+    {% if new_ingredients %}
+        <div style="background: #2a2410; border: 1px solid #d6b87e; border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1.5rem;">
+            <div style="font-size: 0.95rem; color: #d6b87e; font-weight: 600; margin-bottom: 0.5rem;">
+                &#9733; New since last visit
+            </div>
+            <div style="font-size: 0.82rem; color: #8888aa; margin-bottom: 0.6rem;">
+                Recipes pulled in these ingredients automatically. Tick the ones you actually have.
+            </div>
+            {% for item in new_ingredients %}
+                <div class="checklist-item">
+                    <input type="checkbox" name="ingredient" value="{{ item.id }}"
+                           id="new-{{ item.id }}"
+                           {% if item.in_stock %}checked{% endif %}>
+                    <label for="new-{{ item.id }}" style="color: #e0e0e0; margin-bottom: 0;">
+                        {{ item.name }}
+                        <span style="color: #8888aa; font-size: 0.8rem; margin-left: 0.3rem;">({{ item.category }})</span>
+                    </label>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% set current_category = [None] %}
+    {% for item in ingredients %}
+        {% if item.category != current_category[0] %}
+            {% if current_category.append(item.category) %}{% endif %}
+            <div class="category-title">{{ item.category }}s</div>
+        {% endif %}
+        <div class="checklist-item">
+            <input type="checkbox" name="ingredient" value="{{ item.id }}"
+                   id="ing-{{ item.id }}"
+                   {% if item.in_stock %}checked{% endif %}>
+            <label for="ing-{{ item.id }}" style="color: #e0e0e0; margin-bottom: 0;">
+                {{ item.name }}
+                {% if item.name is auto_added and not item.in_stock %}
+                    <span style="background: #d6b87e; color: #1a1a2e; font-size: 0.7rem; padding: 0.1rem 0.4rem; border-radius: 4px; margin-left: 0.3rem; font-weight: 600;">NEW</span>
+                {% endif %}
+            </label>
+        </div>
+    {% endfor %}
+
+    <div style="margin-top: 1.5rem;">
+        <button type="submit" class="btn">Save Checklist</button>
+    </div>
+</form>
+{% endblock %}

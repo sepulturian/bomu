@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Add a Bottle</h1>
+
+<form method="POST">
+    <div class="form-group">
+        <label for="name">Bottle Name</label>
+        <input type="text" id="name" name="name" placeholder="e.g. Hendrick's Gin" required>
+    </div>
+
+    <div class="form-group">
+        <label for="type">Type</label>
+        <select id="type" name="type" required>
+            <option value="">Pick a type...</option>
+            <option value="gin">Gin</option>
+            <option value="vodka">Vodka</option>
+            <option value="rum">Rum</option>
+            <option value="tequila">Tequila</option>
+            <option value="mezcal">Mezcal</option>
+            <option value="whiskey">Whiskey</option>
+            <option value="bourbon">Bourbon</option>
+            <option value="scotch">Scotch</option>
+            <option value="brandy">Brandy</option>
+            <option value="cognac">Cognac</option>
+            <option value="vermouth">Vermouth</option>
+            <option value="amaro">Amaro</option>
+            <option value="liqueur">Liqueur</option>
+            <option value="other">Other</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="brand">Brand (optional)</label>
+        <input type="text" id="brand" name="brand" placeholder="e.g. Hendrick's">
+    </div>
+
+    <button type="submit" class="btn">Add to My Bar</button>
+</form>
+{% endblock %}

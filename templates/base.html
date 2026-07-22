@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bomu</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- PWA: installable to home screen -->
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#16213e">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="Bomu">
+    <link rel="apple-touch-icon" href="/static/icon-180.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/static/icon-192.png">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #1a1a2e;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        nav {
+            background: #16213e;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        nav .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #e0e0e0;
+            text-decoration: none;
+        }
+
+        nav .links {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        nav a {
+            color: #8888aa;
+            text-decoration: none;
+            font-size: 0.95rem;
+        }
+
+        nav a:hover { color: #e0e0e0; }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
+
+        h2 {
+            font-size: 1.3rem;
+            margin-bottom: 0.75rem;
+            color: #8888aa;
+        }
+
+        .btn {
+            display: inline-block;
+            background: #e94560;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .btn:hover { background: #c73e54; }
+
+        .btn-secondary {
+            background: #16213e;
+            border: 1px solid #333;
+        }
+
+        .btn-secondary:hover { background: #1a2a4a; }
+
+        .btn-danger {
+            background: #661111;
+        }
+
+        .btn-danger:hover { background: #881111; }
+
+        .btn-small {
+            padding: 0.3rem 0.7rem;
+            font-size: 0.85rem;
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 0.6rem;
+            background: #16213e;
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: #e0e0e0;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: #e94560;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.3rem;
+            color: #8888aa;
+            font-size: 0.9rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .flash {
+            background: #0f3460;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+        }
+
+        .card {
+            background: #16213e;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .category-title {
+            font-size: 1.1rem;
+            color: #e94560;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            text-transform: capitalize;
+        }
+
+        .category-title:first-child {
+            margin-top: 0;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 0;
+        }
+
+        .checklist-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #e94560;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="/" class="logo">Bomu</a>
+        <div class="links">
+            <a href="/recommend">Make</a>
+<a href="/scan">Scan</a>
+<a href="/add">+ Add</a>
+<a href="/checklist">Checklist</a>
+<a href="/bar">My Bar</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="flash">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <script>
+        // Service worker: only registers on secure contexts (HTTPS or localhost).
+        // Over plain HTTP on the LAN this is a silent no-op — the app still works,
+        // home-screen install still works, you just don't get offline caching.
+        if ("serviceWorker" in navigator) {
+            navigator.serviceWorker.register("/sw.js").catch(function () {});
+        }
+    </script>
+</body>
+</html>
