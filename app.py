@@ -257,8 +257,24 @@ def clean_notes(notes):
     return cleaned.strip().strip(",;").strip()
 
 
+def instruction_steps(text):
+    """Split instruction prose into a list of steps for numbered display.
+    Prefers explicit line breaks; falls back to sentence boundaries. A recipe
+    that's genuinely one sentence comes back as a single step and the
+    template renders it as plain prose."""
+    text = clean_instructions(text)
+    if not text:
+        return []
+    lines = [l.strip() for l in text.splitlines() if l.strip()]
+    if len(lines) > 1:
+        return lines
+    parts = re.split(r"(?<=[.!?])\s+", lines[0])
+    return [p.strip() for p in parts if p.strip()]
+
+
 app.jinja_env.filters["short_name"] = short_bottle_name
 app.jinja_env.filters["clean_instructions"] = clean_instructions
+app.jinja_env.filters["steps"] = instruction_steps
 app.jinja_env.filters["clean_notes"] = clean_notes
 app.jinja_env.filters["suggestions"] = get_suggestions
 app.jinja_env.tests["auto_added"] = is_auto_added
@@ -388,7 +404,16 @@ def home():
     # Badge on the Mixers button if recipes have introduced new ingredients
     # the user hasn't reviewed yet.
     new_ingredient_count = len(get_auto_added_ingredients(uid(), only_unstocked=True))
-    return render_template("home.html", new_ingredient_count=new_ingredient_count)
+    # Status line doubles as onboarding: "0 bottles" tells a new friend
+    # exactly what their first step is.
+    bottle_count = len(get_all_bottles(uid()))
+    makeable_count = get_recommendations(uid(), max_makeable=0, max_one_away=0)["total_makeable"]
+    return render_template(
+        "home.html",
+        new_ingredient_count=new_ingredient_count,
+        bottle_count=bottle_count,
+        makeable_count=makeable_count,
+    )
 
 
 @app.route("/add", methods=["GET", "POST"])

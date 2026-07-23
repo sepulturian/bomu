@@ -3,7 +3,8 @@
 {# Reusable card for one makeable drink. Shared between flat + grouped views. #}
 {% macro drink_card(r, ratings) %}
     {% set thumb = ratings.get(r.recipe.id, 0) %}
-    <a href="/recipe/{{ r.recipe.id }}" style="text-decoration: none; color: inherit;">
+    <a href="/recipe/{{ r.recipe.id }}" class="drink-link" data-name="{{ r.recipe.name|lower }}"
+       style="text-decoration: none; color: inherit;">
         <div class="card" {% if thumb == -1 %}style="opacity: 0.55;"{% endif %}>
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <div style="flex: 1; min-width: 0;">
@@ -35,6 +36,9 @@
         {{ recs.total_makeable }} drink{{ 's' if recs.total_makeable != 1 else '' }} you have everything for.
     </p>
 
+    <input type="search" id="drink-search" placeholder="Search drinks&hellip;"
+           autocomplete="off" style="margin-bottom: 0.75rem;">
+
     {# View toggle: flat (default) vs group-by-spirit #}
     <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
         <a href="/recommend" class="btn btn-small {% if not grouped %}{% else %}btn-secondary{% endif %}"
@@ -58,9 +62,29 @@
             {% endfor %}
         {% endfor %}
     {% else %}
+        {# Thumbs-downed drinks fold away instead of cluttering the list #}
+        {% set active = [] %}
+        {% set disliked = [] %}
         {% for r in recs.makeable %}
+            {% if recs.ratings.get(r.recipe.id, 0) == -1 %}
+                {% if disliked.append(r) %}{% endif %}
+            {% else %}
+                {% if active.append(r) %}{% endif %}
+            {% endif %}
+        {% endfor %}
+        {% for r in active %}
             {{ drink_card(r, recs.ratings) }}
         {% endfor %}
+        {% if disliked %}
+            <details style="margin-top: 1rem;">
+                <summary style="color: #8888aa; font-size: 0.9rem; cursor: pointer; padding: 0.5rem 0;">
+                    Not your thing &middot; {{ disliked|length }}
+                </summary>
+                {% for r in disliked %}
+                    {{ drink_card(r, recs.ratings) }}
+                {% endfor %}
+            </details>
+        {% endif %}
     {% endif %}
 {% else %}
     <div class="empty-state">
@@ -75,7 +99,8 @@
         Pick up one of these and unlock the drink.
     </p>
     {% for item in recs.one_away %}
-        <a href="/recipe/{{ item.recipe.recipe.id }}" style="text-decoration: none; color: inherit;">
+        <a href="/recipe/{{ item.recipe.recipe.id }}" class="drink-link" data-name="{{ item.recipe.recipe.name|lower }}"
+           style="text-decoration: none; color: inherit;">
             <div class="card">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div style="flex: 1;">
@@ -102,4 +127,21 @@
 <div style="margin-top: 2.5rem; text-align: center;">
     <a href="/" class="btn btn-secondary">&larr; Home</a>
 </div>
+
+<script>
+    // Live search over the drink cards (makeable + one-away). Opens the
+    // "Not your thing" fold while searching so matches there aren't hidden.
+    var searchBox = document.getElementById("drink-search");
+    if (searchBox) {
+        searchBox.addEventListener("input", function () {
+            var q = searchBox.value.trim().toLowerCase();
+            document.querySelectorAll(".drink-link").forEach(function (el) {
+                el.style.display = el.dataset.name.includes(q) ? "" : "none";
+            });
+            document.querySelectorAll("details").forEach(function (d) {
+                if (q) d.open = true;
+            });
+        });
+    }
+</script>
 {% endblock %}

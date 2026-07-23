@@ -65,7 +65,16 @@
 
 <h2>How to make it</h2>
 <div class="card" style="margin-bottom: 1.5rem;">
-    <p style="line-height: 1.6; white-space: pre-wrap;">{{ recipe.instructions|clean_instructions }}</p>
+    {% set step_list = recipe.instructions|steps %}
+    {% if step_list|length > 1 %}
+        <ol style="padding-left: 1.4rem; margin: 0;">
+            {% for step in step_list %}
+                <li style="line-height: 1.55; margin-bottom: 0.6rem; {% if loop.last %}margin-bottom: 0;{% endif %} padding-left: 0.25rem;">{{ step }}</li>
+            {% endfor %}
+        </ol>
+    {% else %}
+        <p style="line-height: 1.6; white-space: pre-wrap;">{{ recipe.instructions|clean_instructions }}</p>
+    {% endif %}
 </div>
 
 <h2>What did you think?</h2>

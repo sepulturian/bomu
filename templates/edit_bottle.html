@@ -29,4 +29,14 @@
         <a href="/bar" class="btn btn-secondary">Cancel</a>
     </div>
 </form>
+
+{# Delete lives here (not on the bar list) so it takes two deliberate taps #}
+<div style="margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid #1a2a4a;">
+    <form method="POST" action="/delete/{{ bottle.id }}" style="margin: 0;">
+        <button type="submit" class="btn btn-danger"
+                onclick="return confirm('Delete {{ bottle.name }}? This can\'t be undone.')">
+            Delete this bottle
+        </button>
+    </form>
+</div>
 {% endblock %}

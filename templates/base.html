@@ -102,7 +102,8 @@
             font-size: 0.85rem;
         }
 
-        input[type="text"], select {
+        input[type="text"], input[type="password"], input[type="file"],
+        input[type="search"], select {
             width: 100%;
             padding: 0.6rem;
             background: #16213e;
@@ -113,7 +114,8 @@
             margin-bottom: 1rem;
         }
 
-        input[type="text"]:focus, select:focus {
+        input[type="text"]:focus, input[type="password"]:focus,
+        input[type="search"]:focus, select:focus {
             outline: none;
             border-color: #e94560;
         }
@@ -184,18 +186,50 @@
             padding: 3rem 1rem;
             color: #666;
         }
+
+        /* Bottom tab bar: thumb-reach navigation for phone use. */
+        .tabbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            background: #16213e;
+            border-top: 1px solid #1a2a4a;
+            /* Respect iPhone home-indicator area when installed as a PWA */
+            padding-bottom: env(safe-area-inset-bottom, 0);
+            z-index: 100;
+        }
+
+        .tabbar a {
+            flex: 1;
+            text-align: center;
+            padding: 0.55rem 0 0.5rem;
+            color: #8888aa;
+            text-decoration: none;
+            font-size: 0.72rem;
+        }
+
+        .tabbar a .tab-icon {
+            display: block;
+            font-size: 1.25rem;
+            line-height: 1.3;
+        }
+
+        .tabbar a.active {
+            color: #e94560;
+        }
+
+        /* Keep page content clear of the fixed tab bar */
+        .container {
+            padding-bottom: 90px;
+        }
     </style>
 </head>
 <body>
     <nav>
         <a href="/" class="logo">Bomu</a>
         {% if current_username %}
-        <div class="links">
-            <a href="/recommend">Make</a>
-<a href="/scan">Scan</a>
-<a href="/add">+ Add</a>
-<a href="/checklist">Checklist</a>
-<a href="/bar">My Bar</a>
             <form method="POST" action="/logout" style="display: inline; margin: 0;">
                 <button type="submit"
                         style="background: none; border: none; color: #55557a; cursor: pointer; font-size: 0.95rem; padding: 0;"
@@ -203,7 +237,6 @@
                     {{ current_username }} &middot; out
                 </button>
             </form>
-        </div>
         {% endif %}
     </nav>
 
@@ -219,6 +252,34 @@
         {% block content %}{% endblock %}
     </div>
 
+    {% if current_username %}
+    <div class="tabbar">
+        <a href="/" class="{% if request.path == '/' %}active{% endif %}">
+            <span class="tab-icon">&#127968;</span>Home
+        </a>
+        <a href="/recommend" class="{% if request.path.startswith('/recommend') or request.path.startswith('/recipe') or request.path.startswith('/one-away') %}active{% endif %}">
+            <span class="tab-icon">&#127864;</span>Make
+        </a>
+        <a href="/bar" class="{% if request.path.startswith('/bar') or request.path.startswith('/scan') or request.path.startswith('/add') or request.path.startswith('/edit') %}active{% endif %}">
+            <span class="tab-icon">&#129514;</span>My Bar
+        </a>
+        <a href="/checklist" class="{% if request.path.startswith('/checklist') %}active{% endif %}">
+            <span class="tab-icon">&#9989;</span>Checklist
+        </a>
+    </div>
+    {% endif %}
+
+    <script>
+        // Flash messages fade out after a few seconds so they don't squat
+        // at the top of every page.
+        document.querySelectorAll(".flash").forEach(function (el) {
+            setTimeout(function () {
+                el.style.transition = "opacity 0.6s";
+                el.style.opacity = "0";
+                setTimeout(function () { el.remove(); }, 700);
+            }, 4000);
+        });
+    </script>
     <script>
         // Service worker: only registers on secure contexts (HTTPS or localhost).
         // Over plain HTTP on the LAN this is a silent no-op — the app still works,

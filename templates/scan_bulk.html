@@ -4,14 +4,22 @@
 <h1>Scan Multiple Bottles</h1>
 <p style="color: #8888aa; margin-bottom: 1.5rem;">Photograph a shelf or group of bottles. Claude will identify as many as it can.</p>
 
-<form method="POST" enctype="multipart/form-data">
+<form method="POST" enctype="multipart/form-data" id="scan-form">
     <div class="form-group">
         <label for="photo">Choose or take a photo</label>
-        <input type="file" id="photo" name="photo" accept="image/*" capture="environment"
-               style="width: 100%; padding: 0.6rem; background: #16213e; border: 1px solid #333; border-radius: 6px; color: #e0e0e0;">
+        <input type="file" id="photo" name="photo" accept="image/*" capture="environment">
     </div>
-    <button type="submit" class="btn">Scan Bottles</button>
+    <button type="submit" class="btn" id="scan-btn">Scan Bottles</button>
 </form>
 
 <p style="color: #666; margin-top: 2rem; font-size: 0.85rem;">Tip: Try to get all the labels visible. Claude will flag anything it's unsure about.</p>
+
+<script>
+    document.getElementById("scan-form").addEventListener("submit", function () {
+        var btn = document.getElementById("scan-btn");
+        btn.disabled = true;
+        btn.style.opacity = "0.7";
+        btn.textContent = "Reading the labels…";
+    });
+</script>
 {% endblock %}

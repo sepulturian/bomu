@@ -27,11 +27,14 @@
         </div>
     {% endif %}
 
+    {# Proper plurals: "garnishs" and "pantrys" are not words #}
+    {% set plural = {"mixer": "Mixers", "bitter": "Bitters",
+                     "garnish": "Garnishes", "pantry": "Pantry staples"} %}
     {% set current_category = [None] %}
     {% for item in ingredients %}
         {% if item.category != current_category[0] %}
             {% if current_category.append(item.category) %}{% endif %}
-            <div class="category-title">{{ item.category }}s</div>
+            <div class="category-title">{{ plural.get(item.category, item.category ~ "s") }}</div>
         {% endif %}
         <div class="checklist-item">
             <input type="checkbox" name="ingredient" value="{{ item.id }}"
@@ -46,8 +49,28 @@
         </div>
     {% endfor %}
 
-    <div style="margin-top: 1.5rem;">
-        <button type="submit" class="btn">Save Checklist</button>
+    {# Sticky save bar: sits above the bottom tab bar, highlights when there
+       are unsaved changes so ticks made at the top of a long list don't get
+       silently lost. #}
+    <div id="save-bar"
+         style="position: sticky; bottom: 66px; margin-top: 1.5rem; padding: 0.6rem;
+                background: #16213e; border: 1px solid #1a2a4a; border-radius: 8px;
+                display: flex; align-items: center; gap: 0.75rem; z-index: 50;">
+        <button type="submit" class="btn" style="flex: 1;" id="save-btn">Save Checklist</button>
+        <span id="save-hint" style="color: #8888aa; font-size: 0.82rem; display: none;">
+            Unsaved changes
+        </span>
     </div>
 </form>
+
+<script>
+    var hint = document.getElementById("save-hint");
+    var saveBar = document.getElementById("save-bar");
+    document.querySelectorAll('input[name="ingredient"]').forEach(function (cb) {
+        cb.addEventListener("change", function () {
+            hint.style.display = "inline";
+            saveBar.style.borderColor = "#e94560";
+        });
+    });
+</script>
 {% endblock %}

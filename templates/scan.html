@@ -4,14 +4,24 @@
 <h1>Scan a Bottle</h1>
 <p style="color: #8888aa; margin-bottom: 1.5rem;">Take a photo of a single bottle and Claude will read the label.</p>
 
-<form method="POST" enctype="multipart/form-data">
+<form method="POST" enctype="multipart/form-data" id="scan-form">
     <div class="form-group">
         <label for="photo">Choose or take a photo</label>
-        <input type="file" id="photo" name="photo" accept="image/*" capture="environment"
-               style="width: 100%; padding: 0.6rem; background: #16213e; border: 1px solid #333; border-radius: 6px; color: #e0e0e0;">
+        <input type="file" id="photo" name="photo" accept="image/*" capture="environment">
     </div>
-    <button type="submit" class="btn">Scan Bottle</button>
+    <button type="submit" class="btn" id="scan-btn">Scan Bottle</button>
 </form>
 
 <p style="color: #666; margin-top: 2rem; font-size: 0.85rem;">Tip: Get a clear shot of the label. Good lighting helps.</p>
+
+<script>
+    // Reading a label takes a few seconds. Lock the button and say so,
+    // otherwise people tap again -- and every tap costs a daily scan.
+    document.getElementById("scan-form").addEventListener("submit", function () {
+        var btn = document.getElementById("scan-btn");
+        btn.disabled = true;
+        btn.style.opacity = "0.7";
+        btn.textContent = "Reading the label…";
+    });
+</script>
 {% endblock %}
