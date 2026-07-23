@@ -3,6 +3,7 @@ import re
 import base64
 import json
 import random
+import uuid
 from functools import wraps
 from io import BytesIO
 from flask import Flask, render_template, request, redirect, url_for, flash, session, send_from_directory
@@ -17,6 +18,7 @@ from database import (
     get_recipe, set_rating, get_rating, get_all_ratings, get_favorites,
     get_auto_added_ingredients, is_auto_added,
     create_user, get_user_by_username, get_user,
+    log_scan, scans_today,
 )
 from matching import (
     get_recommendations, get_recommendations_grouped, get_one_away_grouped,
@@ -31,6 +33,17 @@ app = Flask(__name__)
 # On a public host this MUST be a real secret from an env var; the fallback
 # is only for local dev on the laptop.
 app.secret_key = os.environ.get("SECRET_KEY", "bomu-dev-key")
+
+# Cookie hardening. SameSite=Lax means the login cookie isn't sent on
+# cross-site form posts (a decent chunk of CSRF protection for free).
+# SESSION_COOKIE_SECURE makes the cookie HTTPS-only, which would break
+# local dev over http://192.168.x.x, so it's opt-in via env: the server's
+# .env sets SECURE_COOKIES=1, the laptop doesn't.
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+app.config["SESSION_COOKIE_SECURE"] = os.environ.get("SECURE_COOKIES", "0") == "1"
+
+# Per-user daily photo-scan cap: friends' scans bill Aaron's API key.
+SCAN_DAILY_LIMIT = int(os.environ.get("SCAN_DAILY_LIMIT", "15"))
 
 UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), "uploads")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -391,6 +404,26 @@ def add():
     return render_template("add_bottle.html")
 
 
+def _save_upload(photo):
+    """Save an uploaded photo under a unique name so two users uploading
+    'image.jpg' at the same moment can't clobber each other's file."""
+    filename = f"{uuid.uuid4().hex}-{secure_filename(photo.filename)}"
+    filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+    photo.save(filepath)
+    return filepath
+
+
+def _scan_allowed():
+    """Enforce the per-user daily scan cap. Returns None if allowed, or a
+    friendly message if the user is out of scans for today."""
+    used = scans_today(uid())
+    if used >= SCAN_DAILY_LIMIT:
+        return (f"You've used all {SCAN_DAILY_LIMIT} scans for today -- "
+                "the robot bartender needs a nap. Try again tomorrow, "
+                "or add bottles manually.")
+    return None
+
+
 @app.route("/scan", methods=["GET", "POST"])
 @login_required
 def scan():
@@ -403,14 +436,20 @@ def scan():
             flash("No photo selected.")
             return redirect(url_for("scan"))
 
-        filename = secure_filename(photo.filename)
-        filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-        photo.save(filepath)
+        capped = _scan_allowed()
+        if capped:
+            flash(capped)
+            return redirect(url_for("scan"))
 
+        filepath = _save_upload(photo)
         try:
+            log_scan(uid())
             result = scan_bottle_image(filepath)
-        except Exception as e:
-            flash(f"Error scanning photo: {str(e)}")
+        except Exception:
+            # Full details go to the server log; the user gets a clean message
+            # (raw exception text can contain internal details like API errors).
+            app.logger.exception("Bottle scan failed")
+            flash("Couldn't scan that photo. Give it another try in a minute.")
             return redirect(url_for("scan"))
         finally:
             if os.path.exists(filepath):
@@ -437,14 +476,18 @@ def scan_bulk():
             flash("No photo selected.")
             return redirect(url_for("scan_bulk"))
 
-        filename = secure_filename(photo.filename)
-        filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-        photo.save(filepath)
+        capped = _scan_allowed()
+        if capped:
+            flash(capped)
+            return redirect(url_for("scan_bulk"))
 
+        filepath = _save_upload(photo)
         try:
+            log_scan(uid())
             results = scan_shelf_image(filepath)
-        except Exception as e:
-            flash(f"Error scanning photo: {str(e)}")
+        except Exception:
+            app.logger.exception("Shelf scan failed")
+            flash("Couldn't scan that photo. Give it another try in a minute.")
             return redirect(url_for("scan_bulk"))
         finally:
             if os.path.exists(filepath):

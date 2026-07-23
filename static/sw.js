@@ -1,11 +1,12 @@
 // Bomu service worker.
-// Strategy:
-//   - Pages (HTML): network-first, fall back to last cached copy when offline.
-//     Recommendations depend on live DB state, so fresh wins whenever possible.
+// Strategy (changed in v2, after accounts were added):
+//   - Pages (HTML): network-only. Pages are now personal (your bar, your
+//     ratings), so we never keep copies in the shared browser cache --
+//     otherwise a later user of the same device could see them offline.
 //   - Static assets (/static/): cache-first, they rarely change.
 // Bump CACHE_VERSION whenever cached behavior needs a hard reset.
 
-const CACHE_VERSION = "bomu-v1";
+const CACHE_VERSION = "bomu-v2";
 
 const PRECACHE = [
     "/static/manifest.json",
@@ -53,15 +54,16 @@ self.addEventListener("fetch", (event) => {
             })
         );
     } else {
-        // Network-first for pages
+        // Network-only for pages: no caching of personal content. If truly
+        // offline, show a tiny friendly page instead of the browser error.
         event.respondWith(
-            fetch(request)
-                .then((response) => {
-                    const copy = response.clone();
-                    caches.open(CACHE_VERSION).then((cache) => cache.put(request, copy));
-                    return response;
-                })
-                .catch(() => caches.match(request))
+            fetch(request).catch(() => new Response(
+                "<html><body style=\"background:#1a1a2e;color:#e0e0e0;" +
+                "font-family:sans-serif;text-align:center;padding-top:4rem\">" +
+                "<h1>Bomu</h1><p>You're offline. Reconnect and try again " +
+                "&mdash; the bar's still here.</p></body></html>",
+                { headers: { "Content-Type": "text/html" } }
+            ))
         );
     }
 });

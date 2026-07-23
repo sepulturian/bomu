@@ -112,6 +112,17 @@ def init_db():
         )
     """)
 
+    # Scan log -- one row per photo scan, used to enforce the per-user
+    # daily cap (every scan costs real API money on Aaron's key).
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS scan_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            scanned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+    """)
+
     # Only seed if the table is empty (first run)
     c.execute("SELECT COUNT(*) FROM ingredients")
     if c.fetchone()[0] == 0:
@@ -210,6 +221,27 @@ def get_user(user_id):
     row = conn.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
     conn.close()
     return row
+
+
+# --- Scan-cap helpers ---
+
+def log_scan(user_id):
+    conn = get_db()
+    conn.execute("INSERT INTO scan_log (user_id) VALUES (?)", (user_id,))
+    conn.commit()
+    conn.close()
+
+
+def scans_today(user_id):
+    """How many scans this user has done since midnight UTC (matches the
+    CURRENT_TIMESTAMP default, which is UTC)."""
+    conn = get_db()
+    n = conn.execute(
+        "SELECT COUNT(*) FROM scan_log WHERE user_id = ? AND scanned_at >= date('now')",
+        (user_id,),
+    ).fetchone()[0]
+    conn.close()
+    return n
 
 
 # --- Bottle helpers (all scoped to a user) ---
