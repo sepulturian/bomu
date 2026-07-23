@@ -401,16 +401,12 @@ def service_worker():
 @app.route("/")
 @login_required
 def home():
-    # Badge on the Mixers button if recipes have introduced new ingredients
-    # the user hasn't reviewed yet.
-    new_ingredient_count = len(get_auto_added_ingredients(uid(), only_unstocked=True))
     # Status line doubles as onboarding: "0 bottles" tells a new friend
     # exactly what their first step is.
     bottle_count = len(get_all_bottles(uid()))
     makeable_count = get_recommendations(uid(), max_makeable=0, max_one_away=0)["total_makeable"]
     return render_template(
         "home.html",
-        new_ingredient_count=new_ingredient_count,
         bottle_count=bottle_count,
         makeable_count=makeable_count,
     )
@@ -590,7 +586,16 @@ def bar():
     bottles = get_all_bottles(uid())
     all_ingredients = get_all_ingredients(uid())
     stocked = [i for i in all_ingredients if i["in_stock"]]
-    return render_template("my_bar.html", bottles=bottles, stocked_ingredients=stocked)
+    # Badge on the Mixers button if recipes have introduced new ingredients
+    # the user hasn't reviewed yet. (Moved here from home when the manage
+    # buttons moved to this page.)
+    new_ingredient_count = len(get_auto_added_ingredients(uid(), only_unstocked=True))
+    return render_template(
+        "my_bar.html",
+        bottles=bottles,
+        stocked_ingredients=stocked,
+        new_ingredient_count=new_ingredient_count,
+    )
 
 
 @app.route("/recommend")

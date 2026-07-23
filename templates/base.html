@@ -21,8 +21,8 @@
         :root {
             /* Warm editorial palette -- amber/coral over dark charcoal-brown */
             --bg-base: #1a140f;
-            --bg-glow-top: #4a2a10;
-            --bg-glow-mid: #2a1a10;
+            --bg-glow-top: #6b3d14;
+            --bg-glow-mid: #3a2410;
             --card: #241b14;
             --card-border: #3a2c1e;
             --ink: #f5ead9;
@@ -39,10 +39,12 @@
 
         body {
             font-family: var(--font-body);
-            /* Full-page warm glow: concentrated top-center, fading toward the edges */
+            /* Full-page warm glow: bright golden core in the upper third (it
+               reads as light spilling from behind the hero card), fading to
+               dark edges */
             background:
-                radial-gradient(ellipse 900px 700px at 50% 0%, var(--bg-glow-top) 0%, transparent 60%),
-                radial-gradient(ellipse 800px 900px at 50% 40%, var(--bg-glow-mid) 0%, transparent 65%),
+                radial-gradient(ellipse 700px 620px at 50% 22%, var(--bg-glow-top) 0%, transparent 62%),
+                radial-gradient(ellipse 900px 1000px at 50% 45%, var(--bg-glow-mid) 0%, transparent 68%),
                 var(--bg-base);
             background-attachment: fixed;
             color: var(--ink);
@@ -234,6 +236,27 @@
             width: 20px;
             height: 20px;
             accent-color: var(--coral);
+        }
+
+        /* --- Home hero photo card --- */
+        .hero-card {
+            max-width: 340px;
+            margin: 0 auto;
+            aspect-ratio: 1 / 1;
+            border-radius: 26px;
+            overflow: hidden;
+            /* Warm glow bleeding out from behind the photo, like the card is
+               the light source for the page gradient */
+            box-shadow: 0 0 60px rgba(214, 138, 62, 0.28),
+                        0 12px 40px rgba(0, 0, 0, 0.45);
+            border: 1px solid rgba(214, 168, 78, 0.18);
+        }
+
+        .hero-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
         }
 
         .empty-state {

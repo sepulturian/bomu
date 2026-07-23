@@ -1,46 +1,35 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div style="text-align: center; padding: 1.5rem 0;">
-    <div style="font-family: var(--font-body); font-weight: 800; font-size: 1.4rem; margin-bottom: 1.5rem;">
-        Bomu&#127864;
-    </div>
+<div style="text-align: center; padding: 0.5rem 0;">
     <h1 style="font-size: 3.1rem; margin-bottom: 0.6rem;">Own your<br>evening.</h1>
 
     {# Status line: live snapshot of the user's bar. For a fresh account it
        reads as onboarding -- it points straight at the first step. #}
     {% if bottle_count %}
-        <p style="color: var(--green); font-size: 0.95rem; margin-bottom: 2rem;">
+        <p style="color: var(--green); font-size: 0.95rem; margin-bottom: 1.4rem;">
             {{ bottle_count }} bottle{{ 's' if bottle_count != 1 else '' }}
             &middot;
             {{ makeable_count }} drink{{ 's' if makeable_count != 1 else '' }} ready to make
         </p>
     {% else %}
-        <p style="color: var(--gold); font-size: 0.95rem; margin-bottom: 2rem;">
+        <p style="color: var(--gold); font-size: 0.95rem; margin-bottom: 1.4rem;">
             Drinks made from what's already in your bar &mdash; scan or add a bottle to get started
         </p>
     {% endif %}
 
-    <div style="display: flex; flex-direction: column; gap: 1rem; max-width: 300px; margin: 0 auto;">
-        {# Tonight: the reasons you open the app after setup #}
-        <a href="/recommend" class="btn" style="font-size: 1.1rem; padding: 0.9rem 1.2rem;">What can I make?</a>
-        <a href="/surprise" class="btn btn-secondary">&#127922; Surprise me</a>
-        <a href="/favorites" class="btn btn-secondary">&#10084; My Favorites</a>
+    {# Hero: the glow in the background radiates from behind this card #}
+    <div class="hero-card">
+        <img src="/static/hero-cocktail.jpg" alt="Mojito with fresh mint and lime">
+    </div>
 
-        {# Bar management: setup and upkeep #}
-        <div style="color: var(--ink-faint); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; margin-top: 0.75rem;">
-            Manage your bar
+    {# Tonight: the reasons you open the app. Bar management lives on My Bar. #}
+    <div style="display: flex; flex-direction: column; gap: 0.9rem; max-width: 340px; margin: 1.4rem auto 0;">
+        <a href="/recommend" class="btn" style="font-size: 1.1rem; padding: 0.95rem 1.2rem;">What can I make?</a>
+        <div style="display: flex; gap: 0.75rem; justify-content: center;">
+            <a href="/surprise" class="btn btn-secondary" style="flex: 1;">&#127922; Surprise me</a>
+            <a href="/favorites" class="btn btn-secondary" style="flex: 1;">&#10084; Favorites</a>
         </div>
-        <a href="/scan" class="btn btn-secondary">Scan a Bottle</a>
-        <a href="/scan-bulk" class="btn btn-secondary">Scan Multiple Bottles</a>
-        <a href="/add" class="btn btn-secondary">+ Add Manually</a>
-        <a href="/checklist" class="btn btn-secondary">
-            Mixers & Ingredients
-            {% if new_ingredient_count %}
-                <span style="background: var(--gold); color: #1a140f; font-size: 0.72rem; padding: 0.12rem 0.5rem; border-radius: 999px; margin-left: 0.4rem; font-weight: 700; vertical-align: middle;">{{ new_ingredient_count }} new</span>
-            {% endif %}
-        </a>
-        <a href="/bar" class="btn btn-secondary">View My Bar</a>
     </div>
 </div>
 {% endblock %}

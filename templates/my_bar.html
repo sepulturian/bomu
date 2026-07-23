@@ -3,6 +3,20 @@
 {% block content %}
 <h1>My Bar</h1>
 
+{# Bar management actions -- moved here from the home page so home stays
+   focused on "what can I drink tonight". #}
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-bottom: 1.75rem;">
+    <a href="/scan" class="btn btn-secondary" style="text-align: center;">Scan a Bottle</a>
+    <a href="/scan-bulk" class="btn btn-secondary" style="text-align: center;">Scan Multiple</a>
+    <a href="/add" class="btn btn-secondary" style="text-align: center;">+ Add Manually</a>
+    <a href="/checklist" class="btn btn-secondary" style="text-align: center;">
+        Mixers
+        {% if new_ingredient_count %}
+            <span style="background: var(--gold); color: #1a140f; font-size: 0.72rem; padding: 0.12rem 0.5rem; border-radius: 999px; margin-left: 0.3rem; font-weight: 700; vertical-align: middle;">{{ new_ingredient_count }} new</span>
+        {% endif %}
+    </a>
+</div>
+
 <h2>Bottles{% if bottles %} <span style="color: var(--ink-faint); font-size: 0.9rem; font-weight: normal; text-transform: none; letter-spacing: normal;">&middot; {{ bottles|length }}</span>{% endif %}</h2>
 {% if bottles %}
     {# Grouped by type so a growing bar stays scannable. Deleting moved to
