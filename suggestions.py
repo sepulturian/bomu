@@ -2,9 +2,12 @@
 Used on the /one-away page to give the user concrete shopping options
 when an ingredient is missing.
 
-Keys are matched case-insensitively as substrings against the missing
-ingredient's name. So 'Maraschino Liqueur' matches the 'maraschino' key.
+Keys are matched case-insensitively on word boundaries against the missing
+ingredient's name, longest key first. So 'Maraschino Liqueur' matches the
+'maraschino' key, but 'gin' does not match 'ginger beer'.
 """
+
+import re
 
 # Most specific keys first (longer phrases). Lookup walks the dict in order
 # and returns the first match.
@@ -101,12 +104,16 @@ SUGGESTIONS = {
 
 
 def get_suggestions(missing_name):
-    """Case-insensitive substring lookup. Returns list of suggestions or empty list."""
+    """Case-insensitive lookup. Returns list of suggestions or empty list.
+
+    Longest keys are tried first and keys only match on whole words, so
+    'ginger beer' wins over 'ginger' and 'gin' never matches inside
+    'ginger'. (That substring bug used to recommend gin brands when you
+    were missing ginger beer.)"""
     if not missing_name:
         return []
     lower = missing_name.lower()
-    # Walk in insertion order; longer/more specific keys appear earlier
-    for key, suggestions in SUGGESTIONS.items():
-        if key in lower:
+    for key, suggestions in sorted(SUGGESTIONS.items(), key=lambda kv: -len(kv[0])):
+        if re.search(r"\b" + re.escape(key) + r"\b", lower):
             return suggestions
     return []

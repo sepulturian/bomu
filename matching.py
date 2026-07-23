@@ -255,15 +255,20 @@ def get_one_away_grouped(user_id):
     ingredients = get_all_ingredients(user_id)
     stocked = {i["name"].lower() for i in ingredients if i["in_stock"]}
 
-    groups = {}  # missing.name -> {missing: dict, recipes: [recipe_data]}
+    groups = {}  # missing.name (lowercased) -> {missing: dict, recipes: [recipe_data]}
     for r in get_all_recipes():
         status, missing = match_recipe(r, bottles, stocked)
         if status != "one_away":
             continue
         m = missing[0]
-        key = m["name"]
+        # Case-insensitive key so 'Triple sec' and 'Triple Sec' merge into
+        # one group instead of splitting (which also broke the ranking).
+        key = m["name"].lower()
         if key not in groups:
-            groups[key] = {"missing": m, "recipes": []}
+            groups[key] = {"missing": dict(m), "recipes": []}
+        elif groups[key]["missing"]["name"].islower() and not m["name"].islower():
+            # Prefer the nicer-cased variant for display
+            groups[key]["missing"]["name"] = m["name"]
         groups[key]["recipes"].append(r)
 
     # Sort: groups with more drinks first, then alphabetical

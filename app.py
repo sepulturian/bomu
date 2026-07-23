@@ -219,18 +219,25 @@ def short_bottle_name(bottle):
         return str(bottle)
     brand = brand.strip()
     name = name.strip()
-    if brand and len(brand) <= 20:
+    if brand and len(brand) <= 24:
         return brand
-    if name and len(name) <= 20:
+    if name and len(name) <= 24:
         return name
-    if name:
-        words = name.split()
-        # Try first 2 words; if still too long, first word
-        two = " ".join(words[:2])
-        if len(two) <= 22:
-            return two
-        return words[0]
-    return brand or "?"
+    source = name or brand
+    if source:
+        # Build up whole words until we hit the cap, then drop any dangling
+        # connector so we never emit stubs like "Valley of".
+        words = source.split()
+        kept = []
+        for w in words:
+            if len(" ".join(kept + [w])) > 22:
+                break
+            kept.append(w)
+        connectors = {"of", "the", "and", "with", "de", "du", "la", "le", "no."}
+        while kept and kept[-1].lower() in connectors:
+            kept.pop()
+        return " ".join(kept) if kept else words[0]
+    return "?"
 
 
 def clean_instructions(text):

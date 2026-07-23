@@ -49,6 +49,9 @@
            style="flex: 1; text-align: center; {% if grouped %}background: var(--coral); color: #1a140f;{% endif %}">
             Group by spirit
         </a>
+        <a href="/favorites" class="btn btn-small btn-secondary" style="flex: 1; text-align: center;">
+            &#10084; Favorites
+        </a>
     </div>
 
     {% if grouped %}
@@ -123,10 +126,6 @@
         </div>
     {% endif %}
 {% endif %}
-
-<div style="margin-top: 2.5rem; text-align: center;">
-    <a href="/" class="btn btn-secondary">&larr; Home</a>
-</div>
 
 <script>
     // Live search over the drink cards (makeable + one-away). Opens the

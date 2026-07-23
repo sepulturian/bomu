@@ -12,7 +12,9 @@
     </div>
 {% endif %}
 
-{% for g in groups %}
+{# Multi-drink unlocks get the full card treatment -- these are the buys
+   that pay off most, so they earn the space. #}
+{% for g in groups if g.recipes|length > 1 %}
     <div class="card" style="margin-bottom: 1rem;">
         <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; margin-bottom: 0.5rem;">
             <div style="flex: 1;">
@@ -28,7 +30,7 @@
                 </div>
             </div>
             <div style="font-size: 0.9rem; color: var(--ink-dim);">
-                {{ g.recipes|length }} drink{{ 's' if g.recipes|length != 1 else '' }}
+                {{ g.recipes|length }} drinks
             </div>
         </div>
         {% set sugs = g.missing.name|suggestions %}
@@ -49,7 +51,39 @@
     </div>
 {% endfor %}
 
-<div style="margin-top: 2rem; text-align: center;">
-    <a href="/recommend" class="btn btn-secondary">&larr; Back to recommendations</a>
-</div>
+{# Single-drink unlocks collapse to one line each -- tap to expand. Keeps
+   the long tail from burying the page. #}
+{% set singles = [] %}
+{% for g in groups if g.recipes|length == 1 %}
+    {% if singles.append(g) %}{% endif %}
+{% endfor %}
+{% if singles %}
+    <h2 style="margin-top: 2rem;">Unlocks one drink</h2>
+    <p style="color: var(--ink-dim); font-size: 0.85rem; margin-bottom: 0.75rem;">
+        Tap an ingredient for the drink and brand ideas.
+    </p>
+    {% for g in singles %}
+        <details style="border: 1px solid var(--card-border); border-radius: 12px; margin-bottom: 0.5rem; background: var(--card);">
+            <summary style="cursor: pointer; padding: 0.7rem 1rem; display: flex; justify-content: space-between; align-items: center; list-style: none;">
+                <span style="font-weight: 600; color: var(--coral);">{{ g.missing.name }}</span>
+                <span style="color: var(--ink-dim); font-size: 0.82rem;">
+                    {{ g.recipes[0].recipe.name }} &rsaquo;
+                </span>
+            </summary>
+            <div style="padding: 0 1rem 0.85rem;">
+                {% set sugs = g.missing.name|suggestions %}
+                {% if sugs %}
+                    <div style="font-size: 0.85rem; color: var(--ink); margin-bottom: 0.6rem; padding: 0.5rem 0.75rem; background: rgba(0,0,0,0.25); border-radius: 8px;">
+                        <span style="color: var(--ink-dim);">Try:</span> {{ sugs|join(' &middot; ')|safe }}
+                    </div>
+                {% endif %}
+                <a href="/recipe/{{ g.recipes[0].recipe.id }}"
+                   style="text-decoration: none; color: var(--ink); padding: 0.6rem 0.85rem; background: rgba(255,255,255,0.04); border: 1px solid var(--card-border); border-radius: 10px; display: flex; justify-content: space-between; align-items: center;">
+                    <span>{{ g.recipes[0].recipe.name }}</span>
+                    <span style="color: var(--ink-dim); font-size: 0.85rem;">{{ g.recipes[0].recipe.glass or '' }} &rsaquo;</span>
+                </a>
+            </div>
+        </details>
+    {% endfor %}
+{% endif %}
 {% endblock %}
