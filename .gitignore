@@ -11,6 +11,12 @@ __pycache__/
 # server data with laptop data on every deploy.
 bomu.db
 bomu.db.*
+# SQLite scratch files — a journal/WAL pushed to the server can silently
+# "roll back" the live database with laptop data (this happened 2026-07-23)
+bomu.db-journal
+*.db-journal
+*.db-wal
+*.db-shm
 
 # Scratch photo uploads
 uploads/
