@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bomu — Photography-Forward Concepts (Pro)</title>
+<style>
+  :root { --bg:#14141f; --card:#1d1d2b; --line:#2c2c40; --ink:#e6e6ef; --dim:#9a9ab5; --coral:#e94560; --green:#7ed6a5; --gold:#d6b87e; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; background:var(--bg); color:var(--ink); line-height:1.5; padding:2rem 1.25rem 4rem; }
+  .wrap { max-width:1250px; margin:0 auto; }
+  h1 { font-size:1.9rem; margin-bottom:.35rem; }
+  .sub { color:var(--dim); margin-bottom:1.5rem; max-width:760px; }
+  .note { background:var(--card); border:1px solid var(--line); border-left:3px solid var(--coral); border-radius:8px; padding:1rem 1.15rem; margin-bottom:2rem; font-size:.95rem; color:#cfcfe0; }
+  .note b { color:var(--ink); }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:1.5rem; }
+  .col { background:var(--card); border:1px solid var(--line); border-radius:12px; overflow:hidden; display:flex; flex-direction:column; }
+  .col img { width:100%; display:block; border-bottom:1px solid var(--line); background:#000; }
+  .body { padding:1rem 1.1rem 1.25rem; }
+  .tag { font-size:.72rem; letter-spacing:.08em; text-transform:uppercase; color:var(--coral); font-weight:700; }
+  .name { font-size:1.15rem; font-weight:700; margin:.15rem 0 .5rem; }
+  .desc { font-size:.88rem; color:var(--dim); }
+  .feas { display:flex; gap:.4rem; margin-top:.7rem; flex-wrap:wrap; }
+  .pill { font-size:.72rem; padding:.2rem .55rem; border-radius:999px; border:1px solid var(--line); }
+  .pill.css { color:var(--green); border-color:#2d6a4f; }
+  .pill.photo { color:var(--gold); border-color:#5a4a2a; }
+  h2 { margin:2.75rem 0 1rem; font-size:1.3rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Bomu — Photography-Forward Concepts</h1>
+  <p class="sub">Generated with nano-banana-pro at 2K, targeting your actual screens (Home, My Bar, Recipe, Make, Checklist) instead of a generic reference. All 6 landed on the first pass.</p>
+
+  <div class="note">
+    <b>The honest gap:</b> these look this good because of real-looking product photography (bottles, cocktails, garnish) composited into the layout. The <em>layout/chrome</em> (pills, cards, nav bar, gradients) is cheap — plain CSS. The <em>photography</em> is the expensive part: either you license/shoot real photos of your actual bottles and drinks, or generate a matching photo per cocktail/bottle with Nano Banana and cache it. That's a content pipeline, not a one-time CSS change. Worth doing, just sizing it correctly.
+  </div>
+
+  <div class="grid">
+    <div class="col">
+      <img src="v2_01_home_dark.png" alt="Home dark">
+      <div class="body">
+        <div class="tag">Home</div>
+        <div class="name">Dark + product photography</div>
+        <div class="desc">Greeting header, pill category filters, "Ready to make" row with real cocktail photos, floating nav.</div>
+        <div class="feas"><span class="pill css">Chrome: CSS</span><span class="pill photo">Cards: need photos</span></div>
+      </div>
+    </div>
+
+    <div class="col">
+      <img src="v2_02_mybar.jpg" alt="My Bar">
+      <div class="body">
+        <div class="tag">My Bar</div>
+        <div class="name">Bottle inventory grid</div>
+        <div class="desc">This is the one I'd prioritize — your bottle list is currently plain text rows. Real bottle photography here would feel like a completely different app.</div>
+        <div class="feas"><span class="pill css">Chrome: CSS</span><span class="pill photo">Cards: need photos</span></div>
+      </div>
+    </div>
+
+    <div class="col">
+      <img src="v2_03_recipe_detail.jpg" alt="Recipe detail">
+      <div class="body">
+        <div class="tag">Recipe detail</div>
+        <div class="name">Full-bleed photo + bottom sheet</div>
+        <div class="desc">Big hero cocktail photo, card overlaps the bottom like a bottom sheet, circular ingredient thumbnails. Directly lifted from your "Rum Bull Shot" reference.</div>
+        <div class="feas"><span class="pill css">Sheet: CSS</span><span class="pill photo">Hero + thumbs: need photos</span></div>
+      </div>
+    </div>
+
+    <div class="col">
+      <img src="v2_04_home_warm.jpg" alt="Home warm variant">
+      <div class="body">
+        <div class="tag">Home — alt palette</div>
+        <div class="name">Warm gradient hero</div>
+        <div class="desc">Closest to your "energy drink" reference's warmth, adapted to a single big hero card instead of a full-bleed background. "Own your evening" tagline direction.</div>
+        <div class="feas"><span class="pill css">Chrome: CSS</span><span class="pill photo">Hero: need photo</span></div>
+      </div>
+    </div>
+
+    <div class="col">
+      <img src="v2_05_make_moody.jpg" alt="Make moody variant">
+      <div class="body">
+        <div class="tag">Make — alt layout</div>
+        <div class="name">Side tab rail, serif heading</div>
+        <div class="desc">Vertical pill tabs on the left edge (Shots/Cocktails/Mocktails) instead of a top toggle. Elegant serif "Choose your drink." Closest to your beer-app and cocktail-app references.</div>
+        <div class="feas"><span class="pill css">Chrome: CSS</span><span class="pill photo">Cards: need photos</span></div>
+      </div>
+    </div>
+
+    <div class="col">
+      <img src="v2_06_checklist.jpg" alt="Checklist">
+      <div class="body">
+        <div class="tag">Checklist</div>
+        <div class="name">Macro ingredient photography</div>
+        <div class="desc">Your current checklist is a plain checkbox list. This treats mixers/garnish like a grocery app — small square photo tiles grouped by category, checked state glows coral.</div>
+        <div class="feas"><span class="pill css">Chrome: CSS</span><span class="pill photo">Tiles: need photos</span></div>
+      </div>
+    </div>
+  </div>
+
+  <h2>What I'd actually recommend</h2>
+  <div class="note">
+    Don't try to reskin all 5 screens with new photography at once — that's a lot of image generation/curation and a real risk of things looking mismatched if styles drift between batches. Better sequence: 1) rebuild the CSS chrome (dark cards, pill chips, floating nav, gradients) across the whole app first — that's free, fast, and already a big visual jump. 2) Pick <b>one</b> screen to pilot real photography on — My Bar is the best candidate since it's currently the most text-heavy and boring. 3) If that pilot feels worth the upkeep (new bottle photo every time you add a bottle), extend the pattern to Recipe detail and Home.
+  </div>
+</div>
+</body>
+</html>

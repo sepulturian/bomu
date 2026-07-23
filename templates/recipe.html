@@ -2,7 +2,7 @@
 
 {% block content %}
 <h1>{{ recipe.name }}</h1>
-<p style="color: #8888aa; margin-bottom: 1.5rem;">
+<p style="color: var(--ink-dim); margin-bottom: 1.5rem;">
     {% if recipe.glass %}{{ recipe.glass }}{% endif %}
 </p>
 
@@ -17,45 +17,45 @@
         {% set is_missing = i.id in missing_ids %}
         {% set is_optional = i.requirement_type == 'optional' %}
         {% set clean_note = i.notes|clean_notes %}
-        <div style="padding: 0.5rem 0; {% if is_optional %}opacity: 0.78;{% endif %} {% if not loop.last %}border-bottom: 1px solid #1a2a4a;{% endif %}">
+        <div style="padding: 0.5rem 0; {% if is_optional %}opacity: 0.78;{% endif %} {% if not loop.last %}border-bottom: 1px solid var(--card-border);{% endif %}">
             <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 1rem;">
                 <div style="flex: 1;">
-                    <div style="font-size: 1rem; {% if is_missing %}color: #e94560; font-weight: 600;{% endif %}">
-                        {{ i.raw_name }}{% if is_optional %} <span style="font-size: 0.72rem; font-weight: normal; color: #8888aa; background: #1a2a4a; padding: 0.1rem 0.4rem; border-radius: 4px; margin-left: 0.25rem; vertical-align: middle;">optional</span>{% endif %}{% if is_missing %} <span style="font-size: 0.75rem; font-weight: normal; color: #c73e54;">(missing)</span>{% endif %}
+                    <div style="font-size: 1rem; {% if is_missing %}color: var(--coral); font-weight: 600;{% endif %}">
+                        {{ i.raw_name }}{% if is_optional %} <span style="font-size: 0.72rem; font-weight: normal; color: var(--ink-dim); background: rgba(255,255,255,0.06); padding: 0.1rem 0.4rem; border-radius: 4px; margin-left: 0.25rem; vertical-align: middle;">optional</span>{% endif %}{% if is_missing %} <span style="font-size: 0.75rem; font-weight: normal; color: var(--coral-dark);">(missing)</span>{% endif %}
                     </div>
                     {% if clean_note %}
-                        <div style="font-size: 0.8rem; color: #8888aa; margin-top: 0.15rem;">{{ clean_note }}</div>
+                        <div style="font-size: 0.8rem; color: var(--ink-dim); margin-top: 0.15rem;">{{ clean_note }}</div>
                     {% endif %}
                     {% if bottle_hints.get(i.id) %}
-                        <div style="font-size: 0.85rem; color: #7ed6a5; margin-top: 0.25rem;">
+                        <div style="font-size: 0.85rem; color: var(--green); margin-top: 0.25rem;">
                             Use your:
                             {% for b in bottle_hints[i.id] %}
                                 <strong>{{ b|short_name }}</strong>{% if not loop.last %}, {% endif %}
                             {% endfor %}
                         </div>
                     {% elif ingredient_have.get(i.id) %}
-                        <div style="font-size: 0.85rem; color: #7ed6a5; margin-top: 0.25rem;">
+                        <div style="font-size: 0.85rem; color: var(--green); margin-top: 0.25rem;">
                             &#10003; In your stock
                         </div>
                     {% endif %}
                     {% if is_missing %}
                         {% set sugs = i.raw_name|suggestions %}
                         {% if sugs %}
-                            <div style="font-size: 0.82rem; color: #d6b87e; margin-top: 0.3rem; padding: 0.4rem 0.6rem; background: #2a2410; border-radius: 4px;">
-                                <span style="color: #8888aa;">Try:</span> {{ sugs|join(' &middot; ')|safe }}
+                            <div style="font-size: 0.82rem; color: var(--gold); margin-top: 0.3rem; padding: 0.4rem 0.6rem; background: rgba(214, 168, 78, 0.1); border-radius: 8px;">
+                                <span style="color: var(--ink-dim);">Try:</span> {{ sugs|join(' &middot; ')|safe }}
                             </div>
                         {% endif %}
                     {% endif %}
                 </div>
-                <div style="text-align: right; font-size: 0.9rem; color: #e0e0e0; min-width: 110px;">
+                <div style="text-align: right; font-size: 0.9rem; color: var(--ink); min-width: 110px;">
                     {% if i.raw_measure %}
                         <div>{{ i.raw_measure }}</div>
                         {% set metric = i.raw_measure|metric(i.raw_name) %}
                         {% if metric != i.raw_measure %}
-                            <div style="color: #8888aa; font-size: 0.85rem;">{{ metric }}</div>
+                            <div style="color: var(--ink-dim); font-size: 0.85rem;">{{ metric }}</div>
                         {% endif %}
                     {% else %}
-                        <div style="color: #8888aa;">to taste</div>
+                        <div style="color: var(--ink-dim);">to taste</div>
                     {% endif %}
                 </div>
             </div>
@@ -82,11 +82,11 @@
     <form method="POST" action="/rate/{{ recipe.id }}" style="flex: 1; margin: 0;">
         <input type="hidden" name="thumb" value="1">
         <button type="submit" class="btn"
-            style="width: 100%; padding: 0.9rem; font-size: 1.1rem;
+            style="width: 100%; padding: 0.9rem; font-size: 1.1rem; border-radius: 999px;
                    {% if rating == 1 %}
-                       background: #2d6a4f; border: 2px solid #7ed6a5;
+                       background: #2d6a4f; border: 2px solid var(--green); color: var(--ink);
                    {% else %}
-                       background: #16213e; border: 1px solid #333; color: #8888aa;
+                       background: rgba(255,255,255,0.04); border: 1px solid var(--card-border); color: var(--ink-dim);
                    {% endif %}">
             {% if rating == 1 %}&#9989;{% endif %} &#128077; Liked it
         </button>
@@ -94,18 +94,18 @@
     <form method="POST" action="/rate/{{ recipe.id }}" style="flex: 1; margin: 0;">
         <input type="hidden" name="thumb" value="-1">
         <button type="submit" class="btn"
-            style="width: 100%; padding: 0.9rem; font-size: 1.1rem;
+            style="width: 100%; padding: 0.9rem; font-size: 1.1rem; border-radius: 999px;
                    {% if rating == -1 %}
-                       background: #661111; border: 2px solid #c73e54;
+                       background: #661111; border: 2px solid var(--coral-dark); color: var(--ink);
                    {% else %}
-                       background: #16213e; border: 1px solid #333; color: #8888aa;
+                       background: rgba(255,255,255,0.04); border: 1px solid var(--card-border); color: var(--ink-dim);
                    {% endif %}">
             {% if rating == -1 %}&#9989;{% endif %} &#128078; Not for me
         </button>
     </form>
 </div>
 {% if rating != 0 %}
-    <p style="font-size: 0.85rem; color: #8888aa; margin-bottom: 1.5rem; text-align: center;">
+    <p style="font-size: 0.85rem; color: var(--ink-dim); margin-bottom: 1.5rem; text-align: center;">
         Tap the same button again to clear your rating.
     </p>
 {% endif %}

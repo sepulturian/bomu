@@ -3,12 +3,12 @@
 {% block content %}
 <h1>My Bar</h1>
 
-<h2>Bottles{% if bottles %} <span style="color: #55557a; font-size: 0.9rem; font-weight: normal;">&middot; {{ bottles|length }}</span>{% endif %}</h2>
+<h2>Bottles{% if bottles %} <span style="color: var(--ink-faint); font-size: 0.9rem; font-weight: normal; text-transform: none; letter-spacing: normal;">&middot; {{ bottles|length }}</span>{% endif %}</h2>
 {% if bottles %}
     {# Grouped by type so a growing bar stays scannable. Deleting moved to
        the edit page -- no more fat-finger deletes from the list. #}
     {% for type, group in bottles|groupby('type') %}
-        <div class="category-title">{{ type }} <span style="color: #8888aa; font-size: 0.85rem;">&middot; {{ group|length }}</span></div>
+        <div class="category-title">{{ type }} <span style="color: var(--ink-faint); font-size: 0.85rem; text-transform: none; letter-spacing: normal; font-weight: normal;">&middot; {{ group|length }}</span></div>
         {% for bottle in group %}
             <a href="/edit/{{ bottle.id }}" style="text-decoration: none; color: inherit;">
                 <div class="card">
@@ -16,16 +16,16 @@
                         <div>
                             <strong>{{ bottle.name }}</strong>
                             {% if bottle.brand and bottle.brand != bottle.name %}
-                                <span style="color: #666;"> / {{ bottle.brand }}</span>
+                                <span style="color: var(--ink-faint);"> / {{ bottle.brand }}</span>
                             {% endif %}
                         </div>
-                        <div style="color: #8888aa;">&rsaquo;</div>
+                        <div style="color: var(--ink-dim);">&rsaquo;</div>
                     </div>
                 </div>
             </a>
         {% endfor %}
     {% endfor %}
-    <p style="color: #666; font-size: 0.82rem; margin-top: 0.75rem;">Tap a bottle to edit or remove it.</p>
+    <p style="color: var(--ink-faint); font-size: 0.82rem; margin-top: 0.75rem;">Tap a bottle to edit or remove it.</p>
 {% else %}
     <div class="empty-state">
         <p>No bottles yet!</p>
@@ -37,7 +37,7 @@
 {% if stocked_ingredients %}
     <div class="card">
         {% for item in stocked_ingredients %}
-            <span style="display: inline-block; background: #0f3460; padding: 0.3rem 0.7rem; border-radius: 20px; margin: 0.2rem; font-size: 0.85rem;">
+            <span style="display: inline-block; background: rgba(255,255,255,0.05); border: 1px solid var(--card-border); padding: 0.3rem 0.8rem; border-radius: 999px; margin: 0.2rem; font-size: 0.85rem;">
                 {{ item.name }}
             </span>
         {% endfor %}

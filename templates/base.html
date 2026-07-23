@@ -5,26 +5,52 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- PWA: installable to home screen -->
     <link rel="manifest" href="/static/manifest.json">
-    <meta name="theme-color" content="#16213e">
+    <meta name="theme-color" content="#1a140f">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <meta name="apple-mobile-web-app-title" content="Bomu">
     <link rel="apple-touch-icon" href="/static/icon-180.png">
     <link rel="icon" type="image/png" sizes="192x192" href="/static/icon-192.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,600;6..96,700;6..96,800;6..96,900&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
+        :root {
+            /* Warm editorial palette -- amber/coral over dark charcoal-brown */
+            --bg-base: #1a140f;
+            --bg-glow-top: #4a2a10;
+            --bg-glow-mid: #2a1a10;
+            --card: #241b14;
+            --card-border: #3a2c1e;
+            --ink: #f5ead9;
+            --ink-dim: #b8a894;
+            --ink-faint: #7a6b58;
+            --coral: #e9694a;
+            --coral-dark: #c94f36;
+            --gold: #d6a84e;
+            --green: #7ed6a5;
+
+            --font-display: "Bodoni Moda", "Playfair Display", Georgia, serif;
+            --font-body: "Poppins", -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #1a1a2e;
-            color: #e0e0e0;
+            font-family: var(--font-body);
+            /* Full-page warm glow: concentrated top-center, fading toward the edges */
+            background:
+                radial-gradient(ellipse 900px 700px at 50% 0%, var(--bg-glow-top) 0%, transparent 60%),
+                radial-gradient(ellipse 800px 900px at 50% 40%, var(--bg-glow-mid) 0%, transparent 65%),
+                var(--bg-base);
+            background-attachment: fixed;
+            color: var(--ink);
             min-height: 100vh;
         }
 
         nav {
-            background: #16213e;
-            padding: 1rem;
+            padding: 1.25rem 1.5rem 0.5rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -33,10 +59,18 @@
         }
 
         nav .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #e0e0e0;
+            font-family: var(--font-body);
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--ink);
             text-decoration: none;
+            letter-spacing: -0.01em;
+        }
+
+        nav .logo::after {
+            content: "\1F378";
+            margin-left: 0.3rem;
+            font-size: 1.1rem;
         }
 
         nav .links {
@@ -46,12 +80,12 @@
         }
 
         nav a {
-            color: #8888aa;
+            color: var(--ink-dim);
             text-decoration: none;
             font-size: 0.95rem;
         }
 
-        nav a:hover { color: #e0e0e0; }
+        nav a:hover { color: var(--ink); }
 
         .container {
             max-width: 600px;
@@ -60,56 +94,71 @@
         }
 
         h1 {
-            font-size: 1.8rem;
-            margin-bottom: 1rem;
+            /* Bold condensed-feel serif masthead -- editorial/awards-plaque energy */
+            font-family: var(--font-display);
+            font-weight: 900;
+            font-size: 2.5rem;
+            line-height: 1.02;
+            letter-spacing: 0.01em;
+            text-transform: uppercase;
+            margin-bottom: 0.6rem;
+            color: var(--ink);
         }
 
         h2 {
+            font-family: var(--font-display);
+            font-weight: 700;
             font-size: 1.3rem;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
             margin-bottom: 0.75rem;
-            color: #8888aa;
+            color: var(--gold);
         }
 
         .btn {
             display: inline-block;
-            background: #e94560;
-            color: white;
-            padding: 0.6rem 1.2rem;
+            background: var(--coral);
+            color: #1a140f;
+            font-weight: 600;
+            padding: 0.7rem 1.3rem;
             border: none;
-            border-radius: 6px;
+            border-radius: 999px;
             font-size: 1rem;
             cursor: pointer;
             text-decoration: none;
         }
 
-        .btn:hover { background: #c73e54; }
+        .btn:hover { background: var(--coral-dark); color: #fff; }
 
         .btn-secondary {
-            background: #16213e;
-            border: 1px solid #333;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--card-border);
+            color: var(--ink);
         }
 
-        .btn-secondary:hover { background: #1a2a4a; }
+        .btn-secondary:hover { background: rgba(255, 255, 255, 0.08); }
 
         .btn-danger {
             background: #661111;
+            color: var(--ink);
         }
 
         .btn-danger:hover { background: #881111; }
 
         .btn-small {
-            padding: 0.3rem 0.7rem;
+            padding: 0.35rem 0.8rem;
             font-size: 0.85rem;
         }
 
         input[type="text"], input[type="password"], input[type="file"],
         input[type="search"], select {
             width: 100%;
-            padding: 0.6rem;
-            background: #16213e;
-            border: 1px solid #333;
-            border-radius: 6px;
-            color: #e0e0e0;
+            padding: 0.7rem 1rem;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--card-border);
+            border-radius: 999px;
+            color: var(--ink);
+            font-family: var(--font-body);
             font-size: 1rem;
             margin-bottom: 1rem;
         }
@@ -117,13 +166,13 @@
         input[type="text"]:focus, input[type="password"]:focus,
         input[type="search"]:focus, select:focus {
             outline: none;
-            border-color: #e94560;
+            border-color: var(--coral);
         }
 
         label {
             display: block;
             margin-bottom: 0.3rem;
-            color: #8888aa;
+            color: var(--ink-dim);
             font-size: 0.9rem;
         }
 
@@ -132,15 +181,17 @@
         }
 
         .flash {
-            background: #0f3460;
+            background: rgba(233, 105, 74, 0.15);
+            border: 1px solid rgba(233, 105, 74, 0.35);
             padding: 0.75rem 1rem;
-            border-radius: 6px;
+            border-radius: 10px;
             margin-bottom: 1rem;
         }
 
         .card {
-            background: #16213e;
-            border-radius: 8px;
+            background: var(--card);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
             padding: 1rem;
             margin-bottom: 0.75rem;
         }
@@ -157,11 +208,15 @@
         }
 
         .category-title {
-            font-size: 1.1rem;
-            color: #e94560;
-            margin-top: 1.5rem;
-            margin-bottom: 0.75rem;
-            text-transform: capitalize;
+            /* Small-caps serif labels, matching the headline family */
+            font-family: var(--font-display);
+            font-size: 0.95rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-top: 1.75rem;
+            margin-bottom: 0.85rem;
         }
 
         .category-title:first-child {
@@ -178,24 +233,110 @@
         .checklist-item input[type="checkbox"] {
             width: 20px;
             height: 20px;
-            accent-color: #e94560;
+            accent-color: var(--coral);
         }
 
         .empty-state {
             text-align: center;
             padding: 3rem 1rem;
-            color: #666;
+            color: var(--ink-faint);
         }
 
-        /* Bottom tab bar: thumb-reach navigation for phone use. */
+        /* --- Ingredient photo tiles (checklist) --- */
+        .tile-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+            gap: 0.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .tile-cell { text-align: center; }
+
+        .ing-tile {
+            position: relative;
+            display: block;
+            aspect-ratio: 1;
+            border-radius: 18px;
+            overflow: hidden;
+            background: var(--card);
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .ing-tile img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* Hidden real checkbox; state drives the ring + badge below */
+        .ing-tile input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Border ring overlay: dim by default, coral glow when checked */
+        .ing-tile .tile-ring {
+            position: absolute;
+            inset: 0;
+            border-radius: 18px;
+            border: 1.5px solid var(--card-border);
+            transition: border-color 0.18s, box-shadow 0.18s;
+            pointer-events: none;
+        }
+
+        .ing-tile input:checked ~ .tile-ring {
+            border: 2px solid var(--coral);
+            box-shadow: 0 0 16px rgba(233, 105, 74, 0.45),
+                        inset 0 0 12px rgba(233, 105, 74, 0.12);
+        }
+
+        .ing-tile .check-badge {
+            position: absolute;
+            top: 7px;
+            right: 7px;
+            width: 25px;
+            height: 25px;
+            border-radius: 999px;
+            border: 1.5px solid rgba(245, 234, 217, 0.45);
+            background: rgba(10, 6, 3, 0.4);
+            color: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+            transition: background 0.18s, color 0.18s;
+        }
+
+        .ing-tile input:checked ~ .check-badge {
+            background: var(--coral);
+            border-color: var(--coral);
+            color: #1a140f;
+        }
+
+        .tile-name {
+            display: block;
+            margin-top: 0.4rem;
+            font-size: 0.74rem;
+            color: var(--ink-dim);
+            line-height: 1.25;
+        }
+
+        /* Bottom tab bar: floating black pill, thumb-reach navigation for phone use. */
         .tabbar {
             position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
+            bottom: 14px;
+            left: 14px;
+            right: 14px;
             display: flex;
-            background: #16213e;
-            border-top: 1px solid #1a2a4a;
+            background: rgba(15, 10, 6, 0.92);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--card-border);
+            border-radius: 999px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
             /* Respect iPhone home-indicator area when installed as a PWA */
             padding-bottom: env(safe-area-inset-bottom, 0);
             z-index: 100;
@@ -204,25 +345,29 @@
         .tabbar a {
             flex: 1;
             text-align: center;
-            padding: 0.55rem 0 0.5rem;
-            color: #8888aa;
+            padding: 0.6rem 0 0.55rem;
+            margin: 6px;
+            border-radius: 999px;
+            color: var(--ink-dim);
             text-decoration: none;
             font-size: 0.72rem;
         }
 
         .tabbar a .tab-icon {
             display: block;
-            font-size: 1.25rem;
+            font-size: 1.2rem;
             line-height: 1.3;
         }
 
         .tabbar a.active {
-            color: #e94560;
+            color: #1a140f;
+            background: var(--coral);
+            font-weight: 600;
         }
 
         /* Keep page content clear of the fixed tab bar */
         .container {
-            padding-bottom: 90px;
+            padding-bottom: 100px;
         }
     </style>
 </head>
@@ -232,7 +377,7 @@
         {% if current_username %}
             <form method="POST" action="/logout" style="display: inline; margin: 0;">
                 <button type="submit"
-                        style="background: none; border: none; color: #55557a; cursor: pointer; font-size: 0.95rem; padding: 0;"
+                        style="background: none; border: none; color: var(--ink-faint); cursor: pointer; font-size: 0.95rem; padding: 0; font-family: var(--font-body);"
                         title="Logged in as {{ current_username }}">
                     {{ current_username }} &middot; out
                 </button>

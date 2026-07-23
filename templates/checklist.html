@@ -1,16 +1,16 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Mixers & Ingredients</h1>
-<p style="color: #8888aa; margin-bottom: 1.5rem;">Check off what you have at home.</p>
+<h1>Mixers &amp;<br>Ingredients</h1>
+<p style="color: var(--ink-dim); margin-bottom: 1.5rem; font-size: 1.02rem;">Select items to stock your home bar for curated recipes.</p>
 
 <form method="POST">
     {% if new_ingredients %}
-        <div style="background: #2a2410; border: 1px solid #d6b87e; border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1.5rem;">
-            <div style="font-size: 0.95rem; color: #d6b87e; font-weight: 600; margin-bottom: 0.5rem;">
+        <div style="background: rgba(214, 168, 78, 0.1); border: 1px solid rgba(214, 168, 78, 0.4); border-radius: 12px; padding: 0.85rem 1.1rem; margin-bottom: 1.5rem;">
+            <div style="font-size: 0.95rem; color: var(--gold); font-weight: 600; margin-bottom: 0.5rem;">
                 &#9733; New since last visit
             </div>
-            <div style="font-size: 0.82rem; color: #8888aa; margin-bottom: 0.6rem;">
+            <div style="font-size: 0.82rem; color: var(--ink-dim); margin-bottom: 0.6rem;">
                 Recipes pulled in these ingredients automatically. Tick the ones you actually have.
             </div>
             {% for item in new_ingredients %}
@@ -18,9 +18,9 @@
                     <input type="checkbox" name="ingredient" value="{{ item.id }}"
                            id="new-{{ item.id }}"
                            {% if item.in_stock %}checked{% endif %}>
-                    <label for="new-{{ item.id }}" style="color: #e0e0e0; margin-bottom: 0;">
+                    <label for="new-{{ item.id }}" style="color: var(--ink); margin-bottom: 0;">
                         {{ item.name }}
-                        <span style="color: #8888aa; font-size: 0.8rem; margin-left: 0.3rem;">({{ item.category }})</span>
+                        <span style="color: var(--ink-dim); font-size: 0.8rem; margin-left: 0.3rem;">({{ item.category }})</span>
                     </label>
                 </div>
             {% endfor %}
@@ -30,34 +30,68 @@
     {# Proper plurals: "garnishs" and "pantrys" are not words #}
     {% set plural = {"mixer": "Mixers", "bitter": "Bitters",
                      "garnish": "Garnishes", "pantry": "Pantry staples"} %}
-    {% set current_category = [None] %}
-    {% for item in ingredients %}
-        {% if item.category != current_category[0] %}
-            {% if current_category.append(item.category) %}{% endif %}
-            <div class="category-title">{{ plural.get(item.category, item.category ~ "s") }}</div>
+
+    {# Within each category: items with a photo render as tiles in a grid,
+       the rest fall back to checkbox rows below the grid. Photos are matched
+       by slug against static/ingredients/, so new photos light up
+       automatically -- no template changes needed. #}
+    {% for category, items in ingredients | groupby("category") %}
+        <div class="category-title">{{ plural.get(category, category ~ "s") }}</div>
+
+        {% set tiled = [] %}
+        {% set plain = [] %}
+        {% for item in items %}
+            {% if ingredient_slug(item.name) in ingredient_images %}
+                {% if tiled.append(item) %}{% endif %}
+            {% else %}
+                {% if plain.append(item) %}{% endif %}
+            {% endif %}
+        {% endfor %}
+
+        {% if tiled %}
+            <div class="tile-grid">
+                {% for item in tiled %}
+                    <div class="tile-cell">
+                        <label class="ing-tile" for="ing-{{ item.id }}">
+                            <input type="checkbox" name="ingredient" value="{{ item.id }}"
+                                   id="ing-{{ item.id }}"
+                                   {% if item.in_stock %}checked{% endif %}>
+                            <img src="{{ ingredient_images[ingredient_slug(item.name)] }}"
+                                 alt="{{ item.name }}" loading="lazy">
+                            <span class="tile-ring"></span>
+                            <span class="check-badge">&#10003;</span>
+                        </label>
+                        <span class="tile-name">{{ item.name }}</span>
+                    </div>
+                {% endfor %}
+            </div>
         {% endif %}
-        <div class="checklist-item">
-            <input type="checkbox" name="ingredient" value="{{ item.id }}"
-                   id="ing-{{ item.id }}"
-                   {% if item.in_stock %}checked{% endif %}>
-            <label for="ing-{{ item.id }}" style="color: #e0e0e0; margin-bottom: 0;">
-                {{ item.name }}
-                {% if item.name is auto_added and not item.in_stock %}
-                    <span style="background: #d6b87e; color: #1a1a2e; font-size: 0.7rem; padding: 0.1rem 0.4rem; border-radius: 4px; margin-left: 0.3rem; font-weight: 600;">NEW</span>
-                {% endif %}
-            </label>
-        </div>
+
+        {% for item in plain %}
+            <div class="checklist-item">
+                <input type="checkbox" name="ingredient" value="{{ item.id }}"
+                       id="ing-{{ item.id }}"
+                       {% if item.in_stock %}checked{% endif %}>
+                <label for="ing-{{ item.id }}" style="color: var(--ink); margin-bottom: 0;">
+                    {{ item.name }}
+                    {% if item.name is auto_added and not item.in_stock %}
+                        <span style="background: var(--gold); color: #1a140f; font-size: 0.7rem; padding: 0.1rem 0.4rem; border-radius: 4px; margin-left: 0.3rem; font-weight: 600;">NEW</span>
+                    {% endif %}
+                </label>
+            </div>
+        {% endfor %}
     {% endfor %}
 
     {# Sticky save bar: sits above the bottom tab bar, highlights when there
        are unsaved changes so ticks made at the top of a long list don't get
        silently lost. #}
     <div id="save-bar"
-         style="position: sticky; bottom: 66px; margin-top: 1.5rem; padding: 0.6rem;
-                background: #16213e; border: 1px solid #1a2a4a; border-radius: 8px;
+         style="position: sticky; bottom: 76px; margin-top: 1.5rem; padding: 0.65rem;
+                background: rgba(15, 10, 6, 0.92); backdrop-filter: blur(10px);
+                border: 1px solid var(--card-border); border-radius: 999px;
                 display: flex; align-items: center; gap: 0.75rem; z-index: 50;">
         <button type="submit" class="btn" style="flex: 1;" id="save-btn">Save Checklist</button>
-        <span id="save-hint" style="color: #8888aa; font-size: 0.82rem; display: none;">
+        <span id="save-hint" style="color: var(--ink-dim); font-size: 0.82rem; display: none;">
             Unsaved changes
         </span>
     </div>
@@ -69,7 +103,7 @@
     document.querySelectorAll('input[name="ingredient"]').forEach(function (cb) {
         cb.addEventListener("change", function () {
             hint.style.display = "inline";
-            saveBar.style.borderColor = "#e94560";
+            saveBar.style.borderColor = "#e9694a";
         });
     });
 </script>

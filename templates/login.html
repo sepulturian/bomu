@@ -2,8 +2,8 @@
 {% block content %}
 <div style="max-width: 400px; margin: 2rem auto 0;">
     <div style="text-align: center; margin-bottom: 2rem;">
-        <h1 style="font-size: 2.2rem;">Bomu</h1>
-        <p style="color: #8888aa;">your personal bartender</p>
+        <h1 style="font-size: 2.6rem;">Bomu</h1>
+        <p style="color: var(--ink-dim);">your personal bartender</p>
     </div>
 
     <form method="POST">
@@ -17,13 +17,13 @@
             <label for="password">Password</label>
             <input type="password" id="password" name="password" required
                    autocomplete="current-password"
-                   style="width: 100%; padding: 0.6rem; background: #16213e; border: 1px solid #333; border-radius: 6px; color: #e0e0e0; font-size: 1rem;">
+                   style="width: 100%; padding: 0.7rem 1rem; background: rgba(0,0,0,0.25); border: 1px solid var(--card-border); border-radius: 999px; color: var(--ink); font-family: var(--font-body); font-size: 1rem;">
         </div>
         <button type="submit" class="btn" style="width: 100%; margin-top: 1rem;">Log in</button>
     </form>
 
-    <p style="text-align: center; margin-top: 1.5rem; color: #8888aa;">
-        New here? <a href="{{ url_for('signup') }}" style="color: #e94560;">Sign up with your invite code</a>
+    <p style="text-align: center; margin-top: 1.5rem; color: var(--ink-dim);">
+        New here? <a href="{{ url_for('signup') }}" style="color: var(--coral);">Sign up with your invite code</a>
     </p>
 </div>
 {% endblock %}

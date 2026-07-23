@@ -2,7 +2,7 @@
 
 {% block content %}
 <h1>Scan a Bottle</h1>
-<p style="color: #8888aa; margin-bottom: 1.5rem;">Take a photo of a single bottle and Claude will read the label.</p>
+<p style="color: var(--ink-dim); margin-bottom: 1.5rem;">Take a photo of a single bottle and Claude will read the label.</p>
 
 <form method="POST" enctype="multipart/form-data" id="scan-form">
     <div class="form-group">
@@ -12,7 +12,7 @@
     <button type="submit" class="btn" id="scan-btn">Scan Bottle</button>
 </form>
 
-<p style="color: #666; margin-top: 2rem; font-size: 0.85rem;">Tip: Get a clear shot of the label. Good lighting helps.</p>
+<p style="color: var(--ink-faint); margin-top: 2rem; font-size: 0.85rem;">Tip: Get a clear shot of the label. Good lighting helps.</p>
 
 <script>
     // Reading a label takes a few seconds. Lock the button and say so,

@@ -2,14 +2,14 @@
 
 {% block content %}
 <h1>Review Bottles</h1>
-<p style="color: #8888aa; margin-bottom: 1.5rem;">Claude found {{ bottles|length }} bottle{{ 's' if bottles|length != 1 else '' }}. Check the ones you want to add and fix anything that's wrong.</p>
+<p style="color: var(--ink-dim); margin-bottom: 1.5rem;">Claude found {{ bottles|length }} bottle{{ 's' if bottles|length != 1 else '' }}. Check the ones you want to add and fix anything that's wrong.</p>
 
 <form method="POST" action="/confirm-bulk">
     {% for bottle in bottles %}
         <div class="card" style="margin-bottom: 1rem;">
             <div style="display: flex; align-items: start; gap: 0.75rem;">
                 <input type="checkbox" name="add_{{ loop.index0 }}" value="1" checked
-                       style="width: 20px; height: 20px; margin-top: 0.3rem; accent-color: #e94560;">
+                       style="width: 20px; height: 20px; margin-top: 0.3rem; accent-color: var(--coral);">
                 <div style="flex: 1;">
                     <div class="form-group">
                         <label>Name</label>
@@ -28,7 +28,7 @@
                         <input type="text" name="brand_{{ loop.index0 }}" value="{{ bottle.brand }}">
                     </div>
                     {% if bottle.confidence == "low" %}
-                        <span style="color: #e94560; font-size: 0.8rem;">Low confidence - double check this one</span>
+                        <span style="color: var(--coral); font-size: 0.8rem;">Low confidence - double check this one</span>
                     {% endif %}
                 </div>
             </div>

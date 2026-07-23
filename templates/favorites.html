@@ -4,7 +4,7 @@
 <h1>Your favorites</h1>
 
 {% if favorites %}
-    <p style="color: #8888aa; margin-bottom: 1rem;">
+    <p style="color: var(--ink-dim); margin-bottom: 1rem;">
         {{ favorites|length }} drink{{ 's' if favorites|length != 1 else '' }} you've thumbed up.
     </p>
     {% for r in favorites %}
@@ -13,14 +13,14 @@
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
                         <div style="font-size: 1.15rem; font-weight: 600;">
-                            <span style="color: #7ed6a5; font-size: 0.95rem;">&#128077;</span>
+                            <span style="color: var(--green); font-size: 0.95rem;">&#128077;</span>
                             {{ r.name }}
                         </div>
-                        <div style="color: #8888aa; font-size: 0.9rem; margin-top: 0.2rem;">
+                        <div style="color: var(--ink-dim); font-size: 0.9rem; margin-top: 0.2rem;">
                             {{ r.glass or '' }}
                         </div>
                     </div>
-                    <div style="color: #8888aa;">&rsaquo;</div>
+                    <div style="color: var(--ink-dim);">&rsaquo;</div>
                 </div>
             </div>
         </a>

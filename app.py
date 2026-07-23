@@ -546,6 +546,25 @@ def confirm_bulk():
     return redirect(url_for("bar"))
 
 
+def ingredient_slug(name):
+    """'Angostura bitters' -> 'angostura_bitters'. Used to match photo files."""
+    return re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_")
+
+
+def get_ingredient_images():
+    """Map ingredient slug -> static URL for any photo tile that exists on
+    disk. Ingredients without a photo fall back to plain checkbox rows, so
+    photos can be added incrementally without touching code."""
+    img_dir = os.path.join(app.static_folder, "ingredients")
+    images = {}
+    if os.path.isdir(img_dir):
+        for fname in os.listdir(img_dir):
+            stem, ext = os.path.splitext(fname)
+            if ext.lower() in (".jpg", ".jpeg", ".png", ".webp"):
+                images[stem] = url_for("static", filename=f"ingredients/{fname}")
+    return images
+
+
 @app.route("/checklist", methods=["GET", "POST"])
 @login_required
 def checklist():
@@ -560,6 +579,8 @@ def checklist():
         "checklist.html",
         ingredients=ingredients,
         new_ingredients=new_ingredients,
+        ingredient_images=get_ingredient_images(),
+        ingredient_slug=ingredient_slug,
     )
 
 

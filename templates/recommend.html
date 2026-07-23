@@ -9,20 +9,20 @@
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <div style="flex: 1; min-width: 0;">
                     <div style="font-size: 1.15rem; font-weight: 600;">
-                        {% if thumb == 1 %}<span style="color: #7ed6a5; font-size: 0.95rem;">&#128077;</span> {% endif %}{{ r.recipe.name }}{% if thumb == -1 %} <span style="color: #8888aa; font-size: 0.85rem;">&#128078;</span>{% endif %}
+                        {% if thumb == 1 %}<span style="color: var(--green); font-size: 0.95rem;">&#128077;</span> {% endif %}{{ r.recipe.name }}{% if thumb == -1 %} <span style="color: var(--ink-dim); font-size: 0.85rem;">&#128078;</span>{% endif %}
                     </div>
                     {% if r.your_bottles %}
-                        <div style="color: #7ed6a5; font-size: 0.82rem; margin-top: 0.25rem;">
+                        <div style="color: var(--green); font-size: 0.82rem; margin-top: 0.25rem;">
                             Use your: {{ r.your_bottles | map('short_name') | join(' &middot; ') | safe }}
                         </div>
                     {% endif %}
                     {% if r.recipe.glass %}
-                        <div style="color: #8888aa; font-size: 0.82rem; margin-top: 0.2rem;">
+                        <div style="color: var(--ink-dim); font-size: 0.82rem; margin-top: 0.2rem;">
                             {{ r.recipe.glass }}
                         </div>
                     {% endif %}
                 </div>
-                <div style="color: #8888aa; padding-left: 0.5rem;">&rsaquo;</div>
+                <div style="color: var(--ink-dim); padding-left: 0.5rem;">&rsaquo;</div>
             </div>
         </div>
     </a>
@@ -32,7 +32,7 @@
 <h1>What you can make</h1>
 
 {% if recs.total_makeable > 0 %}
-    <p style="color: #8888aa; margin-bottom: 0.75rem;">
+    <p style="color: var(--ink-dim); margin-bottom: 0.75rem;">
         {{ recs.total_makeable }} drink{{ 's' if recs.total_makeable != 1 else '' }} you have everything for.
     </p>
 
@@ -42,20 +42,20 @@
     {# View toggle: flat (default) vs group-by-spirit #}
     <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
         <a href="/recommend" class="btn btn-small {% if not grouped %}{% else %}btn-secondary{% endif %}"
-           style="flex: 1; text-align: center; {% if not grouped %}background: #2d6a4f;{% endif %}">
+           style="flex: 1; text-align: center; {% if not grouped %}background: var(--coral); color: #1a140f;{% endif %}">
             All drinks
         </a>
         <a href="/recommend?group=spirit" class="btn btn-small {% if grouped %}{% else %}btn-secondary{% endif %}"
-           style="flex: 1; text-align: center; {% if grouped %}background: #2d6a4f;{% endif %}">
+           style="flex: 1; text-align: center; {% if grouped %}background: var(--coral); color: #1a140f;{% endif %}">
             Group by spirit
         </a>
     </div>
 
     {% if grouped %}
         {% for spirit_name, drinks in recs.groups %}
-            <h2 style="margin-top: 1.5rem; color: #d6b87e;">
+            <h2 style="margin-top: 1.5rem;">
                 {{ spirit_name }}
-                <span style="color: #8888aa; font-size: 0.9rem; font-weight: normal;">&middot; {{ drinks|length }}</span>
+                <span style="color: var(--ink-dim); font-size: 0.9rem; font-weight: normal; text-transform: none; letter-spacing: normal;">&middot; {{ drinks|length }}</span>
             </h2>
             {% for r in drinks %}
                 {{ drink_card(r, recs.ratings) }}
@@ -77,7 +77,7 @@
         {% endfor %}
         {% if disliked %}
             <details style="margin-top: 1rem;">
-                <summary style="color: #8888aa; font-size: 0.9rem; cursor: pointer; padding: 0.5rem 0;">
+                <summary style="color: var(--ink-dim); font-size: 0.9rem; cursor: pointer; padding: 0.5rem 0;">
                     Not your thing &middot; {{ disliked|length }}
                 </summary>
                 {% for r in disliked %}
@@ -95,7 +95,7 @@
 
 {% if recs.one_away %}
     <h2 style="margin-top: 2.5rem;">One ingredient away</h2>
-    <p style="color: #8888aa; margin-bottom: 1rem; font-size: 0.9rem;">
+    <p style="color: var(--ink-dim); margin-bottom: 1rem; font-size: 0.9rem;">
         Pick up one of these and unlock the drink.
     </p>
     {% for item in recs.one_away %}
@@ -105,12 +105,12 @@
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div style="flex: 1;">
                         <div style="font-size: 1.1rem; font-weight: 600;">{{ item.recipe.recipe.name }}</div>
-                        <div style="color: #e94560; font-size: 0.85rem; margin-top: 0.3rem;">
+                        <div style="color: var(--coral); font-size: 0.85rem; margin-top: 0.3rem;">
                             Need: {{ item.missing.name }}
-                            {% if item.missing.type == 'bottle_type' %}<span style="color: #8888aa;">(any {{ item.missing.name }})</span>{% endif %}
+                            {% if item.missing.type == 'bottle_type' %}<span style="color: var(--ink-dim);">(any {{ item.missing.name }})</span>{% endif %}
                         </div>
                     </div>
-                    <div style="color: #8888aa;">&rsaquo;</div>
+                    <div style="color: var(--ink-dim);">&rsaquo;</div>
                 </div>
             </div>
         </a>
