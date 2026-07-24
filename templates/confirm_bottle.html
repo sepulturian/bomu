@@ -14,8 +14,8 @@
         <label for="type">Type</label>
         <select id="type" name="type" required>
             <option value="">Pick a type...</option>
-            {% for t in ['gin', 'vodka', 'rum', 'tequila', 'mezcal', 'whiskey', 'bourbon', 'scotch', 'brandy', 'cognac', 'vermouth', 'amaro', 'liqueur', 'other'] %}
-                <option value="{{ t }}" {% if bottle.type == t %}selected{% endif %}>{{ t|capitalize }}</option>
+            {% for value, label in BOTTLE_TYPE_CHOICES %}
+                <option value="{{ value }}" {% if bottle.type == value %}selected{% endif %}>{{ label }}</option>
             {% endfor %}
         </select>
     </div>

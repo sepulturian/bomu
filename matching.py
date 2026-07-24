@@ -21,9 +21,17 @@ from database import get_all_recipes, get_all_bottles, get_all_ingredients, get_
 # generic "whiskey" → any whiskey/bourbon/scotch satisfies. "bourbon"
 # specifically only accepts bourbon.
 FUNGIBLE_TYPES = {
-    "whiskey": {"whiskey", "bourbon", "scotch"},
+    # Generic parents accept every sub-type beneath them.
+    "whiskey": {"whiskey", "bourbon", "scotch", "rye", "irish"},
     "bourbon": {"bourbon"},
     "scotch": {"scotch"},
+    # Rye and Irish were added after the fact, so plenty of legacy bottles are
+    # still sitting on the generic "whiskey" type. Accept those here: we don't
+    # know a generic whiskey ISN'T rye, and being permissive about an unknown
+    # beats a false negative. Bourbon and scotch stay strict because the
+    # scanner has always identified those reliably.
+    "rye": {"rye", "whiskey"},
+    "irish": {"irish", "whiskey"},
     "brandy": {"brandy", "cognac"},
     "cognac": {"cognac"},
     "rum": {"rum"},
@@ -31,7 +39,12 @@ FUNGIBLE_TYPES = {
     "vodka": {"vodka"},
     "tequila": {"tequila", "mezcal"},  # mezcal can sub for tequila in a pinch
     "mezcal": {"mezcal"},
-    "vermouth": {"vermouth"},
+    # Sweet and dry vermouth are different products, not points on a scale.
+    # A Martini wants dry, a Manhattan wants sweet, and an Affinity wants both
+    # in the same glass. Same permissive rule for untyped legacy bottles.
+    "vermouth": {"vermouth", "vermouth_sweet", "vermouth_dry"},
+    "vermouth_sweet": {"vermouth_sweet", "vermouth"},
+    "vermouth_dry": {"vermouth_dry", "vermouth"},
 }
 
 # These categories are too varied to match by type alone — Campari, Aperol,
@@ -123,6 +136,55 @@ def _use_name_match(ingredient):
     return False
 
 
+def _assign_distinct_bottles(slots, user_bottles):
+    """Work out which category slots can be filled using a DIFFERENT bottle each.
+
+    `slots` is a list of accepted-type sets, one per deduplicated bottle_type
+    requirement. Returns the set of slot indices that CANNOT be filled.
+
+    Why this is needed: checking each slot independently lets one bottle satisfy
+    several slots at once. Cameron's Kick asks for Scotch and Irish whiskey, and
+    a lone bottle of Laphroaig used to satisfy both, because Scotch is a member
+    of the accepted set for a generic whiskey requirement. The drink's entire
+    point is that they are two different whiskeys.
+
+    Note that identical requirements are deduplicated by the caller BEFORE they
+    reach this function, which is deliberate. Penicillin lists blended Scotch
+    plus an Islay float; both are bottle_type 'scotch', they collapse to one
+    slot, and one bottle of Scotch is a perfectly reasonable way to make it.
+    Two genuinely different requirements are what we insist on separating.
+
+    This is bipartite maximum matching solved with augmenting paths. Recipes top
+    out at a handful of spirits, so the naive version is more than fast enough.
+    """
+    # Candidate bottle indices for each slot.
+    candidates = []
+    for accepted in slots:
+        candidates.append([
+            i for i, b in enumerate(user_bottles) if b["type"] in accepted
+        ])
+
+    bottle_to_slot = {}   # bottle index -> slot index currently holding it
+
+    def try_assign(slot_idx, visited):
+        for b_idx in candidates[slot_idx]:
+            if b_idx in visited:
+                continue
+            visited.add(b_idx)
+            # Free bottle, or its current owner can be rehoused elsewhere.
+            holder = bottle_to_slot.get(b_idx)
+            if holder is None or try_assign(holder, visited):
+                bottle_to_slot[b_idx] = slot_idx
+                return True
+        return False
+
+    unfilled = set()
+    for slot_idx in range(len(slots)):
+        if not try_assign(slot_idx, set()):
+            unfilled.add(slot_idx)
+    return unfilled
+
+
 def matching_user_bottles(ingredient, user_bottles):
     """Given a recipe ingredient with requirement_type='bottle_type',
     return the list of user's bottles that would satisfy it. Empty if none."""
@@ -171,10 +233,14 @@ def used_user_bottles(recipe_data, user_bottles, max_n=2):
 def match_recipe(recipe_data, user_bottles, stocked_ingredient_names):
     """Check a single recipe.
     Returns ('makeable' | 'one_away' | 'not_close', list of missing requirements)."""
-    user_bottle_types = {b["type"] for b in user_bottles}
     bottle_strings = _bottle_match_strings(user_bottles)
 
-    missing = []
+    # Collected in ingredient sort order. Category slots can't be judged until
+    # every one is known, since they compete for the same bottles, so they go in
+    # as placeholders and get resolved together once the loop finishes.
+    entries = []            # list of ('resolved', dict) | ('slot', slot_index)
+    slots = []              # slot_index -> accepted type set
+    slot_labels = []        # slot_index -> name to report when unfilled
     seen_bottle_reqs = set()
     seen_ingredient_reqs = set()
 
@@ -194,20 +260,21 @@ def match_recipe(recipe_data, user_bottles, stocked_ingredient_names):
                 seen_bottle_reqs.add(key)
 
                 if not _liqueur_satisfied(ing["raw_name"], ing["notes"], bottle_strings):
-                    missing.append({
+                    entries.append(("resolved", {
                         "type": "bottle_type",
                         "name": ing["raw_name"] or req_type,
-                    })
+                    }))
             else:
-                # Fungible spirit — dedup by category
+                # Fungible spirit — dedup by category, then hand to the
+                # distinct-bottle assignment below.
                 key = ("type", req_type)
                 if key in seen_bottle_reqs:
                     continue
                 seen_bottle_reqs.add(key)
 
-                accepted = FUNGIBLE_TYPES.get(req_type, {req_type})
-                if not (user_bottle_types & accepted):
-                    missing.append({"type": "bottle_type", "name": req_type})
+                slots.append(FUNGIBLE_TYPES.get(req_type, {req_type}))
+                slot_labels.append(req_type)
+                entries.append(("slot", len(slots) - 1))
 
         elif ing["requirement_type"] == "ingredient" and ing["ingredient_name"]:
             req = ing["ingredient_name"]
@@ -215,7 +282,18 @@ def match_recipe(recipe_data, user_bottles, stocked_ingredient_names):
                 continue
             seen_ingredient_reqs.add(req)
             if req.lower() not in stocked_ingredient_names:
-                missing.append({"type": "ingredient", "name": req})
+                entries.append(("resolved", {"type": "ingredient", "name": req}))
+
+    # Each category slot needs its own bottle. Without this a single bottle of
+    # Scotch could fill both halves of a two-whiskey drink.
+    unfilled = _assign_distinct_bottles(slots, user_bottles) if slots else set()
+
+    missing = []
+    for kind, payload in entries:
+        if kind == "resolved":
+            missing.append(payload)
+        elif payload in unfilled:
+            missing.append({"type": "bottle_type", "name": slot_labels[payload]})
 
     if not missing:
         return "makeable", []
@@ -227,9 +305,16 @@ def match_recipe(recipe_data, user_bottles, stocked_ingredient_names):
 def missing_ingredient_ids(recipe_data, user_bottles, stocked_ingredient_names):
     """For a single recipe, return the set of ingredient row IDs the user
     can't fulfill. Used by the recipe detail page to highlight missing items."""
-    user_bottle_types = {b["type"] for b in user_bottles}
     bottle_strings = _bottle_match_strings(user_bottles)
     missing = set()
+
+    # Mirrors match_recipe: dedup category requirements, then check they can be
+    # filled with a distinct bottle each. Kept in step deliberately, otherwise
+    # the detail page highlights a different set of rows than the Make list used
+    # when it decided the drink was makeable.
+    slots = []
+    slot_row_ids = []       # slot_index -> the ingredient rows that map to it
+    seen_types = {}         # req_type -> slot index
 
     for ing in recipe_data["ingredients"]:
         if ing["requirement_type"] == "optional":
@@ -239,12 +324,21 @@ def missing_ingredient_ids(recipe_data, user_bottles, stocked_ingredient_names):
                 if not _liqueur_satisfied(ing["raw_name"], ing["notes"], bottle_strings):
                     missing.add(ing["id"])
             else:
-                accepted = FUNGIBLE_TYPES.get(ing["bottle_type"], {ing["bottle_type"]})
-                if not (user_bottle_types & accepted):
-                    missing.add(ing["id"])
+                req_type = ing["bottle_type"]
+                if req_type in seen_types:
+                    slot_row_ids[seen_types[req_type]].append(ing["id"])
+                else:
+                    seen_types[req_type] = len(slots)
+                    slots.append(FUNGIBLE_TYPES.get(req_type, {req_type}))
+                    slot_row_ids.append([ing["id"]])
         elif ing["requirement_type"] == "ingredient" and ing["ingredient_name"]:
             if ing["ingredient_name"].lower() not in stocked_ingredient_names:
                 missing.add(ing["id"])
+
+    if slots:
+        for slot_idx in _assign_distinct_bottles(slots, user_bottles):
+            missing.update(slot_row_ids[slot_idx])
+
     return missing
 
 

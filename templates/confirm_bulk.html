@@ -18,8 +18,8 @@
                     <div class="form-group">
                         <label>Type</label>
                         <select name="type_{{ loop.index0 }}">
-                            {% for t in ['gin', 'vodka', 'rum', 'tequila', 'mezcal', 'whiskey', 'bourbon', 'scotch', 'brandy', 'cognac', 'vermouth', 'amaro', 'liqueur', 'other'] %}
-                                <option value="{{ t }}" {% if bottle.type == t %}selected{% endif %}>{{ t|capitalize }}</option>
+                            {% for value, label in BOTTLE_TYPE_CHOICES %}
+                                <option value="{{ value }}" {% if bottle.type == value %}selected{% endif %}>{{ label }}</option>
                             {% endfor %}
                         </select>
                     </div>

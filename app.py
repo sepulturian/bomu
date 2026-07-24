@@ -279,6 +279,46 @@ def instruction_steps(text):
     return [p.strip() for p in parts if p.strip()]
 
 
+# Bottle types offered in the UI, as (stored value, label shown to the user).
+# Sub-types matter to the matcher: sweet and dry vermouth are not
+# interchangeable, and a rye drink should not accept a peaty Scotch. The
+# "not sure" vermouth option is deliberate — matching.py treats the generic
+# type as permissive, so picking it keeps today's looser behaviour rather than
+# forcing a guess that could hide a drink the user can actually make.
+BOTTLE_TYPE_CHOICES = [
+    ("gin", "Gin"),
+    ("vodka", "Vodka"),
+    ("rum", "Rum"),
+    ("tequila", "Tequila"),
+    ("mezcal", "Mezcal"),
+    ("whiskey", "Whiskey (other / blended)"),
+    ("bourbon", "Bourbon"),
+    ("scotch", "Scotch"),
+    ("rye", "Rye"),
+    ("irish", "Irish Whiskey"),
+    ("brandy", "Brandy"),
+    ("cognac", "Cognac"),
+    ("vermouth_sweet", "Vermouth (sweet / rosso)"),
+    ("vermouth_dry", "Vermouth (dry)"),
+    ("vermouth", "Vermouth (not sure)"),
+    ("amaro", "Amaro"),
+    ("liqueur", "Liqueur"),
+    ("other", "Other"),
+]
+
+BOTTLE_TYPE_LABELS = dict(BOTTLE_TYPE_CHOICES)
+
+
+def bottle_type_label(value):
+    """Human-readable name for a stored bottle type. Falls back to a tidied
+    version of the raw value so an unknown type never renders as an ugly slug."""
+    if not value:
+        return ""
+    return BOTTLE_TYPE_LABELS.get(value, value.replace("_", " ").capitalize())
+
+
+app.jinja_env.globals["BOTTLE_TYPE_CHOICES"] = BOTTLE_TYPE_CHOICES
+app.jinja_env.filters["type_label"] = bottle_type_label
 app.jinja_env.filters["short_name"] = short_bottle_name
 app.jinja_env.filters["clean_instructions"] = clean_instructions
 app.jinja_env.filters["steps"] = instruction_steps
@@ -329,7 +369,7 @@ def scan_bottle_image(image_path):
                     "type": "text",
                     "text": """Look at this image of a bottle. Identify the bottle and return ONLY a JSON object with these fields:
 - "name": the full product name (e.g. "Hendrick's Gin")
-- "type": one of: gin, vodka, rum, tequila, mezcal, whiskey, bourbon, scotch, brandy, cognac, vermouth, amaro, liqueur, other
+- "type": one of: gin, vodka, rum, tequila, mezcal, whiskey, bourbon, scotch, rye, irish, brandy, cognac, vermouth_sweet, vermouth_dry, vermouth, amaro, liqueur, other
 - "brand": the brand name (e.g. "Hendrick's")
 
 IMPORTANT - only use a base spirit type (gin, vodka, rum, tequila, mezcal,
@@ -344,6 +384,21 @@ Use "other" for anything that merely contains or is flavoured with a spirit:
 
 A pineapple vodka cooler is NOT vodka. Tagging it as vodka makes the app tell
 someone they can make a Martini out of an alcopop.
+
+WHISKEY SUB-TYPES - be specific when the label is clear:
+- "rye" if the label says rye
+- "irish" if the label says Irish, or it is a known Irish brand (Jameson,
+  Redbreast, Bushmills, Tullamore, Powers, Green Spot)
+- "bourbon" if the label says bourbon
+- "scotch" if it is Scotch whisky
+- "whiskey" for anything else, including Japanese, Canadian and blends you
+  cannot place. Do not guess: "whiskey" is the safe answer.
+
+VERMOUTH - sweet and dry are different products, not a spectrum:
+- "vermouth_sweet" for rosso, rossa, rojo, rouge, red or sweet, and for
+  Carpano Antica and Punt e Mes
+- "vermouth_dry" for dry or extra dry
+- "vermouth" only if you genuinely cannot tell from the label
 
 If you cannot identify the bottle, return: {"name": "", "type": "", "brand": "", "error": "Could not identify this bottle"}
 
@@ -384,7 +439,7 @@ def scan_shelf_image(image_path):
                     "type": "text",
                     "text": """Look at this image showing multiple bottles. Identify as many bottles as you can and return ONLY a JSON array of objects, each with:
 - "name": the full product name
-- "type": one of: gin, vodka, rum, tequila, mezcal, whiskey, bourbon, scotch, brandy, cognac, vermouth, amaro, liqueur, other
+- "type": one of: gin, vodka, rum, tequila, mezcal, whiskey, bourbon, scotch, rye, irish, brandy, cognac, vermouth_sweet, vermouth_dry, vermouth, amaro, liqueur, other
 - "brand": the brand name
 - "confidence": "high" if you can clearly read the label, "low" if you're guessing
 
@@ -400,6 +455,21 @@ Use "other" for anything that merely contains or is flavoured with a spirit:
 
 A pineapple vodka cooler is NOT vodka. Tagging it as vodka makes the app tell
 someone they can make a Martini out of an alcopop.
+
+WHISKEY SUB-TYPES - be specific when the label is clear:
+- "rye" if the label says rye
+- "irish" if the label says Irish, or it is a known Irish brand (Jameson,
+  Redbreast, Bushmills, Tullamore, Powers, Green Spot)
+- "bourbon" if the label says bourbon
+- "scotch" if it is Scotch whisky
+- "whiskey" for anything else, including Japanese, Canadian and blends you
+  cannot place. Do not guess: "whiskey" is the safe answer.
+
+VERMOUTH - sweet and dry are different products, not a spectrum:
+- "vermouth_sweet" for rosso, rossa, rojo, rouge, red or sweet, and for
+  Carpano Antica and Punt e Mes
+- "vermouth_dry" for dry or extra dry
+- "vermouth" only if you genuinely cannot tell from the label
 
 If you cannot identify any bottles, return: [{"name": "", "type": "", "brand": "", "confidence": "low", "error": "Could not identify bottles"}]
 
