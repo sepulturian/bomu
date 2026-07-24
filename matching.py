@@ -385,9 +385,13 @@ SPIRIT_GROUPS = {
     "whiskey": "Whiskey",
     "bourbon": "Whiskey",
     "scotch": "Whiskey",
+    "rye": "Whiskey",
+    "irish": "Whiskey",
     "brandy": "Brandy & Cognac",
     "cognac": "Brandy & Cognac",
     "vermouth": "Vermouth",
+    "vermouth_sweet": "Vermouth",
+    "vermouth_dry": "Vermouth",
 }
 
 # Display order for grouped /recommend page. Groups not listed go to the end

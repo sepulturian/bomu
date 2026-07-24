@@ -109,8 +109,8 @@
                     <div style="flex: 1;">
                         <div style="font-size: 1.1rem; font-weight: 600;">{{ item.recipe.recipe.name }}</div>
                         <div style="color: var(--coral); font-size: 0.85rem; margin-top: 0.3rem;">
-                            Need: {{ item.missing.name }}
-                            {% if item.missing.type == 'bottle_type' %}<span style="color: var(--ink-dim);">(any {{ item.missing.name }})</span>{% endif %}
+                            Need: {{ item.missing.name|type_label }}
+                            {% if item.missing.type == 'bottle_type' %}<span style="color: var(--ink-dim);">(any brand)</span>{% endif %}
                         </div>
                     </div>
                     <div style="color: var(--ink-dim);">&rsaquo;</div>

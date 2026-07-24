@@ -17,6 +17,7 @@ SUGGESTIONS = {
     "cherry heering": ["Cherry Heering", "Luxardo Sangue Morlacco"],
     "coffee liqueur": ["Kahlúa", "Tia Maria", "Mr. Black"],
     "irish cream": ["Baileys", "Carolans"],
+    "irish whiskey": ["Jameson", "Bushmills Original", "Redbreast 12"],
     "triple sec": ["Cointreau", "Combier", "Grand Marnier"],
     "cointreau": ["Cointreau (or any premium triple sec)"],
     "grand marnier": ["Grand Marnier"],
@@ -103,6 +104,19 @@ SUGGESTIONS = {
 }
 
 
+# Bottle-type slugs map to the phrasing used as keys above. Without this,
+# 'vermouth_dry' matches nothing: the underscore is a word character, so the
+# \b anchors below never fire, and the key is worded the other way round anyway.
+#
+# 'irish' has to be explicit rather than left to fall through, or it would hit
+# the 'irish cream' key and recommend Baileys to someone who needs Jameson.
+TYPE_ALIASES = {
+    "vermouth_sweet": "sweet vermouth",
+    "vermouth_dry": "dry vermouth",
+    "irish": "irish whiskey",
+}
+
+
 def get_suggestions(missing_name):
     """Case-insensitive lookup. Returns list of suggestions or empty list.
 
@@ -112,7 +126,7 @@ def get_suggestions(missing_name):
     were missing ginger beer.)"""
     if not missing_name:
         return []
-    lower = missing_name.lower()
+    lower = TYPE_ALIASES.get(missing_name.lower(), missing_name.lower())
     for key, suggestions in sorted(SUGGESTIONS.items(), key=lambda kv: -len(kv[0])):
         if re.search(r"\b" + re.escape(key) + r"\b", lower):
             return suggestions

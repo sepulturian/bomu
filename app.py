@@ -310,11 +310,20 @@ BOTTLE_TYPE_LABELS = dict(BOTTLE_TYPE_CHOICES)
 
 
 def bottle_type_label(value):
-    """Human-readable name for a stored bottle type. Falls back to a tidied
-    version of the raw value so an unknown type never renders as an ugly slug."""
+    """Human-readable name for a stored bottle type.
+
+    Also used on the one-away lists, where the value might not be a category at
+    all — name-matched requirements report a raw ingredient name like
+    "Cointreau" or "Amaro Averna". Those are already human-readable, so they're
+    passed through untouched; only slug-looking values get tidied. Capitalising
+    unconditionally would turn "Amaro Averna" into "Amaro averna"."""
     if not value:
         return ""
-    return BOTTLE_TYPE_LABELS.get(value, value.replace("_", " ").capitalize())
+    if value in BOTTLE_TYPE_LABELS:
+        return BOTTLE_TYPE_LABELS[value]
+    if "_" in value:
+        return value.replace("_", " ").capitalize()
+    return value
 
 
 app.jinja_env.globals["BOTTLE_TYPE_CHOICES"] = BOTTLE_TYPE_CHOICES
