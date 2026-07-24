@@ -332,6 +332,19 @@ def scan_bottle_image(image_path):
 - "type": one of: gin, vodka, rum, tequila, mezcal, whiskey, bourbon, scotch, brandy, cognac, vermouth, amaro, liqueur, other
 - "brand": the brand name (e.g. "Hendrick's")
 
+IMPORTANT - only use a base spirit type (gin, vodka, rum, tequila, mezcal,
+whiskey, bourbon, scotch, brandy, cognac) for a full-strength bottle of that
+spirit, typically 30% alcohol or higher.
+
+Use "other" for anything that merely contains or is flavoured with a spirit:
+- Ready-to-drink (RTD) products, premixed cans, hard seltzers, alcopops and
+  coolers (e.g. "Vodka Cruiser", "Smirnoff Ice", "Jack Daniel's & Cola")
+- Beer, cider, wine, prosecco, champagne, sake, mead
+- Cream liqueurs and low-alcohol flavoured products
+
+A pineapple vodka cooler is NOT vodka. Tagging it as vodka makes the app tell
+someone they can make a Martini out of an alcopop.
+
 If you cannot identify the bottle, return: {"name": "", "type": "", "brand": "", "error": "Could not identify this bottle"}
 
 Return ONLY the JSON, no other text."""
@@ -374,6 +387,19 @@ def scan_shelf_image(image_path):
 - "type": one of: gin, vodka, rum, tequila, mezcal, whiskey, bourbon, scotch, brandy, cognac, vermouth, amaro, liqueur, other
 - "brand": the brand name
 - "confidence": "high" if you can clearly read the label, "low" if you're guessing
+
+IMPORTANT - only use a base spirit type (gin, vodka, rum, tequila, mezcal,
+whiskey, bourbon, scotch, brandy, cognac) for a full-strength bottle of that
+spirit, typically 30% alcohol or higher.
+
+Use "other" for anything that merely contains or is flavoured with a spirit:
+- Ready-to-drink (RTD) products, premixed cans, hard seltzers, alcopops and
+  coolers (e.g. "Vodka Cruiser", "Smirnoff Ice", "Jack Daniel's & Cola")
+- Beer, cider, wine, prosecco, champagne, sake, mead
+- Cream liqueurs and low-alcohol flavoured products
+
+A pineapple vodka cooler is NOT vodka. Tagging it as vodka makes the app tell
+someone they can make a Martini out of an alcopop.
 
 If you cannot identify any bottles, return: [{"name": "", "type": "", "brand": "", "confidence": "low", "error": "Could not identify bottles"}]
 
