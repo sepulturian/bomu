@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <title>Bomu</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -259,11 +259,78 @@
             display: block;
         }
 
+        /* --- Auth screens (login / signup) ---
+           Landscape band above the form. Deliberately a different shape from
+           the square hero on Home: signing in is its own moment, and the
+           wide crop reads as a bar you're walking into rather than a drink
+           you're about to make. Same warm bleed as the hero card so the two
+           screens feel lit by the same room. */
+        .auth-art {
+            position: relative;
+            margin: 0 auto 1.75rem;
+            aspect-ratio: 3 / 2;
+            max-height: 200px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 0 50px rgba(214, 138, 62, 0.22),
+                        0 10px 32px rgba(0, 0, 0, 0.45);
+            border: 1px solid rgba(214, 168, 78, 0.18);
+        }
+
+        .auth-art img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* Scrim along the bottom edge so the wordmark sitting on the photo
+           stays readable no matter which part of the image lands there. */
+        .auth-art .art-scrim {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg,
+                        rgba(26, 20, 15, 0) 35%,
+                        rgba(26, 20, 15, 0.85) 100%);
+        }
+
+        .auth-art .art-caption {
+            position: absolute;
+            left: 1.1rem;
+            right: 1.1rem;
+            bottom: 0.9rem;
+        }
+
+        .auth-art .art-caption .art-title {
+            font-family: var(--font-display);
+            font-weight: 900;
+            font-size: 2rem;
+            line-height: 1;
+            text-transform: uppercase;
+            letter-spacing: 0.01em;
+            color: var(--ink);
+        }
+
+        .auth-art .art-caption .art-sub {
+            font-size: 0.85rem;
+            color: var(--ink-dim);
+            margin-top: 0.25rem;
+        }
+
         .empty-state {
             text-align: center;
             padding: 3rem 1rem;
             color: var(--ink-faint);
         }
+
+        /* Summaries that draw their own row layout opt out of the disclosure
+           triangle with this class. list-style: none alone isn't enough --
+           Safari keeps drawing a marker regardless, and Safari is what everyone
+           here is actually using. Summaries WITHOUT this class keep their
+           triangle on purpose; it's the only affordance saying "this opens". */
+        summary.bare { list-style: none; }
+        summary.bare::-webkit-details-marker { display: none; }
+        summary.bare::marker { content: ""; }
 
         /* --- Ingredient photo tiles (checklist) --- */
         .tile-grid {

@@ -64,7 +64,7 @@
     </p>
     {% for g in singles %}
         <details style="border: 1px solid var(--card-border); border-radius: 12px; margin-bottom: 0.5rem; background: var(--card);">
-            <summary style="cursor: pointer; padding: 0.7rem 1rem; display: flex; justify-content: space-between; align-items: center; list-style: none;">
+            <summary class="bare" style="cursor: pointer; padding: 0.7rem 1rem; display: flex; justify-content: space-between; align-items: center;">
                 <span style="font-weight: 600; color: var(--coral);">{{ g.missing.name|type_label }}</span>
                 <span style="color: var(--ink-dim); font-size: 0.82rem;">
                     {{ g.recipes[0].recipe.name }} &rsaquo;

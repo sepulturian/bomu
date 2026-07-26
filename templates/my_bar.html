@@ -22,7 +22,9 @@
     {# Grouped by type so a growing bar stays scannable. Deleting moved to
        the edit page -- no more fat-finger deletes from the list. #}
     {% for type, group in bottles|groupby('type') %}
-        <div class="category-title">{{ type }} <span style="color: var(--ink-faint); font-size: 0.85rem; text-transform: none; letter-spacing: normal; font-weight: normal;">&middot; {{ group|length }}</span></div>
+        {# type_label, not the raw value: the sub-types added 2026-07-24 store
+           slugs, so this heading read "vermouth_sweet" until it was filtered. #}
+        <div class="category-title">{{ type|type_label }} <span style="color: var(--ink-faint); font-size: 0.85rem; text-transform: none; letter-spacing: normal; font-weight: normal;">&middot; {{ group|length }}</span></div>
         {% for bottle in group %}
             <a href="/edit/{{ bottle.id }}" style="text-decoration: none; color: inherit;">
                 <div class="card">

@@ -12,8 +12,12 @@
                         {% if thumb == 1 %}<span style="color: var(--green); font-size: 0.95rem;">&#128077;</span> {% endif %}{{ r.recipe.name }}{% if thumb == -1 %} <span style="color: var(--ink-dim); font-size: 0.85rem;">&#128078;</span>{% endif %}
                     </div>
                     {% if r.your_bottles %}
+                        {# Separator is the literal character, NOT '&middot;' piped
+                           through |safe. Bottle names are typed by the user, and
+                           marking the joined string safe would render whatever
+                           they typed as raw HTML. #}
                         <div style="color: var(--green); font-size: 0.82rem; margin-top: 0.25rem;">
-                            Use your: {{ r.your_bottles | map('short_name') | join(' &middot; ') | safe }}
+                            Use your: {{ r.your_bottles | map('short_name') | join(' · ') }}
                         </div>
                     {% endif %}
                     {% if r.recipe.glass %}
@@ -70,7 +74,7 @@
                                 Which drinks?
                             </summary>
                             <div style="color: var(--ink-dim); font-size: 0.82rem; margin-top: 0.35rem; line-height: 1.5;">
-                                {{ item.drinks | join(' &middot; ') | safe }}
+                                {{ item.drinks | join(' · ') }}
                             </div>
                         </details>
                     </div>
@@ -118,14 +122,19 @@
     </div>
 
     {% if grouped %}
+        {# Each group is wrapped so the search script can hide the whole block,
+           heading included. Without the wrapper, searching in this view left a
+           column of spirit headings with nothing under them. #}
         {% for spirit_name, drinks in recs.groups %}
-            <h2 style="margin-top: 1.5rem;">
-                {{ spirit_name }}
-                <span style="color: var(--ink-dim); font-size: 0.9rem; font-weight: normal; text-transform: none; letter-spacing: normal;">&middot; {{ drinks|length }}</span>
-            </h2>
-            {% for r in drinks %}
-                {{ drink_card(r, recs.ratings) }}
-            {% endfor %}
+            <div class="spirit-group">
+                <h2 style="margin-top: 1.5rem;">
+                    {{ spirit_name }}
+                    <span style="color: var(--ink-dim); font-size: 0.9rem; font-weight: normal; text-transform: none; letter-spacing: normal;">&middot; {{ drinks|length }}</span>
+                </h2>
+                {% for r in drinks %}
+                    {{ drink_card(r, recs.ratings) }}
+                {% endfor %}
+            </div>
         {% endfor %}
     {% else %}
         {# Thumbs-downed drinks fold away instead of cluttering the list #}
@@ -142,7 +151,7 @@
             {{ drink_card(r, recs.ratings) }}
         {% endfor %}
         {% if disliked %}
-            <details style="margin-top: 1rem;">
+            <details class="dislike-fold" style="margin-top: 1rem;">
                 <summary style="color: var(--ink-dim); font-size: 0.9rem; cursor: pointer; padding: 0.5rem 0;">
                     Not your thing &middot; {{ disliked|length }}
                 </summary>
@@ -200,7 +209,19 @@
             document.querySelectorAll(".drink-link").forEach(function (el) {
                 el.style.display = el.dataset.name.includes(q) ? "" : "none";
             });
-            document.querySelectorAll("details").forEach(function (d) {
+            // In the group-by-spirit view, drop a whole spirit section once
+            // none of its drinks match -- otherwise the page is mostly
+            // headings with nothing beneath them.
+            document.querySelectorAll(".spirit-group").forEach(function (g) {
+                var anyVisible = Array.prototype.some.call(
+                    g.querySelectorAll(".drink-link"),
+                    function (el) { return el.style.display !== "none"; }
+                );
+                g.style.display = anyVisible ? "" : "none";
+            });
+            // Only the "Not your thing" fold should spring open. The nudge's
+            // "Which drinks?" folds are unrelated to the search.
+            document.querySelectorAll("details.dislike-fold").forEach(function (d) {
                 if (q) d.open = true;
             });
         });

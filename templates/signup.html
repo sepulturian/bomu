@@ -1,9 +1,18 @@
 {% extends "base.html" %}
 {% block content %}
-<div style="max-width: 400px; margin: 2rem auto 0;">
-    <div style="text-align: center; margin-bottom: 2rem;">
-        <h1 style="font-size: 2.6rem;">Join Bomu</h1>
-        <p style="color: var(--ink-dim);">your bar, your drinks, your terrible ratings</p>
+<div style="max-width: 400px; margin: 1rem auto 0;">
+    {# Blank-label bottles receding into the dark: the shelf you're about to
+       fill in, rather than a finished drink. Deliberately a different photo
+       from login so the two screens aren't interchangeable. #}
+    <div class="auth-art">
+        <img src="/static/auth-signup.jpg"
+             alt="A row of unlabelled spirit bottles on a dark bar shelf"
+             fetchpriority="high">
+        <div class="art-scrim"></div>
+        <div class="art-caption">
+            <div class="art-title">Join Bomu</div>
+            <div class="art-sub">your bar, your drinks, your terrible ratings</div>
+        </div>
     </div>
 
     <form method="POST">
@@ -21,15 +30,16 @@
         </div>
         <div class="form-group">
             <label for="password">Password (8+ characters)</label>
+            {# Inline styles dropped: input[type="password"] is already covered
+               by the shared rule in base.html, and the copies that used to sit
+               here hardcoded palette values. #}
             <input type="password" id="password" name="password" required minlength="8"
-                   autocomplete="new-password"
-                   style="width: 100%; padding: 0.7rem 1rem; background: rgba(0,0,0,0.25); border: 1px solid var(--card-border); border-radius: 999px; color: var(--ink); font-family: var(--font-body); font-size: 1rem;">
+                   autocomplete="new-password">
         </div>
         <div class="form-group">
             <label for="confirm">Same password again</label>
             <input type="password" id="confirm" name="confirm" required minlength="8"
-                   autocomplete="new-password"
-                   style="width: 100%; padding: 0.7rem 1rem; background: rgba(0,0,0,0.25); border: 1px solid var(--card-border); border-radius: 999px; color: var(--ink); font-family: var(--font-body); font-size: 1rem;">
+                   autocomplete="new-password">
         </div>
         <button type="submit" class="btn" style="width: 100%; margin-top: 1rem;">Create account</button>
     </form>

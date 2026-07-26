@@ -1,9 +1,17 @@
 {% extends "base.html" %}
 {% block content %}
-<div style="max-width: 400px; margin: 2rem auto 0;">
-    <div style="text-align: center; margin-bottom: 2rem;">
-        <h1 style="font-size: 2.6rem;">Bomu</h1>
-        <p style="color: var(--ink-dim);">your personal bartender</p>
+<div style="max-width: 400px; margin: 1rem auto 0;">
+    {# The wordmark sits on the photo rather than above it, so the first screen
+       reads as one object instead of a heading and a picture stacked. #}
+    <div class="auth-art">
+        <img src="/static/auth-login.jpg"
+             alt="A bartender stirring a whiskey cocktail on a dark bar top"
+             fetchpriority="high">
+        <div class="art-scrim"></div>
+        <div class="art-caption">
+            <div class="art-title">Bomu</div>
+            <div class="art-sub">your personal bartender</div>
+        </div>
     </div>
 
     <form method="POST">
@@ -15,9 +23,12 @@
         </div>
         <div class="form-group">
             <label for="password">Password</label>
+            {# No inline styles here: input[type="password"] is already covered
+               by the shared rule in base.html. The copy that used to live here
+               hardcoded the old border colour and would drift on every palette
+               change. #}
             <input type="password" id="password" name="password" required
-                   autocomplete="current-password"
-                   style="width: 100%; padding: 0.7rem 1rem; background: rgba(0,0,0,0.25); border: 1px solid var(--card-border); border-radius: 999px; color: var(--ink); font-family: var(--font-body); font-size: 1rem;">
+                   autocomplete="current-password">
         </div>
         <button type="submit" class="btn" style="width: 100%; margin-top: 1rem;">Log in</button>
     </form>

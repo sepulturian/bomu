@@ -308,6 +308,20 @@ BOTTLE_TYPE_CHOICES = [
 ]
 
 BOTTLE_TYPE_LABELS = dict(BOTTLE_TYPE_CHOICES)
+VALID_BOTTLE_TYPES = {value for value, _label in BOTTLE_TYPE_CHOICES}
+
+
+def safe_bottle_type(value):
+    """Coerce a submitted bottle type to something the matcher understands.
+
+    Anything unrecognised becomes 'other', which is name-matched and therefore
+    never fungibly satisfies a category requirement. The failure mode this
+    prevents is the bulk-scan form defaulting an unreadable bottle to the first
+    option in the dropdown -- Gin -- and the app then offering Martinis on a
+    bottle nobody could identify. 'other' is the honest answer for "we don't
+    know what this is"."""
+    value = (value or "").strip()
+    return value if value in VALID_BOTTLE_TYPES else "other"
 
 
 def bottle_type_label(value):
@@ -530,7 +544,7 @@ def home():
 def add():
     if request.method == "POST":
         name = request.form["name"]
-        bottle_type = request.form["type"]
+        bottle_type = safe_bottle_type(request.form.get("type"))
         brand = request.form.get("brand", "")
         add_bottle(uid(), name, bottle_type, brand)
         flash(f"Added {name} to your bar!")
@@ -646,7 +660,7 @@ def confirm_bulk():
         if name is None:
             break
         if request.form.get(f"add_{i}"):
-            bottle_type = request.form.get(f"type_{i}", "other")
+            bottle_type = safe_bottle_type(request.form.get(f"type_{i}"))
             brand = request.form.get(f"brand_{i}", "")
             add_bottle(uid(), name, bottle_type, brand)
             added += 1
@@ -841,7 +855,7 @@ def edit(bottle_id):
         return redirect(url_for("bar"))
     if request.method == "POST":
         name = request.form["name"]
-        bottle_type = request.form["type"]
+        bottle_type = safe_bottle_type(request.form.get("type"))
         brand = request.form.get("brand", "")
         update_bottle(bottle_id, uid(), name, bottle_type, brand)
         flash(f"Updated {name}!")

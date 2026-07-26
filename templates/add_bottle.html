@@ -11,26 +11,14 @@
 
     <div class="form-group">
         <label for="type">Type</label>
+        {# Driven by BOTTLE_TYPE_CHOICES like the other three bottle forms. This
+           list used to be hardcoded here, which is exactly the drift that puts
+           a type in one form and not another. #}
         <select id="type" name="type" required>
             <option value="">Pick a type...</option>
-            <option value="gin">Gin</option>
-            <option value="vodka">Vodka</option>
-            <option value="rum">Rum</option>
-            <option value="tequila">Tequila</option>
-            <option value="mezcal">Mezcal</option>
-            <option value="whiskey">Whiskey (other / blended)</option>
-            <option value="bourbon">Bourbon</option>
-            <option value="scotch">Scotch</option>
-            <option value="rye">Rye</option>
-            <option value="irish">Irish Whiskey</option>
-            <option value="brandy">Brandy</option>
-            <option value="cognac">Cognac</option>
-            <option value="vermouth_sweet">Vermouth (sweet / rosso)</option>
-            <option value="vermouth_dry">Vermouth (dry)</option>
-            <option value="vermouth">Vermouth (not sure)</option>
-            <option value="amaro">Amaro</option>
-            <option value="liqueur">Liqueur</option>
-            <option value="other">Other</option>
+            {% for value, label in BOTTLE_TYPE_CHOICES %}
+                <option value="{{ value }}">{{ label }}</option>
+            {% endfor %}
         </select>
     </div>
 

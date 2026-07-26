@@ -100,8 +100,24 @@
 <script>
     var hint = document.getElementById("save-hint");
     var saveBar = document.getElementById("save-bar");
-    document.querySelectorAll('input[name="ingredient"]').forEach(function (cb) {
+    var boxes = document.querySelectorAll('input[name="ingredient"]');
+
+    // Every ingredient in the "New since last visit" block ALSO appears in its
+    // category further down, as a second checkbox with the same name and value.
+    // Submitting worked by accident (either one ticked meant one value in the
+    // POST), but the two could sit there visibly disagreeing, and unticking the
+    // lower one didn't undo the upper one. Keep duplicates in lockstep.
+    function syncDuplicates(source) {
+        boxes.forEach(function (other) {
+            if (other !== source && other.value === source.value) {
+                other.checked = source.checked;
+            }
+        });
+    }
+
+    boxes.forEach(function (cb) {
         cb.addEventListener("change", function () {
+            syncDuplicates(cb);
             hint.style.display = "inline";
             saveBar.style.borderColor = "#e9694a";
         });
