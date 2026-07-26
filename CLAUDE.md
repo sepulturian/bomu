@@ -13,14 +13,19 @@ Flask + SQLite, hosted on PythonAnywhere. Built for Aaron and his friends.
 
 ## Where things stand
 
-Live and healthy as of 2026-07-24. 125 recipes, 5 users, 35 bottles logged.
+Live and healthy as of 2026-07-25. 171 recipes, 51 ingredients, 5 users, 35
+bottles logged.
 
-Aaron (user 1): 18 bottles, 12 makeable, 49 one-away.
-Shehan (user 4): 16 bottles, **0 makeable** — he has only ticked 4 mixers. This is
-the clearest evidence yet that onboarding, not catalog size, is the real problem.
+| id | user | bottles | mixers ticked | makeable | ratings |
+|---|---|---|---|---|---|
+| 1 | aaron | 18 | 15 / 51 | 17 | 4 |
+| 2 | Avishka | 0 | 0 | 0 | 0 |
+| 3 | Rajapaksha | 0 | 0 | 0 | 0 |
+| 4 | lenasheh (Shehan) | 16 | 4 | 0 | 0 |
+| 5 | Maho | 1 | 12 | 1 | 0 |
 
-Just landed: 25 new whiskey and split-base recipes, whiskey/vermouth sub-types,
-distinct-bottle matching, and an RTD tagging fix. All three commits deployed and
+Just landed: 46 recipes across rum/agave/vodka/brandy/low-ABV, 3 new checklist
+ingredients, and the mixer-gap nudge on the Make page. Both commits deployed and
 verified server-side.
 
 Nothing is half-finished. Next session can start clean on the backlog below.
@@ -160,6 +165,25 @@ collapse to one slot, and one bottle is a fine way to make it.
 kept in step**, or the detail page highlights different rows than the Make list
 used to decide the drink was makeable.
 
+### The mixer gap (added 2026-07-25)
+
+`build_mixer_gap()` answers "which few checklist ingredients would unlock the
+most drinks?" It's computed inside `get_recommendations` from the *untruncated*
+one-away list, before that list is sliced for display, so it costs no extra
+matcher pass and the count reflects every blocked drink rather than the first
+five.
+
+Every one-away recipe is blocked by exactly one thing, so grouping blockers by
+name and counting is exact — no drink is counted twice and the number on screen
+is a promise the app can keep. Only `ingredient` blockers are considered; a
+missing bottle is a shopping trip, a missing mixer is usually something the user
+already owns and never ticked.
+
+The returned dict uses the key **`picks`, not `items`**. Jinja resolves
+`gap.items` to `dict.items()` before it looks for a key of that name, so the
+template silently iterates a bound method and 500s at render. `py_compile`
+does not catch this — only actually rendering the template does.
+
 ---
 
 ## Scanner
@@ -194,26 +218,53 @@ Written as standalone, reviewable, idempotent scripts (see
 - Match on name so re-running is a no-op
 - Journal/WAL guard
 
-Prefer reusing the existing 48 ingredients over adding new ones. All 25 recipes
-added on 2026-07-24 resolve against them, so nobody had to re-tick anything.
+Prefer reusing the existing ingredients over adding new ones, and treat every
+new checklist row as a real cost: it starts **unticked for every existing user**,
+so the recipes depending on it are invisible until people go back and update
+their Mixers list. The 2026-07-25 batch added only 3 new ingredients for 46
+recipes, each one justified in the script's docstring.
+
+Also prefer recipes needing ONE fungible spirit. Drinks requiring two or three
+name-matched liqueurs (Naked and Famous, Nuclear Daiquiri, Brandy Crusta,
+Harvey Wallbanger) only inflate the one-away list, which is already 67 deep for
+Aaron.
 
 ---
 
 ## Backlog
 
-1. **Empty-state onboarding.** The single biggest real problem. Shehan logged 16
-   bottles and saw *zero* drinks, purely because he never filled in the Mixers
-   checklist (he had 4 items ticked: coffee, red wine, vanilla extract, water).
-   With mixers ticked he'd have 30+. Scanning bottles is fun, the checklist is a
-   chore, and nothing in the app pushes you toward it.
-2. **Fix local dev** so per-user work doesn't require the live server.
-3. **Rum and gin sub-types.** Identical defect to the vermouth one just fixed:
-   light vs aged vs Jamaican rum are not interchangeable, and sloe gin is a
-   liqueur, not gin.
-4. **Ambiguous bottle prompts.** A one-tap "sweet or dry?" nudge in My Bar would
+1. **Never-started users.** Two of five accounts (Avishka, Rajapaksha) have zero
+   bottles and zero mixers. They signed up and did nothing. The mixer nudge
+   cannot reach them — their problem is getting to a first bottle, not ticking a
+   checklist. This is now the biggest untouched gap and it needs a different fix
+   from #2: a reason to scan the first bottle, or a starter bar they can accept
+   in one tap.
+2. **Empty-state onboarding, partially addressed.** The mixer-gap nudge shipped
+   2026-07-25 and helps, but unevenly: Aaron 3 ingredients → 14 drinks, Shehan
+   3 → 3, because Shehan's blockers are mostly *bottles*. The original theory
+   ("he just never filled in the checklist, he'd have 30+") was right for Aaron
+   and only partly right for Shehan. Do not over-trust it again without checking
+   whose blockers are mixers vs bottles.
+3. **Rename `Grape Soda` → grapefruit soda.** It is *already* being used to mean
+   grapefruit soda (see the Paloma row: "Grapefruit soda (e.g. Jarritos,
+   Squirt)"), so anyone ticking it is thinking of purple grape soda. Now
+   load-bearing: if it ranks into someone's top 3, the nudge will confidently
+   tell them to buy the wrong thing. Needs a rename migration plus a recipe-row
+   fix.
+4. **Tune the nudge.** It shows for any gap at all, including one tick for one
+   drink. A floor (hide below ~3 drinks) would keep it feeling like a discovery
+   rather than nagging. Left uncapped deliberately to observe real behaviour
+   first.
+5. **Fix local dev** so per-user work doesn't require the live server.
+6. **Rum and gin sub-types.** Identical defect to the vermouth one already
+   fixed: light vs aged vs Jamaican rum are not interchangeable, and sloe gin is
+   a liqueur, not gin.
+7. **Ambiguous bottle prompts.** A one-tap "sweet or dry?" nudge in My Bar would
    resolve legacy generic bottles over time.
-5. **Recipe images** (52 missing).
-6. **Grow the catalog** past 125.
+8. **Recipe images** (98 missing of 171 — the 46 new ones all lack images, so
+   this is now 57% of the catalog).
+9. **Grow the catalog** past 171. Lowest priority: 2026-07-25 proved catalog
+   size is not what's limiting anyone.
 
 ---
 
@@ -259,3 +310,51 @@ buckets in the group-by-spirit view) — the small cosmetic task was worth more 
 it looked. And an hour went into chasing a Boulevardier bug that did not exist,
 because Chrome served a cached `/recommend` showing a bottle absent from the
 database. Verify through the matcher, not the browser.
+
+### 2026-07-25
+
+Started as "add more cocktails", ended as a fairly hard lesson about what the
+app's actual constraint is.
+
+**Shipped, two commits:**
+
+- `87dbe95` — 46 recipes via `import_catalog_expansion_2.py` (12 rum, 9 agave,
+  10 vodka/gin, 7 brandy, 8 low-ABV), plus 3 new checklist ingredients
+  (Passion Fruit Syrup, Clamato / Caesar mix, White Wine). Catalog 125 → 171,
+  ingredients 48 → 51. No image URLs on any of them.
+- `106fce7` — the mixer-gap nudge: `build_mixer_gap()` in `matching.py`,
+  `add_ingredients_to_stock()` in `database.py`, `POST /stock-add`, and a
+  banner at the top of `/recommend`. Reads "You're 3 ingredients from 14 more
+  drinks", names the ingredients, expands to name the drinks, pre-ticked
+  checkboxes so one tap adds the lot but you can untick what you don't own.
+  `/stock-add` **adds only** — reusing `set_all_ingredients_stock` would have
+  deleted every other tick the user had.
+
+**Impact, and it is smaller than predicted.** Aaron 12 → 17 makeable,
+49 → 67 one-away. 5 of the 46 new drinks were immediately makeable for him
+(Canchánchara, Chet Baker, Milano-Torino, Ranch Water, Vermouth Cocktail).
+
+**Three lessons worth keeping.**
+
+*Simulating against an idealised bar overestimated by 5x.* The recipe selection
+was validated in a sandbox that assumed all 48 mixers ticked, which predicted 27
+immediately-makeable drinks. Aaron has 15 of 51 ticked, so the real answer was
+5. Any future "will this help?" check must read actual `user_stock`, not a full
+checklist.
+
+*Catalog size is not the constraint and adding to it barely moves anything.*
+125 → 171 recipes bought 5 drinks. Ticking three checkboxes would buy 14. The
+recipes are worth having, but "grow the catalog" is now the lowest-value item on
+the backlog and should stay there.
+
+*Two of five users have never added anything at all.* That reframes the whole
+onboarding problem: it isn't one failure, it's two. Unticked mixers (Aaron,
+Shehan) and never-started accounts (Avishka, Rajapaksha) need different fixes,
+and the nudge only addresses the first. Maho is a third shape again — 12 mixers
+ticked, 1 bottle — which is the exact opposite of the assumed behaviour that
+scanning is fun and the checklist is a chore.
+
+**One near-miss.** `gap.items` in the template resolved to `dict.items()` rather
+than the dict key, which would have 500'd `/recommend` for every user. `python3
+-m py_compile` passed it clean; only rendering the template caught it. Key
+renamed to `picks`. Render the template before deploying template changes.
