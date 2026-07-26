@@ -344,6 +344,24 @@ def is_auto_added(ingredient_name):
     return ingredient_name not in SEED_INGREDIENT_NAMES
 
 
+def add_ingredients_to_stock(user_id, ingredient_ids):
+    """Tick specific ingredients WITHOUT touching the rest of the checklist.
+
+    Deliberately not set_all_ingredients_stock, which deletes every row for the
+    user first. The quick-add nudge on the Make page submits three ids, and
+    reusing the replace-everything version there would wipe the other 15 things
+    the user had already ticked."""
+    if not ingredient_ids:
+        return
+    conn = get_db()
+    conn.executemany(
+        "INSERT OR IGNORE INTO user_stock (user_id, ingredient_id) VALUES (?, ?)",
+        [(user_id, int(i)) for i in ingredient_ids],
+    )
+    conn.commit()
+    conn.close()
+
+
 def set_all_ingredients_stock(user_id, checked_ids):
     """Replace this user's checklist state: checked ones in stock, rest not."""
     conn = get_db()

@@ -31,6 +31,69 @@
 {% block content %}
 <h1>What you can make</h1>
 
+{# Mixer gap nudge. Scanning bottles is fun and the checklist is a chore, so
+   people end up with a full shelf and a nearly empty Mixers list, and the app
+   looks broken when it's actually just uninformed. This shows the few
+   ingredients standing between the user and the most drinks, names the drinks
+   so the payoff is concrete, and lets them tick the lot in one tap. Items are
+   pre-checked but unticking one is the point -- you might not own all three. #}
+{% if recs.mixer_gap %}
+    {% set gap = recs.mixer_gap %}
+    <form method="POST" action="/stock-add">
+        <div class="card" style="border-color: rgba(214, 168, 78, 0.45);
+                                 background: linear-gradient(180deg, rgba(214,168,78,0.10), rgba(36,27,20,0.9));
+                                 margin-bottom: 1.1rem;">
+            <div style="font-size: 1.05rem; font-weight: 600; color: var(--gold);">
+                You're {{ gap.ingredient_count }} ingredient{{ 's' if gap.ingredient_count != 1 else '' }}
+                from {{ gap.drink_count }} more drink{{ 's' if gap.drink_count != 1 else '' }}
+            </div>
+            <div style="color: var(--ink-dim); font-size: 0.85rem; margin: 0.35rem 0 0.9rem;">
+                You've got the bottles. These just aren't ticked on your Mixers list yet.
+            </div>
+
+            {% for item in gap.picks %}
+                <div style="display: flex; gap: 0.6rem; align-items: flex-start;
+                            padding: 0.5rem 0;
+                            {% if not loop.last %}border-bottom: 1px solid var(--card-border);{% endif %}">
+                    <input type="checkbox" name="ingredient" value="{{ item.id }}"
+                           id="gap-{{ item.id }}" checked
+                           style="margin-top: 0.25rem; flex-shrink: 0;">
+                    <div style="flex: 1; min-width: 0;">
+                        <label for="gap-{{ item.id }}" style="color: var(--ink); margin-bottom: 0; font-weight: 600;">
+                            {{ item.name }}
+                            <span style="color: var(--green); font-weight: 400; font-size: 0.85rem;">
+                                &middot; {{ item.drinks|length }} drink{{ 's' if item.drinks|length != 1 else '' }}
+                            </span>
+                        </label>
+                        <details style="margin-top: 0.2rem;">
+                            <summary style="color: var(--ink-faint); font-size: 0.8rem; cursor: pointer;">
+                                Which drinks?
+                            </summary>
+                            <div style="color: var(--ink-dim); font-size: 0.82rem; margin-top: 0.35rem; line-height: 1.5;">
+                                {{ item.drinks | join(' &middot; ') | safe }}
+                            </div>
+                        </details>
+                    </div>
+                </div>
+            {% endfor %}
+
+            <button type="submit" class="btn" style="width: 100%; margin-top: 0.9rem;">
+                Add to my bar
+            </button>
+
+            {% if gap.remaining_ingredients %}
+                <div style="text-align: center; margin-top: 0.6rem;">
+                    <a href="/checklist" style="color: var(--ink-faint); font-size: 0.8rem;">
+                        {{ gap.remaining_ingredients }} more ingredient{{ 's' if gap.remaining_ingredients != 1 else '' }}
+                        would unlock {{ gap.remaining_drinks }} other drink{{ 's' if gap.remaining_drinks != 1 else '' }}
+                        &rarr;
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </form>
+{% endif %}
+
 {% if recs.total_makeable > 0 %}
     <p style="color: var(--ink-dim); margin-bottom: 0.75rem;">
         {{ recs.total_makeable }} drink{{ 's' if recs.total_makeable != 1 else '' }} you have everything for.

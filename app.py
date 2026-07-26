@@ -15,6 +15,7 @@ from PIL import Image
 from database import (
     init_db, get_all_bottles, get_bottle, add_bottle, update_bottle,
     delete_bottle, get_all_ingredients, set_all_ingredients_stock,
+    add_ingredients_to_stock,
     get_recipe, set_rating, get_rating, get_all_ratings, get_favorites,
     get_auto_added_ingredients, is_auto_added,
     create_user, get_user_by_username, get_user,
@@ -719,6 +720,22 @@ def recommend():
     else:
         recs = get_recommendations(uid(), max_makeable=50, max_one_away=5)
     return render_template("recommend.html", recs=recs, grouped=grouped)
+
+
+@app.route("/stock-add", methods=["POST"])
+@login_required
+def stock_add():
+    """Quick-add for the mixer nudge on the Make page. Adds only, never clears,
+    so it can't undo whatever the user already ticked on the checklist."""
+    try:
+        ids = [int(x) for x in request.form.getlist("ingredient")]
+    except ValueError:
+        ids = []
+    if ids:
+        add_ingredients_to_stock(uid(), ids)
+        names = [i["name"] for i in get_all_ingredients(uid()) if i["id"] in ids]
+        flash("Added to your bar: " + ", ".join(names))
+    return redirect(url_for("recommend"))
 
 
 @app.route("/one-away")

@@ -461,6 +461,59 @@ def get_recommendations_grouped(user_id, max_per_group=50):
     return base
 
 
+def build_mixer_gap(one_away_entries, ingredients, max_items=3):
+    """Which few CHECKLIST ingredients would unlock the most drinks?
+
+    Every one-away recipe is blocked by exactly one thing, so grouping those
+    blockers by name and counting is exact -- no drink can be counted twice,
+    and the totals here are a promise the app can keep.
+
+    Only ingredient blockers are considered. A missing bottle is a shopping
+    trip; a missing mixer is very often something the user already owns and
+    simply never ticked. That distinction is the whole point: on 2026-07-25 the
+    catalog went from 125 to 171 recipes and the owner's makeable count moved
+    12 -> 17, because he had 15 of 51 mixers ticked. The drinks were there. The
+    checklist was the wall.
+
+    Returns None when there is nothing useful to say, so the template can just
+    test for truthiness.
+    """
+    ids_by_name = {i["name"].lower(): i["id"] for i in ingredients}
+
+    groups = {}  # lowercased name -> {name, id, drinks: [recipe names]}
+    for entry in one_away_entries:
+        missing = entry["missing"]
+        if missing.get("type") != "ingredient":
+            continue
+        key = missing["name"].lower()
+        ing_id = ids_by_name.get(key)
+        if ing_id is None:
+            # Blocker isn't a real checklist row, so we can't offer to tick it.
+            continue
+        g = groups.setdefault(key, {"name": missing["name"], "id": ing_id, "drinks": []})
+        g["drinks"].append(entry["recipe"]["recipe"]["name"])
+
+    if not groups:
+        return None
+
+    ranked = sorted(groups.values(), key=lambda g: (-len(g["drinks"]), g["name"].lower()))
+    top = ranked[:max_items]
+    for g in top:
+        g["drinks"].sort()
+
+    return {
+        # NOT "items": Jinja resolves `gap.items` to dict.items() before it
+        # looks for a key of that name, so the template would silently iterate
+        # a bound method and blow up at render time.
+        "picks": top,
+        "drink_count": sum(len(g["drinks"]) for g in top),
+        "ingredient_count": len(top),
+        # How much is still on the table below the cut, for the "and more" line.
+        "remaining_ingredients": max(0, len(ranked) - len(top)),
+        "remaining_drinks": sum(len(g["drinks"]) for g in ranked[len(top):]),
+    }
+
+
 def get_recommendations(user_id, max_makeable=50, max_one_away=25):
     """Top-level: read the user's bar, score every recipe, return two lists.
     Makeable drinks are sorted: thumbs-up first, unrated next, thumbs-down last.
@@ -483,6 +536,10 @@ def get_recommendations(user_id, max_makeable=50, max_one_away=25):
         elif status == "one_away":
             one_away.append({"recipe": r, "missing": missing[0]})
 
+    # Work out the mixer gap BEFORE one_away gets truncated for display, so
+    # the count reflects every blocked drink rather than the first handful.
+    mixer_gap = build_mixer_gap(one_away, ingredients)
+
     # Sort makeable by rating bucket: liked (1) -> unrated (0) -> disliked (-1).
     # bucket map keeps liked at top, disliked at bottom.
     bucket = {1: 0, 0: 1, -1: 2}
@@ -504,4 +561,5 @@ def get_recommendations(user_id, max_makeable=50, max_one_away=25):
         "total_makeable": len(makeable),
         "total_one_away": len(one_away),
         "ratings": ratings,
+        "mixer_gap": mixer_gap,
     }
