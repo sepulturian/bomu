@@ -24,9 +24,11 @@ bottles logged.
 | 4 | lenasheh (Shehan) | 16 | 4 | 0 | 0 |
 | 5 | Maho | 1 | 12 | 1 | 0 |
 
-Just landed: 46 recipes across rum/agave/vodka/brandy/low-ABV, 3 new checklist
-ingredients, and the mixer-gap nudge on the Make page. Both commits deployed and
-verified server-side.
+Just landed: the Grape Soda rename, a bug sweep (stored XSS on /recommend, the
+bulk scanner silently tagging unknown bottles as Gin, raw type slugs still
+leaking into My Bar), and photography on login/signup. Deployed and verified
+server-side: 17 makeable / 67 one-away, unchanged, which is the point — none of
+it was meant to move the numbers.
 
 Nothing is half-finished. Next session can start clean on the backlog below.
 
@@ -39,7 +41,24 @@ Server path: `/home/sepulturian/bomu`, deployed by `git pull` from GitHub.
 
 ### Deploy sequence
 
-Do these in order. Every step exists because skipping it has caused a problem.
+**Two machines. Say which one every time.** On 2026-07-25 a deploy block was
+handed over without that label and got pasted into PowerShell on the laptop,
+where `python3` doesn't exist, `&&` isn't a separator in Windows PowerShell 5.1,
+and `~/bomu` is the wrong path anyway. Nothing broke, but nothing worked either.
+
+**Laptop, PowerShell — commit and push only.** Never run migrations here: the
+local `bomu.db` is the stale pre-multi-user copy (see Gotchas).
+
+```powershell
+cd "C:\Users\sepulturian\Documents\Claude\projects\bomu"
+del .git\index.lock
+git add -A                    # -A matters: picks up deleted files too
+git commit -m "..."
+git push origin main
+```
+
+**Server, PythonAnywhere Bash console — everything else.** In order; every step
+exists because skipping it has caused a problem.
 
 ```bash
 cd ~/bomu
@@ -51,7 +70,8 @@ python3 <migration>.py --commit
 
 Then hit **Reload** on the PythonAnywhere Web tab. Database changes take effect
 immediately because the app reads live, but Python code is held in memory by the
-running worker and needs the reload.
+running worker and needs the reload. A migration can therefore look like it
+worked while the UI changes in the same commit are still not being served.
 
 ### Verification
 
@@ -69,6 +89,19 @@ print(sorted(x['recipe']['name'] for x in r['makeable']))"
 ```
 
 If you must check in a browser, append a cache-busting query string.
+
+**Render every template before deploying template changes.** `py_compile` passes
+things that 500 on render — that's how `gap.items` nearly shipped. The reliable
+check is a scratch copy of the database plus Flask's test client walking every
+route. The 2026-07-25 harness lived in the agent's scratch space and is gone;
+rebuilding it took about ten minutes and caught nothing that session only because
+it had already caught things during development. Worth committing as
+`verify_routes.py` next time it gets written (backlog #6).
+
+The shape that works: copy `bomu.db` to `/tmp`, add the multi-user columns the
+local copy lacks, `DROP` the pre-multi-user `ratings`/`scan_log` so `init_db()`
+rebuilds them, point `database.DB_PATH` at the copy **before** importing `app`,
+then `test_client()` every route including the POST paths.
 
 ---
 
@@ -113,16 +146,35 @@ The important table. `requirement_type` is one of:
 | value | meaning |
 |---|---|
 | `bottle_type` | needs a bottle. See matching rules below. |
-| `ingredient` | matches the user's Mixers checklist by exact `ingredient_name`. Must already exist in `ingredients` (48 rows) or it can never be satisfied. |
+| `ingredient` | matches the user's Mixers checklist by exact `ingredient_name`. Must already exist in `ingredients` (51 rows) or it can never be satisfied. |
 | `optional` | garnishes, rinses, floats. Never blocks makeability. |
+
+A `bottle_type` row with a NULL/empty `bottle_type` is **silently skipped** by
+both `match_recipe` and `missing_ingredient_ids` — it can never block a drink.
+Consistent between the two, so no drift, but it means a malformed import row
+fails open rather than loudly. Validate in the import script, not here.
 
 ### recipes
 
-- 125 rows: 100 `source='thecocktaildb'`, 25 `source='manual_verified'`
+- 171 rows
 - Instructions carry a `[BOMU_REWRITTEN_v1]` marker, stripped by the
   `clean_instructions` filter
-- 52 have no `image_url` and fall back to a plain card. Deprioritised, but it is
-  now 40% of the catalog.
+- 98 have no `image_url` and fall back to a plain card — 57% of the catalog,
+  since none of the 46 added on 2026-07-25 had images.
+
+### ingredients
+
+Checklist rows are **user-facing shopping instructions**, not internal keys. The
+mixer-gap nudge names them out loud and tells people to go buy them, so a wrong
+or ambiguous label is the app confidently sending someone to the wrong shelf.
+That is why `Grape Soda` became `Grapefruit soda` on 2026-07-25.
+
+A rename is four things, not one: the `ingredients` row, every
+`recipe_ingredients` row pointing at it, the `user_stock` ticks, **and the photo
+in `static/ingredients/`**. The photo is matched purely by slug
+(`ingredient_slug(name)`), so renaming the row silently repoints the tile at a
+file that doesn't exist — or worse, leaves a correct-looking tile showing the
+wrong product. `grape_soda.jpg` really was a picture of purple grape soda.
 
 ---
 
@@ -200,10 +252,30 @@ They now explicitly cover:
   answer" stated explicitly.
 
 `BOTTLE_TYPE_CHOICES` in `app.py` is the single source of truth for the dropdowns
-in all four bottle templates. Add new types there, not in the templates.
+in all four bottle templates. Add new types there, not in the templates. (This
+was written on 2026-07-24 as a statement of fact and was not true:
+`add_bottle.html` still carried a hardcoded copy of the whole list until
+2026-07-25. It happened to match. Assert the invariant, then go and check it.)
 
 Anything user-facing that displays a raw type must go through the `type_label`
-filter, or values like `vermouth_dry` leak into the UI.
+filter, or values like `vermouth_dry` leak into the UI. `my_bar.html` was still
+printing the raw slug as its group headings a full day after the filter shipped —
+adding a display filter is not done until every existing render site has been
+grepped for and converted.
+
+### Untrusted type values
+
+`safe_bottle_type()` coerces anything not in `BOTTLE_TYPE_CHOICES` to `other`,
+and every write path (`/add`, `/edit`, `/confirm-bulk`) runs through it. `other`
+is name-matched, so it can never fungibly satisfy a category requirement — the
+honest answer for "we don't know what this is".
+
+This exists because `confirm_bulk.html` had no blank `<option>`. A bottle whose
+label the scanner couldn't read arrived with `type=""`, matched nothing, and the
+browser fell through to the first option in the list — **Gin** — which is
+fungible, so the app then offered Martinis on it. Same failure as the Vodka
+Cruiser, reached through a different door. Any new `<select>` of bottle types
+needs a blank option AND server-side coercion; the template alone is not enough.
 
 ---
 
@@ -231,6 +303,42 @@ Aaron.
 
 ---
 
+## Templates
+
+Design system lives in one `<style>` block in `base.html`: warm editorial dark
+palette (`--coral` #e9694a, `--gold` #d6a84e over charcoal-brown), Bodoni Moda
+for display, Poppins for body. Page-specific styling is inline. That's fine at
+this size, but anything reused across two templates belongs in `base.html` —
+the login/signup password fields carried a hardcoded copy of the shared input
+rule, complete with a stale border colour, until 2026-07-25.
+
+**Never `|safe` a `join()` that contains user input.** `/recommend` had:
+
+```jinja
+{{ r.your_bottles | map('short_name') | join(' &middot; ') | safe }}
+```
+
+The `|safe` existed only to render the `&middot;` entity, but it marks the
+*entire joined string* as trusted HTML — including bottle names the user typed.
+Naming a bottle `<img src=x onerror=...>` executed it. Self-XSS only (bottles are
+per-user and shown to nobody else), so the blast radius was small, but the fix is
+free: use the literal `·` character and drop the filter. Grep for `|safe` before
+adding another one; the two remaining uses are on `suggestions.py` output and
+recipe names, both app-controlled.
+
+**Duplicate checkboxes need syncing.** The checklist renders new ingredients
+twice — once in "New since last visit", once in their category — with the same
+`name` and `value`. Submitting worked by accident (either box ticked put one
+value in the POST), but the two could sit on screen visibly disagreeing, and
+unticking the lower one didn't undo the upper. Now kept in lockstep by JS.
+
+**Safari draws its own `<summary>` marker** regardless of `list-style: none`.
+Summaries with custom row layouts use the `.bare` class in `base.html`; ones
+without it keep the triangle deliberately, since it's the only affordance saying
+"this opens".
+
+---
+
 ## Backlog
 
 1. **Never-started users.** Two of five accounts (Avishka, Rajapaksha) have zero
@@ -245,26 +353,28 @@ Aaron.
    ("he just never filled in the checklist, he'd have 30+") was right for Aaron
    and only partly right for Shehan. Do not over-trust it again without checking
    whose blockers are mixers vs bottles.
-3. **Rename `Grape Soda` → grapefruit soda.** It is *already* being used to mean
-   grapefruit soda (see the Paloma row: "Grapefruit soda (e.g. Jarritos,
-   Squirt)"), so anyone ticking it is thinking of purple grape soda. Now
-   load-bearing: if it ranks into someone's top 3, the nudge will confidently
-   tell them to buy the wrong thing. Needs a rename migration plus a recipe-row
-   fix.
-4. **Tune the nudge.** It shows for any gap at all, including one tick for one
+3. **Tune the nudge.** It shows for any gap at all, including one tick for one
    drink. A floor (hide below ~3 drinks) would keep it feeling like a discovery
    rather than nagging. Left uncapped deliberately to observe real behaviour
    first.
-5. **Fix local dev** so per-user work doesn't require the live server.
-6. **Rum and gin sub-types.** Identical defect to the vermouth one already
+4. **Fix local dev** so per-user work doesn't require the live server.
+5. **Rum and gin sub-types.** Identical defect to the vermouth one already
    fixed: light vs aged vs Jamaican rum are not interchangeable, and sloe gin is
    a liqueur, not gin.
+6. **Commit a `verify_routes.py`.** The render harness gets rewritten from
+   scratch every session and thrown away. See the Verification section for the
+   shape that works. Cheap, and it's the only thing that catches render-time
+   template bugs.
 7. **Ambiguous bottle prompts.** A one-tap "sweet or dry?" nudge in My Bar would
    resolve legacy generic bottles over time.
-8. **Recipe images** (98 missing of 171 — the 46 new ones all lack images, so
-   this is now 57% of the catalog).
-9. **Grow the catalog** past 171. Lowest priority: 2026-07-25 proved catalog
-   size is not what's limiting anyone.
+8. **Audit the remaining checklist labels** the way `Grape Soda` was audited.
+   That one was found by reading the Paloma's note, not by any systematic pass;
+   there may be others that are ambiguous or plain wrong, and the nudge now
+   reads every label out loud as a shopping instruction.
+9. **Recipe images** (98 missing of 171 — the 46 added 2026-07-25 all lack
+   images, so this is now 57% of the catalog).
+10. **Grow the catalog** past 171. Lowest priority: 2026-07-25 proved catalog
+    size is not what's limiting anyone.
 
 ---
 
@@ -311,7 +421,7 @@ it looked. And an hour went into chasing a Boulevardier bug that did not exist,
 because Chrome served a cached `/recommend` showing a bottle absent from the
 database. Verify through the matcher, not the browser.
 
-### 2026-07-25
+### 2026-07-25 (first session)
 
 Started as "add more cocktails", ended as a fairly hard lesson about what the
 app's actual constraint is.
@@ -358,3 +468,68 @@ scanning is fun and the checklist is a chore.
 than the dict key, which would have 500'd `/recommend` for every user. `python3
 -m py_compile` passed it clean; only rendering the template caught it. Key
 renamed to `picks`. Render the template before deploying template changes.
+
+### 2026-07-25 (second session)
+
+Three asks: the Grape Soda rename off the backlog, a general bug/UI sweep, and
+some photography. The sweep was the valuable part.
+
+**Shipped, one commit.** `migrate_grapefruit_soda.py` plus fixes across `app.py`
+and nine templates, and three new images.
+
+**The rename.** `Grape Soda` → `Grapefruit soda`, ticks cleared rather than
+carried forward (a preserved tick would claim the user can make a Paloma with
+purple grape soda), Paloma row repointed, note rewritten. The backlog item
+described this as a rename plus a recipe-row fix and was incomplete: the tile
+photo `grape_soda.jpg` was an actual picture of purple grape soda, so renaming
+the row alone would have left a wrong image under a right name — worse than
+before. New photo generated, old file deleted.
+
+**Four real bugs, none of which anyone had reported.**
+
+*Stored XSS on `/recommend`.* `|safe` on a `join()` of user-typed bottle names.
+Self-XSS only, but free to fix. See Templates.
+
+*The bulk scanner silently added unidentified bottles as Gin.* No blank
+`<option>` in `confirm_bulk.html`, so `type=""` fell through to the first entry
+in the list, which is fungible. Fixed in the template and again server-side with
+`safe_bottle_type()`. See Scanner.
+
+*Raw type slugs still leaking into My Bar*, a full day after the `type_label`
+filter shipped specifically to stop that.
+
+*Two live checkboxes per new checklist ingredient*, unsynced.
+
+Plus: `add_bottle.html` had a hardcoded dropdown contradicting this file's own
+"single source of truth" claim; search in group-by-spirit left orphaned headings;
+Safari was drawing its own `<summary>` triangle over the one-away rows.
+
+**Impact: 17 makeable / 67 one-away, unchanged.** That was the goal. Every fix
+was a correctness or presentation fix, so movement in those numbers would have
+meant something broke.
+
+**Three lessons worth keeping.**
+
+*This file's assertions decay into fiction if nobody checks them.* Two claims
+written on 2026-07-24 — "BOTTLE_TYPE_CHOICES is the single source of truth for
+all four bottle templates" and "anything user-facing goes through `type_label`" —
+were both false within a day, and one of them was false when written. They read
+as descriptions but they're aspirations. Grep before trusting a line in here.
+
+*The same class of bug keeps arriving through a new door.* The Vodka Cruiser
+(RTD tagged as a fungible spirit) was fixed at the scanner prompt. It came back
+through an HTML `<select>` default. Fixing the source that produced a bad value
+doesn't fix the shape of the hole it went through; guard where the value is
+consumed, not only where it's produced.
+
+*A checklist label is a shopping instruction now.* Once `build_mixer_gap()`
+started naming ingredients in a banner that says "go get these", every label
+became load-bearing copy. `Grape Soda` was tolerable as a checklist row and
+indefensible as an instruction. Backlog #8 is the systematic version of the
+one-off audit that caught it.
+
+**One process note.** The deploy block was handed over without saying which
+machine it ran on and got pasted into PowerShell on the laptop instead of the
+server's Bash console. No damage — Windows has no `python3` and PowerShell 5.1
+has no `&&`, so it simply refused. The Deploy section now splits the two
+explicitly.
