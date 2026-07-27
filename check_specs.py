@@ -55,10 +55,17 @@ def load_corpus():
 METHOD_WORDS = {
     "shake": ("shake", "shaken", "shaking"),
     "stir": ("stir ", "stirred", "stir,", "stir."),
-    "build": ("build", "fill the glass", "top with", "pour in"),
+    "build": ("build", "fill the glass", "fill with", "top with", "top slowly",
+              "pour in", "pour into"),
     "blend": ("blend", "blender"),
     "swizzle": ("swizzle",),
     "muddle": ("muddle", "press"),
+    # Layered and poured drinks are a real build method, not a missing one.
+    # Without these the B-52, Death in the Afternoon and Mimosa all read as
+    # having no method at all, which is noise, and a checker that cries wolf
+    # gets ignored.
+    "layer": ("layer", "float", "over the back of a spoon"),
+    "pour": ("pour ", "poured"),
 }
 
 # Glasses that should basically never receive a shaken-and-strained drink
@@ -166,6 +173,19 @@ def check(name, r, valid_ings):
 
     # --- coverage: row present but never used in the steps ----------------
     for raw, meas, rtype, btype, ing_name, notes in r["ingredients"]:
+        # Bitters get their own rule. Generic keyword matching let the Mezcal
+        # Negroni's "Orange bitters" row count as covered because the method
+        # said "Express the orange peel", so a garnish was vouching for an
+        # ingredient it has nothing to do with. A bitters row is only covered
+        # if the method actually says "bitters" or names the brand.
+        if "bitters" in norm(raw):
+            brand = norm(raw).replace("bitters", "").strip()
+            covered = "bitters" in full or (len(brand) >= 4 and brand in full)
+            if not covered:
+                sev = "MINOR" if rtype == "optional" else "COVERAGE"
+                issues.append((sev, f"'{raw}' never mentioned in the instructions"))
+            continue
+
         kws = keywords(raw)
         if not kws:
             continue
@@ -212,9 +232,16 @@ def check(name, r, valid_ings):
     # --- method vs glass --------------------------------------------------
     methods = {m for m, words in METHOD_WORDS.items() if any(w in body for w in words)}
     glass = norm(r.get("glass"))
+    # A shaken drink strained into a tall glass is only odd if nothing is added
+    # afterwards. Collins and fizz drinks get topped with soda, and the Ramos
+    # is deliberately served with no ice at all, so the original form of this
+    # check flagged two correct recipes and nothing else.
     if "shake" in methods and any(g in glass for g in ("highball", "collins")) and "strain" in body:
-        if "over" not in body and "fresh ice" not in body:
-            issues.append(("MINOR", "shaken and strained into a tall glass with no ice step"))
+        tops_up = any(w in body for w in ("top with", "top up", "soda", "tonic",
+                                          "ginger", "champagne", "prosecco", "cola"))
+        has_ice = "over" in body or "fresh ice" in body
+        if not tops_up and not has_ice:
+            issues.append(("MINOR", "shaken and strained into a tall glass, no ice and nothing added"))
     if not methods and steps:
         issues.append(("MINOR", "no recognisable build method in the steps"))
 

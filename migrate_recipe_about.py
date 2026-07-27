@@ -148,7 +148,6 @@ INSTRUCTION_REWRITES = {
         "Add 1 oz light rum, 1/2 oz orgeat syrup, 1/2 oz triple sec and 1 1/2 oz sweet and sour to a shaker with ice.",
         "Shake hard until the tin is properly cold.",
         "Strain into a Collins glass over fresh ice.",
-        "Add a dash of Angostura over the top if you have it.",
         "Garnish with a cherry and hand it to someone who deserves a vacation.",
     ],
     "Mimosa": [
