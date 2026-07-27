@@ -24,5 +24,8 @@ uploads/
 # check_specs.py --json output. A point-in-time audit report, not source.
 spec_flags.json
 
+# sweep_namematch.py --json output. Same reasoning.
+sweep_namematch.json
+
 # Design mockups / explorations — reference only, not app code
 design_explorations/
