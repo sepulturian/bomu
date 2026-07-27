@@ -24,11 +24,16 @@ bottles logged.
 | 4 | lenasheh (Shehan) | 16 | 4 | 0 | 0 |
 | 5 | Maho | 1 | 12 | 1 | 0 |
 
-Just landed: the Grape Soda rename, a bug sweep (stored XSS on /recommend, the
-bulk scanner silently tagging unknown bottles as Gin, raw type slugs still
-leaking into My Bar), and photography on login/signup. Deployed and verified
-server-side: 17 makeable / 67 one-away, unchanged, which is the point — none of
-it was meant to move the numbers.
+Just landed (2026-07-26, commits `e4ead3b` and `9c034e0`): an About + Worth
+knowing section on every recipe, and the catalog audit that came out of writing
+it. `check_specs.py` went from 37 flagged recipes to 0.
+
+**The makeable column above is stale from here.** The name-matching fixes in
+that batch move the counts up and the Sazerac change can move one shelf down.
+Real per-user before/after numbers were never recorded on the server — the
+figures in the session log are from synthetic shelves against the stale local
+100-recipe database. **First job next session: run the counts on the server and
+correct this table.**
 
 Nothing is half-finished. Next session can start clean on the backlog below.
 
@@ -91,17 +96,35 @@ print(sorted(x['recipe']['name'] for x in r['makeable']))"
 If you must check in a browser, append a cache-busting query string.
 
 **Render every template before deploying template changes.** `py_compile` passes
-things that 500 on render — that's how `gap.items` nearly shipped. The reliable
-check is a scratch copy of the database plus Flask's test client walking every
-route. The 2026-07-25 harness lived in the agent's scratch space and is gone;
-rebuilding it took about ten minutes and caught nothing that session only because
-it had already caught things during development. Worth committing as
-`verify_routes.py` next time it gets written (backlog #6).
+things that 500 on render — that's how `gap.items` nearly shipped.
 
-The shape that works: copy `bomu.db` to `/tmp`, add the multi-user columns the
-local copy lacks, `DROP` the pre-multi-user `ratings`/`scan_log` so `init_db()`
-rebuilds them, point `database.DB_PATH` at the copy **before** importing `app`,
-then `test_client()` every route including the POST paths.
+`verify_routes.py` now exists and is committed (was backlog #6, written twice
+and thrown away before). Run it:
+
+```bash
+python3 verify_routes.py                 # against bomu.db
+python3 verify_routes.py --db copy.db     # against a migrated copy
+```
+
+It copies the database, brings the copy up to the multi-user schema, seeds one
+user with a shelf chosen to exercise the fungible / sub-typed / name-matched
+paths (an empty state renders fine and proves nothing), points
+`database.DB_PATH` at the copy **before** importing `app`, then walks every
+route logged out and logged in, including every recipe page and the POST paths.
+It also asserts `safe_bottle_type()` still coerces junk to `other`.
+
+**The `--db` form is the point when shipping a migration.** Run it once against
+the current database to prove the templates render *without* the new columns,
+so the code can deploy before the migration runs, then again against a migrated
+copy to prove they render *with* them.
+
+**Audit the catalog with `check_specs.py`.** Read-only, safe on the server, no
+arguments. It finds internal inconsistencies: rows the instructions never
+mention, measures that disagree between row and step, `ingredient` rows
+pointing at checklist names that don't exist, `bottle_type` rows with no type,
+name-matched rows that can never match. `--json` writes `spec_flags.json`
+(gitignored). It should report 0 flags; anything else is either a real bug or a
+gap in the checker, and both are worth ten minutes.
 
 ---
 
@@ -162,6 +185,34 @@ fails open rather than loudly. Validate in the import script, not here.
 - 98 have no `image_url` and fall back to a plain card — 57% of the catalog,
   since none of the 46 added on 2026-07-25 had images.
 
+**`about` and `tip` columns (added 2026-07-26).** Both nullable and both
+rendered behind an `{% if %}`, so a recipe missing them degrades to exactly the
+old page. `about` is 1-3 sentences of origin and flavour; `tip` is an optional
+technique note shown under "Worth knowing". All 171 have an `about`, 125 have a
+`tip`. Copy lives in `about_text.py`, keyed by recipe name.
+
+**`instructions` is now numbered steps and nothing else.** This is the load-
+bearing part. `instruction_steps()` in app.py splits on line breaks and does not
+care whether a line is prose or a step, so the flavour line every recipe opened
+with was rendering as **step 1** — "1. A Sour with a little more dignity." Same
+at the bottom: 31 recipes added on 07-24 and 07-25 ended with a trailing note
+that rendered as a final numbered step. Nobody reported it in three months.
+
+Anything that writes `instructions` must therefore write steps only. Prose
+belongs in `about` or `tip`. The rule is not enforced in code; `check_specs.py`
+catches violations under SHAPE.
+
+**Rules the copy in `about_text.py` follows**, and any addition should:
+
+- Nothing invented. Documented origin where one exists, "contested" where
+  sources disagree, and flavour-only where there is no real history. A
+  plausible-sounding invented origin is worse than no origin.
+- Tips are instructions, not trivia. A tip earns its place by changing what you
+  do. 46 recipes have no tip because there was nothing worth saying.
+- Steps name ingredients exactly as the `recipe_ingredients` rows do. A step
+  saying "orange liqueur" above a list saying "Triple sec" reads as two
+  different drinks on one page.
+
 ### ingredients
 
 Checklist rows are **user-facing shopping instructions**, not internal keys. The
@@ -190,6 +241,23 @@ cachaca and pisco) match by substring against the bottle's name. This means
 `notes` on those rows **must** contain a distinctive keyword of 4+ characters, or
 the requirement is permanently unsatisfiable. Campari must not match Cointreau
 just because both are liqueurs.
+
+Name matching is **accent-insensitive** as of 2026-07-26. `_fold()` normalises
+both sides. Before that, a row reading `Bénédictine` could never be satisfied by
+a bottle the user had typed `Benedictine`, while Bobby Burns (row:
+`Benedictine`) matched the same bottle fine. Same shelf, one drink visible and
+one not, nothing on screen to explain it.
+
+**Two traps to check whenever a name-matched row is added:**
+
+1. *Accents.* Covered by `_fold()` now, but `check_specs.py` still flags them
+   because an accented row is a smell even when it works.
+2. *Brand names where a category belongs.* The Sazerac required a bottle
+   literally named `Ricard` and the Zombie one named `Pernod`, while four other
+   anise drinks wanted `Absinthe`. A user with a bottle labelled Absinthe could
+   make four of the six. Requiring a brand is not a requirement, it is a typo
+   with consequences. `check_specs.py` knows about the anise and cherry-liqueur
+   families; add to `FAMILIES` there when a new one appears.
 
 ### Sub-types (added 2026-07-24)
 
@@ -361,10 +429,7 @@ without it keep the triangle deliberately, since it's the only affordance saying
 5. **Rum and gin sub-types.** Identical defect to the vermouth one already
    fixed: light vs aged vs Jamaican rum are not interchangeable, and sloe gin is
    a liqueur, not gin.
-6. **Commit a `verify_routes.py`.** The render harness gets rewritten from
-   scratch every session and thrown away. See the Verification section for the
-   shape that works. Cheap, and it's the only thing that catches render-time
-   template bugs.
+6. ~~**Commit a `verify_routes.py`.**~~ Done 2026-07-26. See Verification.
 7. **Ambiguous bottle prompts.** A one-tap "sweet or dry?" nudge in My Bar would
    resolve legacy generic bottles over time.
 8. **Audit the remaining checklist labels** the way `Grape Soda` was audited.
@@ -375,6 +440,18 @@ without it keep the triangle deliberately, since it's the only affordance saying
    images, so this is now 57% of the catalog).
 10. **Grow the catalog** past 171. Lowest priority: 2026-07-25 proved catalog
     size is not what's limiting anyone.
+11. **Record the real server counts** and fix the table at the top of this file.
+    The 2026-07-26 batch shipped without per-user before/after numbers, so the
+    actual impact of the name-matching fixes on Aaron and Shehan is unknown.
+12. **Sub-types for rum and gin** is #5, but the same class of defect now has a
+    second instance worth naming: `sherry` has no type at all. Adonis, Bamboo
+    and Sherry Cobbler all sit on `other` and match by the word "sherry", which
+    works but means fino, amontillado and cream sherry are interchangeable to
+    the matcher. Adonis specifically says cream sherry will ruin it.
+13. **The Sazerac base is a live judgement call.** Moved from bourbon to rye on
+    2026-07-26 for correctness, which *removes* the drink from a bourbon-only
+    shelf. `SAZERAC_BASE_TYPE` at the top of `fix_recipe_specs.py` reverts it in
+    one line. Revisit if anyone complains.
 
 ---
 
@@ -533,3 +610,84 @@ machine it ran on and got pasted into PowerShell on the laptop instead of the
 server's Bash console. No damage — Windows has no `python3` and PowerShell 5.1
 has no `&&`, so it simply refused. The Deploy section now splits the two
 explicitly.
+
+### 2026-07-26
+
+Asked for an "About this drink" section on the recipe page, plus a sanity check
+across all 171 recipes and a technique tip where there was one to give. The
+About section was the ask. The audit was where the value was.
+
+**Shipped, two commits.**
+
+- `e4ead3b` — `about` and `tip` columns, `about_text.py` (171 abouts, 125
+  tips), `migrate_recipe_about.py`, `fix_namematch_requirements.py`, accent
+  folding in `matching.py`, the recipe.html blocks, plus `check_specs.py` and
+  `verify_routes.py` as new permanent tools.
+- `9c034e0` — `fix_recipe_specs.py`: the Sazerac base spirit and the orphaned
+  bitters rows, plus two fixes to `check_specs.py` itself.
+
+**The request was a bug report and nobody knew it.** The example given was the
+Bee's Knees, whose page opens "1. A Sour with a little more dignity." That line
+is the first line of `instructions`, and `instruction_steps()` splits on line
+breaks without caring whether a line is prose. So every recipe in the catalog
+has been numbering its blurb as step 1, and 31 of the newer ones have been
+numbering a trailing note as the last step. Three months, five users, zero
+reports. The fix for the missing context and the fix for the phantom steps are
+the same change: get the prose out of `instructions`.
+
+**Five silent name-matching bugs**, none reported, all invisible by
+construction — the drink just never appears. Two accent traps (`Bénédictine`,
+`Crème de Cassis`, `Orange Curaçao`) and two brand-name-as-category splits
+(`Ricard` and `Pernod` against four recipes' `Absinthe`; `Cherry brandy`
+against `Cherry Heering`). Fixed in the data *and* in `_fold()`, because fixing
+only the rows leaves the hole open.
+
+**The Sazerac was specced with bourbon.** Canon is rye or cognac, the IBA spec
+is cognac, bourbon is a substitution. Tolerable until the About copy went in
+saying the drink is named for a cognac brand "before rye took over", at which
+point the page asserted one thing in prose and required another in the list.
+Moved to `rye`. This *removes* the drink from a bourbon-only shelf, which is a
+real cost and a judgement call, not an obvious fix — one-line revert documented
+in the script and in backlog #13.
+
+**Twelve orphaned bitters rows**, added by an old audit that never touched the
+instructions, so the ingredient list showed a dash of Angostura the method
+never mentioned. Not uniformly right, so not uniformly removed: six kept and
+named in the method (a Rob Roy without Angostura is not a Rob Roy; the Pisco
+Sour's dash goes on the foam, a technique the method was silently omitting) and
+seven removed as plausible-sounding but not part of the drink.
+
+**Impact.** `check_specs.py` 37 flagged recipes → 0. Counts measured on
+synthetic shelves against the local stale database: the about migration moved
+nothing (62/31 → 62/31, which was the design and the whole verification), the
+name-matching fixes gained 3, and the Sazerac change cost 1 on a bourbon-only
+shelf and 0 otherwise. **Real per-user numbers were never taken on the server.
+That is backlog #11 and the table at the top of this file is stale until it is
+done.**
+
+**Four lessons worth keeping.**
+
+*A cosmetic request was the only reason the step-1 bug got found.* Same shape as
+2026-07-24, where wiring up a label filter surfaced three real bugs. Twice now
+the small presentation task has been worth more than it looked. Take them.
+
+*Splitting migrations by expected effect is what made them verifiable.*
+`migrate_recipe_about.py` must not move the counts and
+`fix_namematch_requirements.py` must, so each one's number means something on
+its own. Bundled together, neither would have been checkable. Both were also
+tested for order-independence and idempotency by running all three in both
+orders twice and diffing the resulting databases byte for byte.
+
+*The audit tool missed a bug and that was the most useful thing it did.* Mezcal
+Negroni's orphaned `Orange bitters` row read as covered because the method said
+"express the orange peel" — a garnish vouching for an unrelated ingredient. It
+was found by hand. A checker that quietly passes bad data is worse than no
+checker, so bitters rows now need the word "bitters" or the brand. Two
+false-positive rules were also loosened, because a tool that cries wolf gets
+ignored and then it may as well not exist.
+
+*Every "no history" answer had to be allowed.* 46 of 171 recipes have no tip and
+a number have no origin story, because inventing a plausible one is the exact
+failure this app already has a history of: the Grape Soda label and the Vodka
+Cruiser were both the app being confidently wrong. Contested attributions are
+written as contested.
