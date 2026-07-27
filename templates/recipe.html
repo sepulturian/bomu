@@ -11,6 +11,16 @@
          style="width: 100%; max-width: 400px; border-radius: 8px; margin-bottom: 1.5rem;">
 {% endif %}
 
+{# About sits above the ingredients so it reads as an introduction rather than
+   an afterthought. Both fields are nullable, so a recipe without them renders
+   exactly as it did before this shipped. #}
+{% if recipe.about %}
+<h2>About this drink</h2>
+<div class="card" style="margin-bottom: 1.5rem;">
+    <p style="line-height: 1.65; margin: 0; color: var(--ink);">{{ recipe.about }}</p>
+</div>
+{% endif %}
+
 <h2>Ingredients</h2>
 <div class="card" style="margin-bottom: 1.5rem;">
     {% for i in ingredients %}
@@ -76,6 +86,18 @@
         <p style="line-height: 1.6; white-space: pre-wrap;">{{ recipe.instructions|clean_instructions }}</p>
     {% endif %}
 </div>
+
+{# The tip goes AFTER the steps but is written to be read before you start.
+   Gold rather than coral: coral means missing or wrong in this app and this is
+   neither. #}
+{% if recipe.tip %}
+<div class="card" style="margin-bottom: 1.5rem; border-left: 3px solid var(--gold);
+                         background: rgba(214, 168, 78, 0.07);">
+    <div style="font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase;
+                color: var(--gold); margin-bottom: 0.4rem;">Worth knowing</div>
+    <p style="line-height: 1.6; margin: 0; color: var(--ink);">{{ recipe.tip }}</p>
+</div>
+{% endif %}
 
 <h2>What did you think?</h2>
 <div style="display: flex; gap: 0.75rem; margin-bottom: 1.5rem;">

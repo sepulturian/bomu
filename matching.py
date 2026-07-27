@@ -14,7 +14,30 @@ Matching is split into two strategies:
   bottle just because they're both 'liqueur' type.
 """
 
+import unicodedata
+
 from database import get_all_recipes, get_all_bottles, get_all_ingredients, get_all_ratings
+
+
+def _fold(s):
+    """Lowercase and strip accents, for name matching only.
+
+    Name-matched requirements are satisfied by literal substring search against
+    the user's bottle names. That made the comparison accent-sensitive, so a
+    row reading 'Bénédictine' could never be satisfied by a bottle the user had
+    typed as 'Benedictine', which is how the label reads and how everyone types
+    it. Bobby Burns (row: 'Benedictine') matched the same bottle fine. Same
+    shelf, one drink visible and one not, with nothing on screen to explain it.
+
+    Folding here rather than fixing the affected rows is deliberate. The rows
+    were fixed too, in fix_namematch_requirements.py, but data fixes do not
+    stop the next accented liqueur from being typed in. Guard where the value
+    is consumed, not only where it is produced.
+    """
+    if not s:
+        return ""
+    s = unicodedata.normalize("NFKD", s)
+    return "".join(ch for ch in s if not unicodedata.combining(ch)).lower()
 
 
 # Category accepts THIS broader set when matching. e.g. recipe asks for
@@ -76,7 +99,7 @@ NOISE_WORDS = {"liqueur", "liquor", "(", ")", "the"}
 def _is_specialty(raw_name):
     if not raw_name:
         return False
-    lower = raw_name.lower()
+    lower = _fold(raw_name)
     return any(kw in lower for kw in SPECIALTY_KEYWORDS)
 
 
@@ -87,7 +110,7 @@ def _liqueur_keys(raw_name, notes):
     for source in (raw_name, notes):
         if not source:
             continue
-        s = source.lower()
+        s = _fold(source)
         keys.add(s.strip())
         # Strip noise words to get the brand/spirit name on its own
         cleaned = s
@@ -104,8 +127,8 @@ def _bottle_match_strings(bottles):
     """Build a list of lowercase 'name + brand' strings for substring matching."""
     out = []
     for b in bottles:
-        name = (b["name"] or "").lower()
-        brand = (b["brand"] or "").lower() if b["brand"] else ""
+        name = _fold(b["name"] or "")
+        brand = _fold(b["brand"] or "") if b["brand"] else ""
         out.append(f"{name} {brand}".strip())
     return out
 
@@ -194,7 +217,7 @@ def matching_user_bottles(ingredient, user_bottles):
         keys = _liqueur_keys(ingredient.get("raw_name"), ingredient.get("notes"))
         out = []
         for b in user_bottles:
-            bs = f"{b['name'] or ''} {b['brand'] or ''}".lower()
+            bs = _fold(f"{b['name'] or ''} {b['brand'] or ''}")
             for k in keys:
                 if len(k) >= 4 and k in bs:
                     out.append(b)
