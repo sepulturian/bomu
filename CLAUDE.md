@@ -13,29 +13,43 @@ Flask + SQLite, hosted on PythonAnywhere. Built for Aaron and his friends.
 
 ## Where things stand
 
-Live and healthy as of 2026-07-25. 171 recipes, 51 ingredients, 5 users, 35
-bottles logged.
+Live and healthy. 171 recipes, 51 ingredients, 5 users, 35 bottles logged.
 
-| id | user | bottles | mixers ticked | makeable | ratings |
+**Counts below were read off the live server on 2026-07-26** via
+`matching.get_recommendations()`, not simulated. This closes old backlog #11.
+
+| id | user | bottles | mixers ticked | makeable | one-away |
 |---|---|---|---|---|---|
-| 1 | aaron | 18 | 15 / 51 | 17 | 4 |
+| 1 | aaron | 18 | 16 / 51 | 22 | 72 |
 | 2 | Avishka | 0 | 0 | 0 | 0 |
 | 3 | Rajapaksha | 0 | 0 | 0 | 0 |
-| 4 | lenasheh (Shehan) | 16 | 4 | 0 | 0 |
-| 5 | Maho | 1 | 12 | 1 | 0 |
+| 4 | lenasheh (Shehan) | 16 | 4 | 0 | 14 |
+| 5 | Maho | 1 | 12 | 1 | 13 |
 
-Just landed (2026-07-26, commits `e4ead3b` and `9c034e0`): an About + Worth
-knowing section on every recipe, and the catalog audit that came out of writing
-it. `check_specs.py` went from 37 flagged recipes to 0.
+Aaron moved 17 → 22 across the 2026-07-26 work. Shehan is still on **0 makeable
+from 16 bottles**, which is the single worst number in this file and is backlog
+#2. Two users still have nothing at all (backlog #1).
 
-**The makeable column above is stale from here.** The name-matching fixes in
-that batch move the counts up and the Sazerac change can move one shelf down.
-Real per-user before/after numbers were never recorded on the server — the
-figures in the session log are from synthetic shelves against the stale local
-100-recipe database. **First job next session: run the counts on the server and
-correct this table.**
+Landed 2026-07-26: commits `e4ead3b` and `9c034e0` (About + Worth knowing on
+every recipe, plus the catalog audit that came out of writing it,
+`check_specs.py` 37 flagged → 0), then `055a96c` and `2745190`.
 
-Nothing is half-finished. Next session can start clean on the backlog below.
+### One thing IS half-finished
+
+`sweep_namematch.py` is committed and deployed at `2745190`, **and the deployed
+copy is wrong.** It reads the `ingredient_name` column where it must read
+`raw_name`, which makes it report roughly 35 false BROKEN rows out of 87. The
+corrected version is sitting uncommitted on the laptop. Next session:
+
+```powershell
+cd "C:\Users\sepulturian\Documents\Claude\projects\bomu"
+del .git\index.lock
+git add -A
+git commit -m "sweep_namematch: read raw_name, not ingredient_name"
+git push origin main
+```
+
+Do not trust any output from the server copy until that lands.
 
 ---
 
@@ -126,6 +140,28 @@ name-matched rows that can never match. `--json` writes `spec_flags.json`
 (gitignored). It should report 0 flags; anything else is either a real bug or a
 gap in the checker, and both are worth ten minutes.
 
+**Audit name matching with `sweep_namematch.py`** (added 2026-07-26). Read-only,
+opens the database `mode=ro`, safe on the live server with no backup. It answers
+one question `check_specs.py` does not: can this name-matched row ever be a
+substring of a real bottle name?
+
+```bash
+python3 sweep_namematch.py            # ./bomu.db
+python3 sweep_namematch.py --json     # also writes sweep_namematch.json (gitignored)
+```
+
+Three sections. **BROKEN** is certain and needs no judgement: every key carries
+punctuation or a connective, so no bottle name can contain it. **REVIEW**
+deliberately over-flags any key needing more than two words, because there is no
+way to tell `White Creme de Cacao` (a real product) from `Blue Curacao orange
+liqueur` (a product wearing a description) without knowing the products; expect
+false positives there and read them. **IMPACT** is per user and is a *candidate*
+count, not a count of drinks unlocked, since the recipe may be blocked by
+something else too.
+
+Live baseline on 2026-07-26: **87 name-matched rows, 1 BROKEN, 6 REVIEW**, and
+all 6 REVIEW entries were confirmed false positives by hand.
+
 ---
 
 ## Gotchas
@@ -171,6 +207,26 @@ The important table. `requirement_type` is one of:
 | `bottle_type` | needs a bottle. See matching rules below. |
 | `ingredient` | matches the user's Mixers checklist by exact `ingredient_name`. Must already exist in `ingredients` (51 rows) or it can never be satisfied. |
 | `optional` | garnishes, rinses, floats. Never blocks makeability. |
+
+**`raw_name` and `ingredient_name` are two different columns and confusing them
+is expensive.** Full column list: `id`, `recipe_id`, `raw_name`, `raw_measure`,
+`requirement_type`, `bottle_type`, `ingredient_name`, `notes`, `sort_order`.
+
+| column | holds | NULL when |
+|---|---|---|
+| `raw_name` | the product name, e.g. `Creme de Cassis`, `Pimm's No. 1` | rarely |
+| `ingredient_name` | a key into the Mixers checklist | **always, on every `bottle_type` row** |
+
+The matcher reads **`raw_name`** everywhere it does name matching:
+`_liqueur_satisfied`, `match_recipe`, `missing_ingredient_ids` all use
+`ing["raw_name"]`. `notes` is a second chance at a match, not the primary key.
+
+On 2026-07-26 a new audit script read `ingredient_name` on bottle rows, got
+NULL for all of them, and so judged every row on its descriptive `notes` string
+alone. It reported **35 broken rows out of 84. The real number was 1 out of 87.**
+Reading the wrong column here does not under-report, it invents a catastrophe,
+and the invented version is convincing because the notes really are prose.
+Check which column a script reads before believing what it says.
 
 A `bottle_type` row with a NULL/empty `bottle_type` is **silently skipped** by
 both `match_recipe` and `missing_ingredient_ids` — it can never block a drink.
@@ -241,6 +297,20 @@ cachaca and pisco) match by substring against the bottle's name. This means
 `notes` on those rows **must** contain a distinctive keyword of 4+ characters, or
 the requirement is permanently unsatisfiable. Campari must not match Cointreau
 just because both are liqueurs.
+
+Keys come from `_liqueur_keys(raw_name, notes)`, which returns **whole strings
+only**: the folded source, plus one variant with `NOISE_WORDS` removed. It never
+splits a string into candidate sub-names. So a source that reads like a sentence
+is unsatisfiable, because no bottle is named `Elderflower Liqueur (St-Germain)`.
+This is what `sweep_namematch.py` audits. Two known sharp edges:
+
+- `NOISE_WORDS` is applied by plain `str.replace`, not word boundaries, so
+  `"the"` is stripped from inside words: `Green Creme de Menthe` also yields the
+  key `green creme de men`. Harmless today only because the unstripped key still
+  matches. Word-boundary replacement would fix it (backlog #14).
+- Brackets are in `NOISE_WORDS` but their *contents* are not, so
+  `Cointreau (orange liqueur)` yields `cointreau orange`, splicing two words
+  that were never adjacent. Neither key matches a bottle named `Cointreau`.
 
 Name matching is **accent-insensitive** as of 2026-07-26. `_fold()` normalises
 both sides. Before that, a row reading `Bénédictine` could never be satisfied by
@@ -440,9 +510,8 @@ without it keep the triangle deliberately, since it's the only affordance saying
    images, so this is now 57% of the catalog).
 10. **Grow the catalog** past 171. Lowest priority: 2026-07-25 proved catalog
     size is not what's limiting anyone.
-11. **Record the real server counts** and fix the table at the top of this file.
-    The 2026-07-26 batch shipped without per-user before/after numbers, so the
-    actual impact of the name-matching fixes on Aaron and Shehan is unknown.
+11. ~~**Record the real server counts.**~~ Done 2026-07-26, table at the top of
+    this file is now live data read via `matching.get_recommendations()`.
 12. **Sub-types for rum and gin** is #5, but the same class of defect now has a
     second instance worth naming: `sherry` has no type at all. Adonis, Bamboo
     and Sherry Cobbler all sit on `other` and match by the word "sherry", which
@@ -452,6 +521,18 @@ without it keep the triangle deliberately, since it's the only affordance saying
     2026-07-26 for correctness, which *removes* the drink from a bourbon-only
     shelf. `SAZERAC_BASE_TYPE` at the top of `fix_recipe_specs.py` reverts it in
     one line. Revisit if anyone complains.
+14. **Push the corrected `sweep_namematch.py`.** The deployed copy at `2745190`
+    reads the wrong column and reports ~35 false BROKEN rows. Fix is written and
+    sitting uncommitted on the laptop. Do this before running it again. See
+    "Where things stand".
+15. **Hugo Spritz, `recipe_ingredients` row 398.** The one genuine BROKEN row on
+    the live server. `raw_name` is `Elderflower Liqueur (St-Germain)`; the
+    brackets make every key it generates unmatchable, so the drink can never
+    appear for anybody. Verified against three plausible bottle names, all
+    False. Set `raw_name` to `St-Germain` or `Elderflower Liqueur`. Zero users
+    own an elderflower liqueur today, so this is correctness, not impact.
+16. **Word-boundary `NOISE_WORDS` in `_liqueur_keys`.** `str.replace` strips
+    `"the"` from inside `Menthe`. Latent, not currently biting. See The matcher.
 
 ---
 
@@ -691,3 +772,67 @@ a number have no origin story, because inventing a plausible one is the exact
 failure this app already has a history of: the Grape Soda label and the Vodka
 Cruiser were both the app being confidently wrong. Contested attributions are
 written as contested.
+
+### 2026-07-26 (second session)
+
+Started as a one-line question — "are peach schnapps and triple sec in the
+Mixers checklist?" — and turned into a false alarm that took most of the
+session, plus the real server counts that had been outstanding since the
+morning.
+
+**The answer to the question.** No, and they never should be. Liqueurs are
+`bottle_type` requirements matched by name against My Bar. The Mixers checklist
+is non-alcoholic (juices, sodas, syrups, bitters, garnishes, pantry) with four
+deliberate exceptions: Champagne, Prosecco, Red Wine, White Wine. A checklist
+tick would make Campari and Cointreau interchangeable, which is the whole thing
+`NAME_MATCH_TYPES` exists to prevent.
+
+**Shipped, one commit.** `2745190`, `sweep_namematch.py`. **It is wrong as
+deployed** — see backlog #14 — and the correction is uncommitted on the laptop.
+
+**The false alarm, which is the thing worth remembering.** Investigating the
+question, an ad-hoc query read `notes` on the liqueur rows, saw prose like
+`Campari specifically` and `Cointreau (orange liqueur)`, and concluded the
+matcher could never satisfy them. That was reported confidently, with a table,
+across two messages. A sweep script was then built around the same assumption
+and it read `ingredient_name` — NULL on every bottle row — so it agreed. **35
+BROKEN out of 84.** The number was fabricated by reading the wrong column, and
+it was convincing precisely because the notes really are prose.
+
+Reading `raw_name`, which is what `matching.py` actually uses, the same live
+database gives **1 BROKEN out of 87**, and the 6 REVIEW rows are all false
+positives confirmed by hand. The catalog was fine the whole time. The single
+real bug is Hugo Spritz, backlog #15, which affects nobody because no user owns
+an elderflower liqueur.
+
+**Real server counts, closing backlog #11.** Read via
+`matching.get_recommendations()`, table at the top of this file updated. Aaron
+17 → 22 makeable across the 2026-07-26 work. Shehan still 0 from 16 bottles.
+
+**Four lessons worth keeping.**
+
+*The wrong column does not under-report, it invents a catastrophe.* An audit
+tool reading a NULL column does not go quiet, it flags everything, and every
+flag comes with real-looking evidence attached. `check_specs.py` was written
+carefully against the right fields; this one was written in an afternoon against
+a field name that looked right. Before believing any audit output, check which
+column the query selects against what the consuming code reads.
+
+*Verify against the consumer, not against the data.* The whole error chain would
+have been cut at minute one by opening `matching.py` and grepping for what
+`_liqueur_satisfied` is passed. That grep was finally run only after the numbers
+stopped making sense. CLAUDE.md already said "verify through the matcher, not
+the browser" after the 2026-07-24 cached-Boulevardier hour; the same rule
+applies to verifying through the matcher rather than through the schema.
+
+*Confidence scaled with the size of the wrong number.* 35 broken rows out of 84
+should have read as implausible on its face, because five users have been using
+this app for three months and Aaron has 22 makeable drinks. A defect rate that
+high is not consistent with the app working. Treat a shocking audit result as
+evidence about the audit first.
+
+*The stale local database is now actively dangerous, not just useless.* Every
+wrong step this session came from developing against a 100-recipe pre-multi-user
+copy where `ingredient_name` being NULL looked normal. Backlog #4 has been
+sitting at "highest-value chore outstanding" since 2026-07-24. It just cost a
+session.

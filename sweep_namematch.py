@@ -36,6 +36,14 @@ WHAT IT REPORTS
            quoting it. (CLAUDE.md, 2026-07-25: simulating against an idealised
            bar overestimated by 5x.)
 
+READ raw_name, NOT ingredient_name
+
+`recipe_ingredients` carries both columns and they mean different things. On a
+bottle_type row, `ingredient_name` is NULL and `raw_name` holds the product
+name. matching.py reads `raw_name`. Reading the wrong one makes every row look
+broken, because the clean single-product key vanishes and only the descriptive
+`notes` string is left. See the comment on the query in main().
+
 SAFETY
 
 Read-only. Opens the database with mode=ro and issues no writes, so it is safe
@@ -209,8 +217,19 @@ def main():
     con = sqlite3.connect("file:%s?mode=ro" % db_path, uri=True)
     con.row_factory = sqlite3.Row
 
+    # raw_name, NOT ingredient_name. `recipe_ingredients` has both, and they are
+    # not interchangeable: `ingredient_name` points at the Mixers checklist and
+    # is NULL on every bottle_type row, while `raw_name` holds the product name
+    # the matcher actually uses. matching.py reads ing["raw_name"] in
+    # _liqueur_satisfied, match_recipe and missing_ingredient_ids.
+    #
+    # The first version of this script read ingredient_name and so fed None as
+    # the raw name, throwing away the clean key on every single row. It reported
+    # 35 BROKEN and 8 REVIEW out of 84. Reading the right column, the same data
+    # is 1 BROKEN and 6 REVIEW out of 87. A checker that reads the wrong column
+    # does not under-report, it invents a catastrophe.
     rows = con.execute(
-        "SELECT r.id recipe_id, r.name recipe, ri.id row_id, ri.ingredient_name n,"
+        "SELECT r.id recipe_id, r.name recipe, ri.id row_id, ri.raw_name n,"
         "       ri.notes nt, ri.bottle_type bt "
         "FROM recipe_ingredients ri JOIN recipes r ON r.id = ri.recipe_id "
         "WHERE ri.requirement_type = 'bottle_type' "
