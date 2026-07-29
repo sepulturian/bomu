@@ -109,8 +109,9 @@
 <h2>Make it your own</h2>
 <div class="card" style="margin-bottom: 1.5rem;">
     <p style="font-size: 0.85rem; color: var(--ink-dim); margin: 0 0 0.9rem; line-height: 1.5;">
-        Optional. The drink is complete without all of these. Each one is a
-        documented variation, not our invention.
+        Optional. The drink is complete without all of these. Every one says where
+        it comes from, so you can tell a printed recipe from something bartenders
+        just do.
     </p>
     {% for e in enhancements %}
         <div style="padding: 0.6rem 0; {% if not loop.last %}border-bottom: 1px solid var(--card-border);{% endif %}">
@@ -132,9 +133,15 @@
                     Not on your list yet: {{ e.ingredient_name }}
                 </div>
             {% endif %}
+            {# A citation and "this is just what people do" must not look alike.
+               A named source gets "Source:"; unsourced practice says so in its
+               own words and drops the label, because prefixing it with "Source:"
+               is exactly the dressing-up that rule 1 forbids. #}
             {% if e.source %}
-                <div style="font-size: 0.75rem; color: var(--ink-dim); opacity: 0.75; margin-top: 0.3rem;">
-                    Source: {{ e.source }}
+                {% set is_practice = 'Common bar practice' in e.source %}
+                <div style="font-size: 0.75rem; margin-top: 0.3rem; color: var(--ink-dim);
+                            {% if is_practice %}opacity: 0.6; font-style: italic;{% else %}opacity: 0.8;{% endif %}">
+                    {% if is_practice %}{{ e.source }}{% else %}Source: {{ e.source }}{% endif %}
                 </div>
             {% endif %}
         </div>

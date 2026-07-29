@@ -146,11 +146,24 @@ def build_plan(conn, allow_missing_recipes=False):
                 )
                 continue
             if ing and ing.lower() in already_shown:
-                problems.append(
-                    f"{recipe_name} / {name}: {ing!r} is already on this "
-                    f"recipe's ingredient list (required or optional). It "
-                    f"would appear twice on the page. Either set ingredient "
-                    f"to None if this is a technique note, or drop the entry."
+                # A WARNING, not an error, and this distinction matters.
+                #
+                # Whether a collision exists is a property of the database, not
+                # of enhance_text.py: the local copy is a stale 100-recipe
+                # snapshot and the live server has had rows added and removed
+                # since. The Negroni is the worked example -- the local copy
+                # still carries an optional orange bitters row, the live server
+                # does not, because it was one of seven removed on 2026-07-26.
+                # The same entry is therefore correct on one database and a
+                # duplicate on the other, and only the database can say which.
+                #
+                # Aborting the whole run over one collision would also mean a
+                # single already-present garnish blocks 160 unrelated rows from
+                # landing. Skip the row, say so loudly, keep going.
+                warnings.append(
+                    f"SKIPPED {recipe_name} / {name}: {ing!r} is already on "
+                    f"this recipe's ingredient list, so it would render twice. "
+                    f"Nothing to fix unless you expected it to appear."
                 )
                 continue
 
@@ -200,11 +213,21 @@ def main():
     rows, problems, warnings = build_plan(conn, args.allow_missing_recipes)
 
     if warnings:
-        print(f"{len(warnings)} WARNING(S), skipped rather than written.")
-        print("(--allow-missing-recipes is on. Do not use it on the server.)\n")
-        for w in warnings:
-            print("  -", w)
-        print()
+        skips = [w for w in warnings if w.startswith("SKIPPED")]
+        missing = [w for w in warnings if not w.startswith("SKIPPED")]
+        if missing:
+            print(f"{len(missing)} recipe(s) in enhance_text.py are not in this "
+                  f"catalog. --allow-missing-recipes is on, so these were "
+                  f"skipped instead of failing. Never pass that flag on the "
+                  f"server, where a name that does not match is a typo.\n")
+            for w in missing:
+                print("  -", w)
+            print()
+        if skips:
+            print(f"{len(skips)} entr(ies) skipped as already-shown:\n")
+            for w in skips:
+                print("  -", w)
+            print()
 
     if problems:
         print(f"{len(problems)} PROBLEM(S). Nothing will be written.\n")
