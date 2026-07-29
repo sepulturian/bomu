@@ -443,8 +443,37 @@ def get_recipe(recipe_id):
         "SELECT * FROM recipe_ingredients WHERE recipe_id = ? ORDER BY sort_order",
         (recipe_id,),
     ).fetchall()
+    enh = get_recipe_enhancements(conn, recipe_id)
     conn.close()
-    return {"recipe": dict(recipe), "ingredients": [dict(i) for i in ings]}
+    return {
+        "recipe": dict(recipe),
+        "ingredients": [dict(i) for i in ings],
+        "enhancements": enh,
+    }
+
+
+def get_recipe_enhancements(conn, recipe_id):
+    """Documented optional additions for a recipe -- the "Make it your own"
+    block. Deliberately a separate table from recipe_ingredients:
+
+    - The matcher never reads it, so nothing here can change what a user can
+      make. That is the whole point. An enhancement is a suggestion, not part
+      of the spec, and the 2026-07-26 session spent an afternoon separating
+      those two ideas after twelve orphaned bitters rows blurred them.
+    - Every row carries a `source`, because the standing rule in about_text.py
+      is that nothing is invented. A suggestion with no citation does not ship.
+
+    Returns [] if the table does not exist yet, so the code can be deployed
+    before the migration is run -- the same order the About columns shipped in.
+    """
+    try:
+        rows = conn.execute(
+            "SELECT * FROM recipe_enhancements WHERE recipe_id = ? ORDER BY sort_order",
+            (recipe_id,),
+        ).fetchall()
+    except sqlite3.OperationalError:
+        return []
+    return [dict(r) for r in rows]
 
 
 def recipe_count():

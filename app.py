@@ -265,19 +265,35 @@ def clean_notes(notes):
     return cleaned.strip().strip(",;").strip()
 
 
+# Leading enumerator on a stored instruction line: "1. ", "2) ", "3 - ".
+# The stored text carries these because the source recipes were written as
+# numbered lists, and recipe.html then wraps the result in an <ol>, so every
+# step rendered as "1. 1. Fill an old-fashioned glass with ice." Stripping here
+# rather than in the data keeps the fix in one place and makes it apply to any
+# future import that arrives pre-numbered.
+#
+# Deliberately requires a separator (. ) - ) after the digits AND whitespace
+# after that, so a step legitimately opening with a measure ("2 oz gin into the
+# shaker") is left alone. "1/2 lemon, muddled" is safe for the same reason.
+_LEADING_ENUM = re.compile(r"^\s*\d{1,2}\s*[.)\-]\s+")
+
+
 def instruction_steps(text):
     """Split instruction prose into a list of steps for numbered display.
     Prefers explicit line breaks; falls back to sentence boundaries. A recipe
     that's genuinely one sentence comes back as a single step and the
-    template renders it as plain prose."""
+    template renders it as plain prose.
+
+    Any leading "1." / "2)" the stored text carries is stripped, because the
+    template numbers the steps itself."""
     text = clean_instructions(text)
     if not text:
         return []
     lines = [l.strip() for l in text.splitlines() if l.strip()]
     if len(lines) > 1:
-        return lines
+        return [_LEADING_ENUM.sub("", l).strip() for l in lines]
     parts = re.split(r"(?<=[.!?])\s+", lines[0])
-    return [p.strip() for p in parts if p.strip()]
+    return [_LEADING_ENUM.sub("", p).strip() for p in parts if p.strip()]
 
 
 # Bottle types offered in the UI, as (stored value, label shown to the user).
@@ -815,6 +831,18 @@ def recipe(recipe_id):
     # Which ingredients can't be fulfilled by the user's current bar?
     missing_ids = missing_ingredient_ids(r, bottles, stocked)
 
+    # "Make it your own" suggestions. These never affect makeability -- the
+    # matcher does not read this table -- so the only per-user state here is
+    # cosmetic: whether the user already has the thing on their Mixers list.
+    # .get() rather than [] because an older database with no enhancements
+    # table returns a recipe dict without the key.
+    enhancements = r.get("enhancements", [])
+    enhancement_have = {
+        e["id"]
+        for e in enhancements
+        if e["ingredient_name"] and e["ingredient_name"].lower() in stocked
+    }
+
     return render_template(
         "recipe.html",
         recipe=r["recipe"],
@@ -822,6 +850,8 @@ def recipe(recipe_id):
         bottle_hints=bottle_hints,
         ingredient_have=ingredient_have,
         missing_ids=missing_ids,
+        enhancements=enhancements,
+        enhancement_have=enhancement_have,
         rating=get_rating(uid(), recipe_id),
     )
 

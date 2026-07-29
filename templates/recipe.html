@@ -99,6 +99,49 @@
 </div>
 {% endif %}
 
+{# "Make it your own" is deliberately BELOW the method and visually separate
+   from the Ingredients card. Everything here is a documented variation, not
+   part of the drink, and putting it in the ingredient list would re-blur the
+   line the 2026-07-26 bitters cleanup drew. Nullable by construction: a recipe
+   with no enhancements renders exactly the page it rendered before this
+   shipped, and so does an older database with no enhancements table at all. #}
+{% if enhancements %}
+<h2>Make it your own</h2>
+<div class="card" style="margin-bottom: 1.5rem;">
+    <p style="font-size: 0.85rem; color: var(--ink-dim); margin: 0 0 0.9rem; line-height: 1.5;">
+        Optional. The drink is complete without all of these. Each one is a
+        documented variation, not our invention.
+    </p>
+    {% for e in enhancements %}
+        <div style="padding: 0.6rem 0; {% if not loop.last %}border-bottom: 1px solid var(--card-border);{% endif %}">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 1rem;">
+                <div style="font-size: 0.98rem; color: var(--ink);">{{ e.name }}</div>
+                {% if e.measure %}
+                    <div style="font-size: 0.85rem; color: var(--ink-dim); white-space: nowrap;">{{ e.measure }}</div>
+                {% endif %}
+            </div>
+            {% if e.note %}
+                <div style="font-size: 0.85rem; color: var(--ink-dim); margin-top: 0.2rem; line-height: 1.5;">{{ e.note }}</div>
+            {% endif %}
+            {% if e.id in enhancement_have %}
+                <div style="font-size: 0.85rem; color: var(--green); margin-top: 0.25rem;">
+                    &#10003; In your stock
+                </div>
+            {% elif e.ingredient_name %}
+                <div style="font-size: 0.85rem; color: var(--ink-dim); margin-top: 0.25rem;">
+                    Not on your list yet: {{ e.ingredient_name }}
+                </div>
+            {% endif %}
+            {% if e.source %}
+                <div style="font-size: 0.75rem; color: var(--ink-dim); opacity: 0.75; margin-top: 0.3rem;">
+                    Source: {{ e.source }}
+                </div>
+            {% endif %}
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
+
 <h2>What did you think?</h2>
 <div style="display: flex; gap: 0.75rem; margin-bottom: 1.5rem;">
     <form method="POST" action="/rate/{{ recipe.id }}" style="flex: 1; margin: 0;">

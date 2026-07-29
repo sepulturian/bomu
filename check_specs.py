@@ -46,10 +46,74 @@ def load_corpus():
                 [i["raw_name"], i["raw_measure"], i["requirement_type"],
                  i["bottle_type"], i["ingredient_name"], i["notes"]] for i in ings
             ],
+            "enhancements": _enhancements(conn, r["id"]),
         }
     valid = {row[0] for row in conn.execute("SELECT name FROM ingredients")}
     conn.close()
     return corpus, valid
+
+
+def _enhancements(conn, recipe_id):
+    """"Make it your own" rows. Returns [] if the table does not exist, so this
+    checker still runs on a database that predates migrate_enhancements.py."""
+    try:
+        rows = conn.execute(
+            "SELECT name, ingredient_name, measure, note, source "
+            "FROM recipe_enhancements WHERE recipe_id = ? ORDER BY sort_order",
+            (recipe_id,),
+        ).fetchall()
+    except sqlite3.OperationalError:
+        return []
+    return [dict(r) for r in rows]
+
+
+def check_enhancements(name, r, valid_ings):
+    """Audit the "Make it your own" block.
+
+    Everything here is a suggestion rather than part of the drink, which makes
+    it MORE dangerous to get wrong, not less: the reader has no way to tell an
+    invented suggestion from a documented one, and this app has a history of
+    being confidently wrong in exactly that way. So the rules are strict.
+    """
+    issues = []
+    shown = set()
+    for i in r["ingredients"]:
+        for v in (i[0], i[4]):          # raw_name, ingredient_name
+            if v:
+                shown.add(norm(v))
+
+    seen = set()
+    for e in r["enhancements"]:
+        label = e["name"]
+
+        # Rule 1 of enhance_text.py, enforced against the data rather than the
+        # source file, because the source file is not what the app renders.
+        if not (e["source"] or "").strip():
+            issues.append(("DATA", f"enhancement '{label}' has no source; "
+                                   f"nothing in this app ships uncited"))
+
+        # A suggestion with no reason to act on it is decoration.
+        if not (e["note"] or "").strip():
+            issues.append(("MINOR", f"enhancement '{label}' has no note, so it "
+                                    f"tells the reader nothing they can act on"))
+
+        # Same failure the twelve orphaned bitters rows were: the page says one
+        # thing in one place and something else in another.
+        ing = e["ingredient_name"]
+        if ing and norm(ing) in shown:
+            issues.append(("COVERAGE", f"enhancement '{label}' links to '{ing}', "
+                                       f"which is already in the ingredient list; "
+                                       f"it renders twice on one page"))
+        if ing and ing not in valid_ings:
+            issues.append(("DATA", f"enhancement '{label}' links to '{ing}', "
+                                   f"which is not a row in the ingredients "
+                                   f"checklist and can never be ticked"))
+
+        if norm(label) in seen:
+            issues.append(("DATA", f"enhancement '{label}' appears twice"))
+        seen.add(norm(label))
+
+    return issues
 
 # Words that appear in a step to signal the build method.
 METHOD_WORDS = {
@@ -328,7 +392,9 @@ def main():
     flagged = {}
     nm = check_name_matching(corpus)
     for name, r in sorted(corpus.items()):
-        iss = check(name, r, valid) + nm.get(name, [])
+        iss = (check(name, r, valid)
+               + nm.get(name, [])
+               + check_enhancements(name, r, valid))
         if iss:
             flagged[name] = iss
             for sev, msg in iss:
