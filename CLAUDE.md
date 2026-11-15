@@ -492,9 +492,17 @@ Aaron.
 
 ## Templates
 
-Design system lives in one `<style>` block in `base.html`: warm editorial dark
-palette (`--coral` #e9694a, `--gold` #d6a84e over charcoal-brown), Bodoni Moda
-for display, Poppins for body. Page-specific styling is inline. That's fine at
+Design system lives in one `<style>` block in `base.html` ("Espresso & Zest"
+since `07db78f`): espresso surfaces (`--bg-base` #110d0a), `--zest` #f4c430
+yellow, sage / terracotta for status, Barlow Condensed for display, Plus Jakarta
+Sans for body. (Until 2026-11-15 this line still described the pre-redesign
+coral / Bodoni Moda / Poppins system.) Page-specific styling is inline.
+
+**Buttons are "stamped", not pills** (2026-11-15): flat face, `--radius-btn`
+4px, solid offset shadow with no blur, pressing slides the face into it. Each
+variant only sets `--btn-shadow`; `.btn-sm` shrinks `--btn-offset`. Aaron
+called the glossy gradient pill "an AI giveaway" — don't reintroduce gradients,
+glows or 999px radii on buttons. Chips and status pills stay rounded on purpose. That's fine at
 this size, but anything reused across two templates belongs in `base.html` —
 the login/signup password fields carried a hardcoded copy of the shared input
 rule, complete with a stale border colour, until 2026-07-25.
@@ -591,6 +599,9 @@ without it keep the triangle deliberately, since it's the only affordance saying
     `.env` (`DATABASE_URL`, `DATABASE_URL_UNPOOLED`). Aaron's action.
 18. **Optional: Porkbun DNS to per-project Vercel targets.** Current records work;
     see the 2026-11-15 (first) log entry for the suggested values.
+19. **Sign-out unreachable for cookies without `username`.** See the 2026-11-15
+    (fifth) log entry. Fill `current_username` from the DB when only
+    `user_id` is in the session.
 
 ---
 
@@ -1070,3 +1081,46 @@ One Away in the browser on a scratch copy.
 **Open at close of day:** Hugo Spritz row 398 (#15), Shehan 0 from 16 (#2,
 the Amaretto spotlight may now help), never-started users (#1), and the leaked
 connection string + Neon password rotation (#17, Aaron's action).
+
+### 2026-11-15 (fifth session) — Header, login photo, stamped buttons (Claude Code)
+
+Aaron asked for three visual changes and to be asked questions first.
+
+**Shipped:** `e6b89f6`, templates only (`base.html`, `login.html`,
+`signup.html`, `recipe.html`), pushed and confirmed live on www.bomu.lol.
+
+- *Header:* avatar dropdown replaced by plain text `aaron · out`, the style the
+  app used before the redesign. "out" opens a `<dialog>`: "Calling it a
+  night?" / "One more round" (stay, autofocused) / "Close my tab" (POST
+  `/logout`). Aaron proposed "One for the road" for the stay button; changed
+  because it idiomatically means a last drink *before leaving*, so it reads
+  as "yes" on a leaving prompt. His call to revert, one line in `base.html`.
+  Backdrop tap closes via `closedby="any"` plus a bounds-checked JS fallback
+  (a bare `e.target === dlg` check also fires on the dialog's own padding).
+- *Login/signup photo:* `aspect-ratio: 3/2` + `max-height: 210px` transfers
+  to a ~315px width, so the card sat left under a 420px form. Now
+  `max-width: 315px; margin: 0 auto`. Aaron chose centred-same-size over
+  full width.
+- *Buttons:* see Templates. Shadow colour picked by rendering four candidates
+  side by side: `#8a6410` was invisible on the espresso background, cream read
+  grey, terracotta added a second accent to every button; amber `#b07d0c` won.
+  Recipe dock Back / Liked / Pass converted too. Chips, filter toggles and
+  status pills deliberately untouched ("buttons only").
+
+**Verified:** `verify_routes.py` passes; on a scratch copy of `bomu.db`
+(`FORCE_SQLITE=1`) checked login, Tonight, the dialog's three exits and the
+recipe dock at desktop and 375px. Live: `/login` serves the new CSS. The
+logged-in header was not checked on live.
+
+**Gotchas:**
+- *A session cookie with `user_id` but no `username` hides the account UI
+  entirely.* `current_username` comes from `session["username"]`; the browser
+  pane had an old cookie like that and showed no header text at all. Any real
+  user with such a cookie has no way to sign out short of clearing cookies.
+  Pre-existing (the avatar had the same gate). Cheap fix: look the name up in
+  the context processor when `user_id` is set and `username` isn't. Backlog #19.
+- *The local preview runs `debug=False`, so Jinja caches templates;* restart
+  the server after a template edit or you'll be checking the old render.
+
+**Open:** #19 below, plus Hugo Spritz row 398 (#15), Shehan 0 from 16 (#2),
+never-started users (#1), leaked connection string + Neon password (#17).
