@@ -1,5 +1,6 @@
 import sqlite3
 import os
+import re
 
 DEFAULT_DB_PATH = os.path.join(os.path.dirname(__file__), "bomu.db")
 DB_PATH = DEFAULT_DB_PATH
@@ -10,7 +11,13 @@ def _pg_url():
         return None  # verify_routes.py overrides DB_PATH to a scratch SQLite file
     if os.environ.get("FORCE_SQLITE") == "1":
         return None
-    return os.environ.get("DATABASE_URL") or os.environ.get("POSTGRES_URL")
+    raw = os.environ.get("DATABASE_URL") or os.environ.get("POSTGRES_URL")
+    if not raw:
+        return None
+    url = raw.strip().strip("'\"")
+    url = re.sub(r"(^|[?&])channel_binding=[^&]*&?", r"\1", url)
+    url = url.replace("?&", "?").rstrip("?&")
+    return url
 
 
 def _is_postgres():
