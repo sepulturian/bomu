@@ -866,3 +866,36 @@ in the prompt. Recipe images: 6-image style test before generating the other 92.
 
 **Priorities, Aaron's call:** aesthetic, usability and navigation. Friends'
 feedback is explicitly not an input for this redesign.
+
+### 2026-11-15 — Moved to Vercel + Neon + bomu.lol (handoff)
+
+**Live site:** https://www.bomu.lol (apex `bomu.lol` 308-redirects to www). Replaces
+the old PythonAnywhere host.
+
+**Hosting:** Vercel project `sepulturian/bomu`, Flask preset, `vercel.json` routes
+to `app.py`. Pushing to `main` on `github.com/sepulturian/bomu` auto-deploys.
+
+**DNS:** Domain registered at Porkbun. Records: `A @ -> 76.76.21.21`,
+`CNAME www -> cname.vercel-dns.com`. Vercel's Domains page suggests newer
+per-project targets (`216.198.79.1`, a `*.vercel-dns-017.com` CNAME); the old ones
+still work.
+
+**Database:** Neon Postgres, project `broad-water-80207736`. `database.py` is
+dual-mode: Postgres when `DATABASE_URL` (or `POSTGRES_URL`) is set, SQLite
+otherwise. `verify_routes.py` forces a scratch SQLite DB. `_pg_url()` strips
+quotes/whitespace and `channel_binding=`. Production data was migrated from the
+PythonAnywhere copy (`bomu_live.db`, gitignored) with `migrate_to_postgres.py`.
+
+**Vercel env vars (names only):** `DATABASE_URL`, `ANTHROPIC_API_KEY`,
+`SECRET_KEY`, `SECURE_COOKIES`. Edit under Vercel -> Settings -> Environment
+Variables, then Redeploy (env changes don't apply to existing deployments).
+
+**Gotchas:**
+- Claiming the Neon project rotated the `neondb_owner` password. That caused a
+  `POST /login` 500 (`password authentication failed`) until Vercel's
+  `DATABASE_URL` was updated. `GET /login` never touches the DB, so it looked fine.
+- The local `.env` `DATABASE_URL` still holds the OLD pre-claim password and no
+  longer works. Get the current string from Neon Console -> Connect, or leave
+  `DATABASE_URL` unset to develop on local SQLite.
+- Debug a 500 on prod by checking Vercel -> project -> Logs first.
+- In Antigravity's sandbox, git and npm need to run outside the sandbox.
