@@ -33,40 +33,47 @@ see the other's chat history, so anything not written here is lost.
 
 Live and healthy. 171 recipes, 51 ingredients, 5 users, 35 bottles logged.
 
-**Counts below were read off the live server on 2026-07-26** via
-`matching.get_recommendations()`, not simulated. This closes old backlog #11.
+**Counts below were read off live Neon on 2026-11-15** via
+`matching.get_recommendations()`, not simulated.
 
 | id | user | bottles | mixers ticked | makeable | one-away |
 |---|---|---|---|---|---|
-| 1 | aaron | 18 | 16 / 51 | 22 | 72 |
+| 1 | aaron | 18 | 19 / 51 | 34 | 70 |
 | 2 | Avishka | 0 | 0 | 0 | 0 |
 | 3 | Rajapaksha | 0 | 0 | 0 | 0 |
 | 4 | lenasheh (Shehan) | 16 | 4 | 0 | 14 |
 | 5 | Maho | 1 | 12 | 1 | 13 |
 
-Aaron moved 17 → 22 across the 2026-07-26 work. Shehan is still on **0 makeable
-from 16 bottles**, which is the single worst number in this file and is backlog
-#2. Two users still have nothing at all (backlog #1).
+Aaron went 22 → 34 between 2026-07-26 and 2026-11-15 purely by ticking 3 more
+mixers on the live site (16 → 19); the catalog did not change. Shehan is still
+on **0 makeable from 16 bottles**, which is the single worst number in this file
+and is backlog #2. Two users still have nothing at all (backlog #1).
 
-Landed 2026-07-26: commits `e4ead3b` and `9c034e0` (About + Worth knowing on
-every recipe, plus the catalog audit that came out of writing it,
-`check_specs.py` 37 flagged → 0), then `055a96c` and `2745190`.
+**Live has diverged from the local snapshot.** `bomu_live.db` / `bomu.db` still
+hold Aaron at 16 mixers (22 / 72). Catalog tables match live exactly; per-user
+tables (`user_stock`, `bottles`, `ratings`) drift as people use the app. Read
+user counts from Neon, never from the snapshot.
 
-### Since 2026-07-26
+### 2026-07-29 commits (no session log was written at the time)
 
-The `sweep_namematch.py` fix landed in `7b6fa39`, so the deployed copy now reads
-`raw_name` (backlog #14 done). Two more commits followed on 2026-07-29
-(`20747dc`, `80d4f63`: documented enhancements, normalized optional garnishes,
-double-numbered steps fixed) but **no session log entry was written for them**,
-so their details live only in the commit messages. The user counts above have
-not been re-read since 2026-07-26.
+- `20747dc` — **"Make it your own" enhancements.** New `recipe_enhancements`
+  table (see Data model), copy in `enhance_text.py`, loaded by
+  `migrate_enhancements.py`, rendered on `recipe.html`. Also
+  `migrate_normalize_optional.py` (collapsed garnish spellings like
+  `Orange Peel / Orange twist / Orange slice`, dropped `Ice` / `Water` rows that
+  were tagged optional) and the double-numbered-steps fix. Both migrations were
+  designed to move the matcher by **zero**: neither table/row type is read by
+  `matching.py`.
+- `80d4f63` — loosened the enhancement bar from "documented" to
+  "documented-or-practice" and labelled the difference on the page.
 
 ### Completed 2026-11-15: UI/UX overhaul + Vercel / Neon / bomu.lol migration
 
 - **Espresso & Zest UI redesign (`07db78f`)**: Responsive phone + desktop templates
   (`base.html`, `tonight.html`, `explore.html`, `my_bar.html`, `saved.html`,
   `one_away.html`, `recipe.html`), custom nav icons (`static/nav/*.webp`), and
-  complete studio cocktail photography coverage (`static/recipes/*.webp`, 98 WebP files).
+  complete studio cocktail photography coverage (`static/recipes/*.webp`, 98 WebP files
+  for the 98 recipes with no `image_url`; the other 73 still use TheCocktailDB URLs).
 - **Production migration (`295e47b`, `9a335ba`)**: Moved live hosting from
   PythonAnywhere to **Vercel** (`sepulturian/bomu`) at **https://www.bomu.lol**,
   backed by **Neon Postgres** (`broad-water-80207736`) migrated 1:1 from `bomu_live.db`.
@@ -88,6 +95,8 @@ with `git add -A`.
 - **Local Dev Data & Env:**
   - `.env` (gitignored) holds `DATABASE_URL`, `DATABASE_URL_UNPOOLED`, and `ANTHROPIC_API_KEY` pointing to the active Neon Postgres database (verify with `matching.get_recommendations(1)`). Unset `DATABASE_URL` (or pass `FORCE_SQLITE=1`) to run against local SQLite.
   - `bomu_live.db` (gitignored) is the full 171-recipe multi-user SQLite snapshot downloaded from PythonAnywhere on 2026-11-15 (`venv\Scripts\python.exe verify_routes.py --db bomu_live.db`).
+  - `bomu.db` is now **byte-identical to `bomu_live.db`** (checked 2026-11-15), so the SQLite fallback is a real multi-user copy, not the old stale one. Its per-user rows are frozen at the snapshot and already behind live.
+  - **`load_dotenv()` finds `.env` relative to the calling script, not the cwd.** A helper script saved outside the repo (scratchpad, `%TEMP%`) silently gets no `DATABASE_URL` and runs against SQLite while you think you're reading Neon. Print `database._is_postgres()` before trusting any "live" number.
 - **Vercel Environment Variables (names only):** `DATABASE_URL`, `ANTHROPIC_API_KEY`, `SECRET_KEY`, `SECURE_COOKIES`. Updated under Vercel -> Project Settings -> Environment Variables (requires a Redeploy to take effect).
 
 ### Deploy sequence
@@ -106,18 +115,18 @@ git push origin main           # triggers automatic Vercel production build
 
 ### Verification
 
-**Check the matcher server-side, not through the browser.** Chrome caches
-`/recommend` and `/one-away` aggressively. On 2026-07-24 a stale render showed a
-bottle that does not exist in the database and sent an hour into chasing a bug
-that was never real. Authoritative check:
+**Check the matcher directly, not through the browser.** Chrome caches
+`/` (Tonight; `/recommend` now just redirects there) and `/one-away`
+aggressively. On 2026-07-24 a stale render showed a bottle that does not exist
+in the database and sent an hour into chasing a bug that was never real.
+Authoritative check, run from the repo root so `.env` is found:
 
-```bash
-python3 -c "
-import matching
-r = matching.get_recommendations(1)
-print(r['total_makeable'], r['total_one_away'])
-print(sorted(x['recipe']['name'] for x in r['makeable']))"
+```powershell
+venv\Scripts\python.exe -c "import dotenv; dotenv.load_dotenv(); import database, matching; print('postgres' if database._is_postgres() else 'SQLITE'); r = matching.get_recommendations(1); print(r['total_makeable'], r['total_one_away'])"
 ```
+
+The `python3 ...` forms further down date from the PythonAnywhere era; on the
+laptop use `venv\Scripts\python.exe`.
 
 If you must check in a browser, append a cache-busting query string.
 
@@ -178,18 +187,20 @@ all 6 REVIEW entries were confirmed false positives by hand.
 
 ## Gotchas
 
-**The local `bomu.db` is stale and pre-multi-user.** It has no `user_id` column
-on `bottles` and zero rows in `users`, so anything per-user fails against it. It
-is only useful for reading recipe/ingredient conventions. Real per-user work has
-to happen on the server. Fixing local dev (run `migrate_multiuser.py`, or write
-a `seed_dev_db.py`) is the highest-value chore outstanding.
+**The local `bomu.db` used to be stale and pre-multi-user. It no longer is.**
+Until 2026-11-15 it had no `user_id` on `bottles` and zero users, and developing
+against it caused the 2026-07-26 false alarm. It is now a copy of the
+PythonAnywhere snapshot (see Running it). Older docstrings still warn that
+`bomu.db` is stale (`verify_routes.py`, `migrate_enhancements.py`); those
+comments predate the swap.
 
 **SQLite side files can eat committed data.** On 2026-07-23 a `.db-journal`
 rolled the live database back. Both `.gitignore` and every migration script now
 refuse to proceed if `bomu.db-journal`, `-wal` or `-shm` is present. Keep that
 guard in any new script.
 
-**`.git` is not writable from the Cowork sandbox.** Agent tooling can stage files
+**`.git` is not writable from the Cowork sandbox** (that sandbox only; Claude
+Code in the desktop app and Antigravity outside its sandbox can commit). Agent tooling there can stage files
 but cannot create commits (it can't remove `.git/index.lock`). Commits and pushes
 have to be run by hand in PowerShell:
 
@@ -205,7 +216,15 @@ git push origin main
 ## Data model
 
 `users`, `bottles`, `ingredients`, `user_stock`, `recipes`, `recipe_ingredients`,
-`ratings`, `scan_log`.
+`recipe_enhancements`, `ratings`, `scan_log`.
+
+**`recipe_enhancements`** (added 2026-07-29, 106 rows): optional "make it your
+own" suggestions shown on the recipe page. Columns `recipe_id`, `name`,
+`ingredient_name` (checklist key, may be NULL), `measure`, `note`, `source`,
+`sort_order`. Copy lives in `enhance_text.py`. **The matcher never reads it**, so
+it cannot change makeability. `migrate_enhancements.py` refuses rows with no
+source, rows naming a nonexistent checklist ingredient, and rows duplicating
+something the recipe already requires.
 
 Users as of 2026-07-24: 1 aaron, 2 Avishka, 3 Rajapaksha, 4 lenasheh (Shehan,
 Aaron's brother), 5 Maho.
@@ -250,8 +269,10 @@ fails open rather than loudly. Validate in the import script, not here.
 - 171 rows
 - Instructions carry a `[BOMU_REWRITTEN_v1]` marker, stripped by the
   `clean_instructions` filter
-- 98 have no `image_url` and fall back to a plain card — 57% of the catalog,
-  since none of the 46 added on 2026-07-25 had images.
+- Images: 73 have a TheCocktailDB `image_url`; the other 98 have none and use a
+  studio WebP at `static/recipes/<slug>.webp` instead. `recipe_image_url()` in
+  `app.py` checks the local WebP first, then `image_url`. Every recipe has an
+  image as of 2026-11-15.
 
 **`about` and `tip` columns (added 2026-07-26).** Both nullable and both
 rendered behind an `{% if %}`, so a recipe missing them degrades to exactly the
@@ -319,7 +340,7 @@ This is what `sweep_namematch.py` audits. Two known sharp edges:
 - `NOISE_WORDS` is applied by plain `str.replace`, not word boundaries, so
   `"the"` is stripped from inside words: `Green Creme de Menthe` also yields the
   key `green creme de men`. Harmless today only because the unstripped key still
-  matches. Word-boundary replacement would fix it (backlog #14).
+  matches. Word-boundary replacement would fix it (backlog #16).
 - Brackets are in `NOISE_WORDS` but their *contents* are not, so
   `Cointreau (orange liqueur)` yields `cointreau orange`, splicing two words
   that were never adjacent. Neither key matches a bottle named `Cointreau`.
@@ -507,10 +528,15 @@ without it keep the triangle deliberately, since it's the only affordance saying
    drink. A floor (hide below ~3 drinks) would keep it feeling like a discovery
    rather than nagging. Left uncapped deliberately to observe real behaviour
    first.
-4. **Fix local dev** so per-user work doesn't require the live server.
-5. **Rum and gin sub-types.** Identical defect to the vermouth one already
-   fixed: light vs aged vs Jamaican rum are not interchangeable, and sloe gin is
-   a liqueur, not gin.
+4. ~~**Fix local dev.**~~ Effectively done 2026-11-15: `bomu.db` is now the
+   multi-user snapshot and `.env` points at Neon. Remaining nicety: a way to
+   refresh the snapshot from Neon, since per-user rows already lag live.
+5. **Rum, gin and sherry sub-types.** Identical defect to the vermouth one
+   already fixed: light vs aged vs Jamaican rum are not interchangeable, and
+   sloe gin is a liqueur, not gin. `sherry` has no type at all: Adonis, Bamboo
+   and Sherry Cobbler sit on `other` and match by the word "sherry", so fino,
+   amontillado and cream sherry are interchangeable to the matcher. Adonis
+   specifically says cream sherry will ruin it. (Merged old #12 into this.)
 6. ~~**Commit a `verify_routes.py`.**~~ Done 2026-07-26. See Verification.
 7. **Ambiguous bottle prompts.** A one-tap "sweet or dry?" nudge in My Bar would
    resolve legacy generic bottles over time.
@@ -518,33 +544,36 @@ without it keep the triangle deliberately, since it's the only affordance saying
    That one was found by reading the Paloma's note, not by any systematic pass;
    there may be others that are ambiguous or plain wrong, and the nudge now
    reads every label out loud as a shopping instruction.
-9. **Recipe images** (98 missing of 171 — the 46 added 2026-07-25 all lack
-   images, so this is now 57% of the catalog).
+9. ~~**Recipe images.**~~ Done 2026-11-15 in `07db78f`: 98 studio WebPs cover
+   every recipe without an `image_url`.
 10. **Grow the catalog** past 171. Lowest priority: 2026-07-25 proved catalog
     size is not what's limiting anyone.
-11. ~~**Record the real server counts.**~~ Done 2026-07-26, table at the top of
-    this file is now live data read via `matching.get_recommendations()`.
-12. **Sub-types for rum and gin** is #5, but the same class of defect now has a
-    second instance worth naming: `sherry` has no type at all. Adonis, Bamboo
-    and Sherry Cobbler all sit on `other` and match by the word "sherry", which
-    works but means fino, amontillado and cream sherry are interchangeable to
-    the matcher. Adonis specifically says cream sherry will ruin it.
+11. ~~**Record the real server counts.**~~ Done 2026-07-26, re-read from Neon
+    2026-11-15. Table at the top of this file.
+12. ~~**Sherry sub-type.**~~ Merged into #5.
 13. **The Sazerac base is a live judgement call.** Moved from bourbon to rye on
     2026-07-26 for correctness, which *removes* the drink from a bourbon-only
     shelf. `SAZERAC_BASE_TYPE` at the top of `fix_recipe_specs.py` reverts it in
     one line. Revisit if anyone complains.
-14. ~~**Push the corrected `sweep_namematch.py`.**~~ Done in `7b6fa39`. The deployed copy at `2745190`
-    reads the wrong column and reports ~35 false BROKEN rows. Fix is written and
-    sitting uncommitted on the laptop. Do this before running it again. See
-    "Where things stand".
-15. **Hugo Spritz, `recipe_ingredients` row 398.** The one genuine BROKEN row on
-    the live server. `raw_name` is `Elderflower Liqueur (St-Germain)`; the
+14. ~~**Push the corrected `sweep_namematch.py`.**~~ Done in `7b6fa39`; it now
+    reads `raw_name`. (`2745190` read `ingredient_name` and reported ~35 false
+    BROKEN rows; don't run that revision.)
+15. **Hugo Spritz, `recipe_ingredients` row 398.** Still unfixed on live Neon as
+    of 2026-11-15. The one genuine BROKEN row. `raw_name` is `Elderflower Liqueur (St-Germain)`; the
     brackets make every key it generates unmatchable, so the drink can never
     appear for anybody. Verified against three plausible bottle names, all
     False. Set `raw_name` to `St-Germain` or `Elderflower Liqueur`. Zero users
     own an elderflower liqueur today, so this is correctness, not impact.
 16. **Word-boundary `NOISE_WORDS` in `_liqueur_keys`.** `str.replace` strips
     `"the"` from inside `Menthe`. Latent, not currently biting. See The matcher.
+17. **Delete the leaked connection string and rotate the Neon password.** The
+    Antigravity log `~\.gemini\antigravity\brain\179a4452-...\browser_sandbox\outputs\step_88.json`
+    still exists (checked 2026-11-15) and holds the `DATABASE_URL` extracted
+    during recovery. Delete it, then reset the `neondb_owner` password in the
+    Neon console and update `DATABASE_URL` in Vercel (redeploy) and in local
+    `.env` (`DATABASE_URL`, `DATABASE_URL_UNPOOLED`). Aaron's action.
+18. **Optional: Porkbun DNS to per-project Vercel targets.** Current records work;
+    see the 2026-11-15 (first) log entry for the suggested values.
 
 ---
 
@@ -925,3 +954,38 @@ feedback is explicitly not an input for this redesign.
   remain intentionally unstaged.
 - Note: a browser subagent intermediate output (`179a4452-.../browser_sandbox/outputs/step_88.json`)
   under AppData brain logs still holds the extracted connection string from recovery.
+
+### 2026-11-15 (second session) — Review and CLAUDE.md audit (Claude Code)
+
+Docs only, no app code or data changed. Asked for a "where are we" review; did
+it by checking this file against git, the code, the local SQLite files and live
+Neon, not by re-reading it.
+
+**Found and corrected in this file:**
+
+- *User counts.* The top table still showed the 2026-07-26 numbers (Aaron 22).
+  Live Neon has Aaron at **34 makeable / 70 one-away** on 19 mixers, matching the
+  first 2026-11-15 entry. The +12 came entirely from 3 more mixer ticks; the
+  catalog on Neon is identical to the snapshot (762 recipe_ingredients rows,
+  291 / 326 / 145 by type). Other users unchanged.
+- *Local dev.* The "bomu.db is stale and pre-multi-user" gotcha was false:
+  `bomu.db` is byte-identical to `bomu_live.db`. Backlog #4 closed.
+- *Images.* "98 recipes have no image" and backlog #9 were stale. The 98
+  studio WebPs cover exactly the 98 recipes with no `image_url`. #9 closed.
+- *`recipe_enhancements`* was missing from Data model, and the 2026-07-29
+  commits had no write-up. Both added (from the commit messages and migration
+  docstrings, not from memory).
+- *Backlog hygiene.* #14's text contradicted its strikethrough; #5 and #12
+  duplicated each other (merged); The matcher pointed at #14 for what is #16.
+  Added #17 (leaked connection string, still on disk) and #18 (DNS, optional).
+- *Verification* commands updated for the laptop + Neon world.
+
+**Gotcha hit.** The first "live" count came back 22 / 72, identical to the
+snapshot. That was SQLite: the helper script lived in `%TEMP%`, and
+`load_dotenv()` searches for `.env` from the *script's* directory, not the cwd.
+No error, no warning, plausible numbers. Recorded under Running it. Same lesson
+as 2026-07-26 in a new form: a result that agrees suspiciously well with the
+wrong source is evidence about the tool first.
+
+**Still open:** Hugo Spritz row 398 (#15), Shehan 0 from 16 (#2), the two
+never-started users (#1), and the leaked string + password rotation (#17).
