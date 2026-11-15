@@ -5,6 +5,7 @@ import json
 import random
 import tempfile
 import uuid
+from datetime import date
 from functools import wraps
 from io import BytesIO
 from flask import Flask, render_template, request, redirect, url_for, flash, session, send_from_directory
@@ -490,6 +491,88 @@ app.jinja_env.filters["recipe_slug"] = recipe_slug
 app.jinja_env.filters["recipe_image"] = recipe_image_url
 app.jinja_env.filters["glass_kind"] = glass_kind
 app.jinja_env.filters["glass_label"] = format_glass_label
+
+
+# ---------------------------------------------------------------------------
+# "One ingredient away" spotlight on Tonight
+# ---------------------------------------------------------------------------
+
+# Headline copy. Each line is a list of segments; the string "{drink}" is
+# replaced with "a Mojito" / "an Aviation", "{Drink}" with the same at sentence
+# start, and "{name}" with the bare drink name. Built as segments, not HTML,
+# so nothing here ever needs |safe. {unit} is "ingredient" or "bottle".
+#
+# The ingredient itself is deliberately NOT in the headline: it sits in a pill
+# on the next line, so its casing ("Fresh mint", "Angostura bitters") never has
+# to survive the middle of a sentence.
+SPOTLIGHT_LINES = [
+    "You're one {unit} from even more good times with {drink}.",
+    "{Drink} is closer than you think.",
+    "So close to {drink} you can almost taste it.",
+    "Your {name} is waiting on one thing.",
+]
+
+# Friendlier names for fungible bottle categories in a sentence-ish context.
+# Everything else falls back to type_label, and name-matched bottles already
+# carry a product name ("Cointreau").
+_SPOTLIGHT_BOTTLE_NAMES = {
+    "vermouth_dry": "Dry vermouth",
+    "vermouth_sweet": "Sweet vermouth",
+    "vermouth": "Vermouth",
+    "whiskey": "Whiskey",
+    "irish": "Irish whiskey",
+}
+
+
+def _with_article(name):
+    if name.lower().startswith("the "):
+        return name
+    return ("an " if name[:1].lower() in "aeiou" else "a ") + name
+
+
+def spotlight_headline(spot, day_number):
+    """Pick today's headline for the spotlight as [(text, is_drink), ...].
+
+    Rotates by date so it stays put through an evening but doesn't go stale."""
+    drink = spot["headline_drink"]["name"]
+    line = SPOTLIGHT_LINES[day_number % len(SPOTLIGHT_LINES)]
+    unit = "ingredient" if spot["kind"] == "ingredient" else "bottle"
+    article = _with_article(drink)
+    drink_phrase = {
+        "{drink}": article,
+        "{Drink}": article[:1].upper() + article[1:],
+        "{name}": drink,
+    }
+    segments = []
+    for part in re.split(r"(\{drink\}|\{Drink\}|\{name\})", line.replace("{unit}", unit)):
+        if part in drink_phrase:
+            # Keep the article as plain text so only the drink name is styled.
+            text = drink_phrase[part]
+            prefix = text[: len(text) - len(drink)]
+            if prefix:
+                segments.append((prefix, False))
+            segments.append((drink, True))
+        elif part:
+            segments.append((part, False))
+    return segments
+
+
+def spotlight_label(spot):
+    if spot["kind"] == "ingredient" or spot["name_matched"]:
+        return spot["name"]
+    return _SPOTLIGHT_BOTTLE_NAMES.get(spot["name"]) or bottle_type_label(spot["name"])
+
+
+def spotlight_add_url(spot):
+    """Where 'Add to my bar' goes for a bottle: the My Bar add sheet, with the
+    type preselected and, for name-matched bottles, the name prefilled. The
+    name matters there: a name-matched requirement only matches a bottle whose
+    NAME contains the key, so 'Cointreau' typed as the name is what makes the
+    drinks appear."""
+    args = {"sheet": "add", "type": safe_bottle_type(spot["bottle_type"])}
+    if spot["name_matched"]:
+        args["name"] = spot["name"]
+    return url_for("bar", **args)
 app.jinja_env.filters["drink_style"] = classify_drink_style
 app.jinja_env.tests["auto_added"] = is_auto_added
 
@@ -690,11 +773,22 @@ def home():
     if not featured and pool:
         featured = pool[0]
 
+    spot = recs.get("spotlight")
+    spot_view = None
+    if spot:
+        spot_view = {
+            "headline": spotlight_headline(spot, date.today().toordinal()),
+            "label": spotlight_label(spot),
+            "add_url": spotlight_add_url(spot) if spot["kind"] == "bottle" else None,
+        }
+
     return render_template(
         "tonight.html",
         recs=recs,
         grouped=grouped,
         featured=featured,
+        spot=spot,
+        spot_view=spot_view,
         bottle_count=len(bottles),
         stocked_count=stocked_count,
     )
@@ -899,6 +993,10 @@ def bar():
         "my_bar.html",
         active_tab=active_tab,
         sheet_open=sheet_open,
+        # From the Tonight spotlight: preselect a type / prefill a name. Type is
+        # only passed through if valid, so a junk query string selects nothing.
+        prefill_type=(request.args.get("type") if request.args.get("type") in VALID_BOTTLE_TYPES else ""),
+        prefill_name=request.args.get("name", "")[:120],
         q=q,
         grouped=grouped,
         bottles=bottles,

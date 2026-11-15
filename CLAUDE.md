@@ -388,24 +388,40 @@ collapse to one slot, and one bottle is a fine way to make it.
 kept in step**, or the detail page highlights different rows than the Make list
 used to decide the drink was makeable.
 
-### The mixer gap (added 2026-07-25)
+### The one-ingredient spotlight (replaced the mixer gap, 2026-11-15)
 
-`build_mixer_gap()` answers "which few checklist ingredients would unlock the
-most drinks?" It's computed inside `get_recommendations` from the *untruncated*
-one-away list, before that list is sliced for display, so it costs no extra
-matcher pass and the count reflects every blocked drink rather than the first
-five.
+`build_one_away_spotlight()` answers "which ONE ingredient, mixer or bottle,
+would unlock the most drinks?" and Tonight shows it as a card under the
+featured pour: a headline naming a drink, the ingredient in a pill, photo tiles
+of every drink it unlocks (each opens the recipe), and one action.
 
-Every one-away recipe is blocked by exactly one thing, so grouping blockers by
-name and counting is exact — no drink is counted twice and the number on screen
-is a promise the app can keep. Only `ingredient` blockers are considered; a
-missing bottle is a shopping trip, a missing mixer is usually something the user
-already owns and never ticked.
+- Computed inside `get_recommendations` from the *untruncated* one-away list,
+  so no extra matcher pass. Every one-away recipe is blocked by exactly one
+  thing, so grouping blockers by name and counting is exact.
+- **Mixers and bottles both count.** A mixer gets a one-drink head start in the
+  ranking (often already owned, never ticked), so a bottle wins only when it
+  unlocks 2+ more drinks. Floor of 2 drinks, applied **before** ranking:
+  applied after, a 1-drink mixer outranked Shehan's 2-drink Amaretto, failed the
+  floor, and hid the card from the one user with 0 makeable.
+- **Headline drink** = liked first, never disliked if avoidable, then the
+  lowest recipe id (oldest rows are the classic catalog: bourbon → Old
+  Fashioned, not alphabetical Gold Rush).
+- **Action.** Mixer: "I have this" POSTs one id to `/stock-add` (adds only).
+  Bottle: "Add to my bar" links to `/bar?sheet=add&type=…` with the type
+  preselected, plus `&name=…` for name-matched bottles, because a name-matched
+  requirement only matches a bottle whose *name* contains the key. `/bar`
+  passes `type` through only if it is in `VALID_BOTTLE_TYPES`.
+- **Copy** lives in `SPOTLIGHT_LINES` in `app.py`, rotated by date. Built as
+  `(text, is_drink)` segments so no `|safe` is needed. The ingredient is kept
+  out of the headline on purpose: in a pill its casing (`Angostura bitters`,
+  `Lemon juice (fresh)`) never has to survive mid-sentence.
+- Mixer blockers that aren't a real checklist row are skipped (no id to tick).
 
-The returned dict uses the key **`picks`, not `items`**. Jinja resolves
-`gap.items` to `dict.items()` before it looks for a key of that name, so the
-template silently iterates a bound method and 500s at render. `py_compile`
-does not catch this — only actually rendering the template does.
+**Old lesson still worth keeping:** the mixer-gap dict used the key **`picks`,
+not `items`**, because Jinja resolves `gap.items` to `dict.items()` before it
+looks for a key and the template 500s at render. `py_compile` does not catch
+this; only rendering the template does. Same rule for any new dict passed to
+a template.
 
 ---
 
@@ -524,10 +540,11 @@ without it keep the triangle deliberately, since it's the only affordance saying
    ("he just never filled in the checklist, he'd have 30+") was right for Aaron
    and only partly right for Shehan. Do not over-trust it again without checking
    whose blockers are mixers vs bottles.
-3. **Tune the nudge.** It shows for any gap at all, including one tick for one
-   drink. A floor (hide below ~3 drinks) would keep it feeling like a discovery
-   rather than nagging. Left uncapped deliberately to observe real behaviour
-   first.
+3. **Tune the spotlight.** Superseded the old "tune the nudge" item on
+   2026-11-15 (floor of 2 drinks shipped). Open questions to settle by watching
+   real use: whether the spotlight should rotate between top ingredients rather
+   than always showing the best one, and whether zero-makeable users should
+   see single-drink mixers (Shehan's mixers each unlock 1).
 4. ~~**Fix local dev.**~~ Effectively done 2026-11-15: `bomu.db` is now the
    multi-user snapshot and `.env` points at Neon. Remaining nicety: a way to
    refresh the snapshot from Neon, since per-user rows already lag live.
@@ -989,3 +1006,40 @@ wrong source is evidence about the tool first.
 
 **Still open:** Hugo Spritz row 398 (#15), Shehan 0 from 16 (#2), the two
 never-started users (#1), and the leaked string + password rotation (#17).
+
+### 2026-11-15 (third session) — "One ingredient away" spotlight (Claude Code)
+
+Aaron didn't like "+3 mixers unlock 9 more drinks" and wanted the "one
+ingredient short" idea to get real attention. Designed together via questions:
+mixers *and* bottles, one spotlight plus "More ingredients →", an "I have this"
+button, a headline that names a drink with a bit of wit.
+
+**Changed:** `matching.py` (`build_mixer_gap` → `build_one_away_spotlight`,
+result key `mixer_gap` → `spotlight`), `app.py` (headline copy + helpers,
+`/bar` prefill args), `templates/tonight.html` (banner → spotlight card),
+`templates/my_bar.html` (prefill + Sweet Vermouth chip fix). See "The
+one-ingredient spotlight" under The matcher.
+
+**Why the old banner was weak, measured on live:** it summed three separate
+3-drink mixers into "+9", and ignored bottles although 45 of Aaron's 70
+one-away drinks were blocked by one (bourbon → 5, dry vermouth → 5).
+
+**Found while building:**
+- *Shehan got no spotlight at all* on the first version. Ranking-before-floor
+  bug, see the matcher section. Fixed; he now sees "Pick up Amaretto" →
+  French Connection, Godfather.
+- *The Sweet Vermouth quick chip in the Add Bottle sheet was dead.* It set
+  `sweet_vermouth`; the type is `vermouth_sweet`. The select stayed empty and
+  the form refused to submit until a type was picked from the dropdown. Fixed.
+
+**Verified:** makeable / one-away unchanged on SQLite (22/72) and Neon (34/70)
+for all 5 users; Tonight, grouped Tonight and My Bar (with good, name-matched
+and junk prefill args) render 200 for every user on both backends (GET only on
+Neon); all 4 headline variants checked for a/an; `verify_routes.py` passes.
+In the browser on a scratch copy of the snapshot: "I have this" ticked Ginger
+beer (Aaron 22 → 27, spotlight moved to Champagne); "Add to my bar" opened the
+sheet with Amaretto + Liqueur prefilled, and submitting it took Shehan 0 → 2.
+Phone (375px) layout checked.
+
+**Live today:** Aaron's spotlight is "Pick up Bourbon" (Old Fashioned headline,
+5 drinks); Maho's is Lemon juice (fresh) → Tom Collins, Bee's Knees.

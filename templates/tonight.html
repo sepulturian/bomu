@@ -129,64 +129,83 @@
         text-overflow: ellipsis;
     }
 
-    /* Mixer Gap Accordion Body */
-    .gap-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: var(--zest);
-        flex-shrink: 0;
+    /* One Ingredient Away spotlight */
+    .spotlight {
+        background: var(--bg-elevated);
+        border: 1px solid var(--zest-border);
+        border-radius: var(--radius-card);
+        padding: 0.85rem 0.95rem 0.9rem;
+        margin-bottom: 0.65rem;
     }
 
-    .gap-body {
-        padding: 0.2rem 0.9rem 0.9rem;
-        border-top: 1px solid var(--border-subtle);
+    .spot-kicker {
+        font-family: var(--font-display);
+        font-weight: 700;
+        font-size: 0.72rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--zest);
+        margin-bottom: 0.35rem;
     }
 
-    .gap-sub {
-        font-size: 0.8rem;
-        color: var(--ink-dim);
-        margin: 0.5rem 0 0.6rem;
+    .spot-headline {
+        font-size: 1.04rem;
+        font-weight: 600;
+        line-height: 1.35;
+        color: var(--ink);
+        margin: 0 0 0.55rem;
     }
 
-    .gap-picks {
+    .spot-drink {
+        color: var(--zest);
+    }
+
+    .spot-need {
         display: flex;
-        flex-direction: column;
-        gap: 0.4rem;
-        margin-bottom: 0.7rem;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.35rem;
+        font-size: 0.82rem;
+        color: var(--ink-dim);
+        margin-bottom: 0.55rem;
     }
 
-    .gap-pick {
+    .spot-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.12rem 0.55rem;
+        border-radius: var(--radius-pill);
+        background: rgba(214, 168, 78, 0.12);
+        border: 1px solid var(--zest-border);
+        color: var(--ink);
+        font-weight: 700;
+    }
+
+    .spot-row .oneaway-tile {
+        flex: 0 0 116px;
         background: var(--bg-base);
-        border: 1px solid var(--border-subtle);
-        border-radius: var(--radius-control);
-        padding: 0.52rem 0.75rem;
     }
 
-    .gap-pick-row {
+    .spot-row .oneaway-img-wrap {
+        height: 76px;
+    }
+
+    .spot-row .oneaway-name {
+        font-size: 0.86rem;
+        margin-bottom: 0;
+    }
+
+    .spot-actions {
         display: flex;
         align-items: center;
-        gap: 0.65rem;
-        cursor: pointer;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-top: 0.15rem;
     }
 
-    .gap-pick-row input[type="checkbox"] {
-        accent-color: var(--zest);
-        width: 18px;
-        height: 18px;
-        flex-shrink: 0;
+    .spot-actions form {
+        margin: 0;
     }
-
-    .gap-drinks-summary {
-        list-style: none;
-        cursor: pointer;
-        font-size: 0.76rem;
-        color: var(--ink-dim);
-        padding-left: 1.75rem;
-        margin-top: 0.25rem;
-    }
-
-    .gap-drinks-summary::-webkit-details-marker { display: none; }
 
     /* One-Away Horizontal Carousel */
     .hscroll-row {
@@ -355,6 +374,14 @@
             flex: 0 0 184px;
         }
 
+        .spot-row .oneaway-tile {
+            flex: 0 0 140px;
+        }
+
+        .spot-row .oneaway-img-wrap {
+            height: 92px;
+        }
+
         .onboard-hero {
             display: grid;
             grid-template-columns: 1.05fr 1fr;
@@ -460,48 +487,54 @@
         </a>
     {% endif %}
 
-    {# Compact Unified Mixer Gap Accordion #}
-    {% if recs.mixer_gap and recs.mixer_gap.drink_count >= 2 %}
-        {% set gap = recs.mixer_gap %}
-        <details class="accordion-bar is-accent" id="mixer-gap-banner">
-            <summary class="bare accordion-summary">
-                <span class="accordion-title">
-                    <span class="gap-dot"></span>
-                    <span>+{{ gap.ingredient_count }} mixer{{ 's' if gap.ingredient_count != 1 else '' }} unlock{{ '' if gap.ingredient_count != 1 else 's' }} {{ gap.drink_count }} more drinks</span>
-                </span>
-                <span class="accordion-right">
-                    <span class="pill pill-zest">+{{ gap.drink_count }}</span>
-                    {{ ui_icon("chevron-down", "accordion-chev") }}
-                </span>
-            </summary>
-            <div class="gap-body">
-                <div class="gap-sub">
-                    You already own the bottles. Untick anything you don&rsquo;t have:
-                </div>
-                <form method="POST" action="/stock-add">
-                    <div class="gap-picks">
-                        {% for item in gap.picks %}
-                            <div class="gap-pick">
-                                <label class="gap-pick-row" for="gap-{{ item.id }}">
-                                    <input type="checkbox" name="ingredient" value="{{ item.id }}" id="gap-{{ item.id }}" checked>
-                                    <span style="flex: 1; font-size: 0.9rem; font-weight: 600; color: var(--ink);">
-                                        {{ item.name }}
-                                    </span>
-                                    <span class="pill pill-sage">+{{ item.drinks|length }}</span>
-                                </label>
-                                <details>
-                                    <summary class="gap-drinks-summary">Which {{ item.drinks|length }} drink{{ 's' if item.drinks|length != 1 else '' }}?</summary>
-                                    <div style="padding: 0.35rem 0 0 1.75rem; font-size: 0.78rem; color: var(--ink-dim); line-height: 1.45;">
-                                        {{ item.drinks | join(' · ') }}
-                                    </div>
-                                </details>
-                            </div>
-                        {% endfor %}
-                    </div>
-                    <button type="submit" class="btn" style="width: 100%;">Stock Selected Mixers</button>
-                </form>
+    {# One Ingredient Away spotlight: the single ingredient (mixer or bottle)
+       that unlocks the most drinks. Data from build_one_away_spotlight(). #}
+    {% if spot %}
+        <section class="spotlight" id="one-away-spotlight">
+            <div class="spot-kicker">One {{ 'ingredient' if spot.kind == 'ingredient' else 'bottle' }} away</div>
+            <p class="spot-headline">
+                {%- for text, is_drink in spot_view.headline -%}
+                    {%- if is_drink %}<span class="spot-drink">{{ text }}</span>{% else %}{{ text }}{% endif -%}
+                {%- endfor -%}
+            </p>
+            <div class="spot-need">
+                <span>{{ 'Just add' if spot.kind == 'ingredient' else 'Pick up' }}</span>
+                <span class="spot-pill">{{ spot_view.label }}</span>
+                <span>and you can make {{ spot.drinks|length }}:</span>
             </div>
-        </details>
+            <div class="hscroll-row spot-row">
+                {% for d in spot.drinks %}
+                    {% set img_url = d|recipe_image %}
+                    <a href="/recipe/{{ d.id }}" class="oneaway-tile">
+                        <div class="oneaway-img-wrap">
+                            {% if img_url %}
+                                <img src="{{ img_url }}" alt="{{ d.name }}" loading="lazy"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            {% endif %}
+                            <div class="drink-thumb-fallback" {% if img_url %}style="display: none;"{% endif %}>
+                                {{ glass_icon(d.glass) }}
+                            </div>
+                        </div>
+                        <div class="oneaway-body">
+                            <div class="oneaway-name">{{ d.name }}</div>
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+            <div class="spot-actions">
+                {% if spot.kind == 'ingredient' %}
+                    <form method="POST" action="/stock-add">
+                        <input type="hidden" name="ingredient" value="{{ spot.ingredient_id }}">
+                        <button type="submit" class="btn btn-sm">I have this</button>
+                    </form>
+                {% else %}
+                    <a href="{{ spot_view.add_url }}" class="btn btn-sm">Add to my bar</a>
+                {% endif %}
+                {% if spot.other_groups %}
+                    <a href="/one-away" class="section-link">More ingredients &rarr;</a>
+                {% endif %}
+            </div>
+        </section>
     {% endif %}
 
     {# Make Now List (excluding featured drink if multiple ready) #}

@@ -484,57 +484,91 @@ def get_recommendations_grouped(user_id, max_per_group=50):
     return base
 
 
-def build_mixer_gap(one_away_entries, ingredients, max_items=3):
-    """Which few CHECKLIST ingredients would unlock the most drinks?
+def _bottle_requirement(entry):
+    """For a one-away entry blocked by a bottle, work out what kind of bottle.
 
-    Every one-away recipe is blocked by exactly one thing, so grouping those
-    blockers by name and counting is exact -- no drink can be counted twice,
-    and the totals here are a promise the app can keep.
+    Returns (bottle_type, name_matched). Fungible blockers report their category
+    slug as the name ("vermouth_dry"); name-matched ones report the row's
+    raw_name ("Cointreau"), so the recipe's own rows are the only place the
+    category ("liqueur") can be read back from.
+    """
+    name = (entry["missing"]["name"] or "").lower()
+    for ing in entry["recipe"]["ingredients"]:
+        if ing["requirement_type"] != "bottle_type" or not ing["bottle_type"]:
+            continue
+        if _use_name_match(ing) and (ing["raw_name"] or ing["bottle_type"]).lower() == name:
+            return ing["bottle_type"], True
+    return entry["missing"]["name"], False
 
-    Only ingredient blockers are considered. A missing bottle is a shopping
-    trip; a missing mixer is very often something the user already owns and
-    simply never ticked. That distinction is the whole point: on 2026-07-25 the
-    catalog went from 125 to 171 recipes and the owner's makeable count moved
-    12 -> 17, because he had 15 of 51 mixers ticked. The drinks were there. The
-    checklist was the wall.
 
-    Returns None when there is nothing useful to say, so the template can just
+def build_one_away_spotlight(one_away_entries, ingredients, ratings, min_drinks=2):
+    """The single ingredient that would unlock the most drinks, for Tonight.
+
+    Every one-away recipe is blocked by exactly one thing, so grouping blockers
+    by name and counting is exact: no drink is counted twice and the number on
+    screen is a promise the app can keep.
+
+    Replaced build_mixer_gap() on 2026-11-15. That summed the top three
+    MIXERS into one line ("+3 mixers unlock 9 more drinks"), which hid that each
+    was its own small opportunity and ignored bottles entirely, although 45 of
+    Aaron's 70 one-away drinks were blocked by a bottle.
+
+    Ranking: most drinks wins, but a mixer gets a one-drink head start, because
+    a mixer is very often something the user already owns and never ticked (on
+    2026-07-25 three unticked checkboxes were worth 14 drinks), while a bottle
+    is a shopping trip. So a bottle takes the spotlight only when it unlocks at
+    least two more drinks than the best mixer.
+
+    Mixer blockers that are not a real checklist row are skipped: the
+    "I have this" button needs an ingredient id to tick.
+
+    Returns None when the best group is below min_drinks, so the template can
     test for truthiness.
     """
     ids_by_name = {i["name"].lower(): i["id"] for i in ingredients}
 
-    groups = {}  # lowercased name -> {name, id, drinks: [recipe names]}
+    groups = {}
     for entry in one_away_entries:
         missing = entry["missing"]
-        if missing.get("type") != "ingredient":
-            continue
-        key = missing["name"].lower()
-        ing_id = ids_by_name.get(key)
-        if ing_id is None:
-            # Blocker isn't a real checklist row, so we can't offer to tick it.
-            continue
-        g = groups.setdefault(key, {"name": missing["name"], "id": ing_id, "drinks": []})
-        g["drinks"].append(entry["recipe"]["recipe"]["name"])
+        kind = "ingredient" if missing.get("type") == "ingredient" else "bottle"
+        key = (kind, (missing["name"] or "").lower())
+        if key not in groups:
+            g = {"kind": kind, "name": missing["name"], "ingredient_id": None,
+                 "bottle_type": None, "name_matched": False, "drinks": []}
+            if kind == "ingredient":
+                g["ingredient_id"] = ids_by_name.get(key[1])
+                if g["ingredient_id"] is None:
+                    continue
+            else:
+                g["bottle_type"], g["name_matched"] = _bottle_requirement(entry)
+            groups[key] = g
+        groups[key]["drinks"].append(entry["recipe"]["recipe"])
 
-    if not groups:
+    # Floor BEFORE ranking. Applied after, the mixer head start let a 1-drink
+    # mixer outrank a 2-drink bottle and then fail the floor, which hid the
+    # spotlight entirely from Shehan (0 makeable, Amaretto -> 2 drinks).
+    eligible = [g for g in groups.values() if len(g["drinks"]) >= min_drinks]
+    if not eligible:
         return None
 
-    ranked = sorted(groups.values(), key=lambda g: (-len(g["drinks"]), g["name"].lower()))
-    top = ranked[:max_items]
-    for g in top:
-        g["drinks"].sort()
+    def rank(g):
+        head_start = 1 if g["kind"] == "ingredient" else 0
+        return (-(len(g["drinks"]) + head_start), g["kind"] != "ingredient", g["name"].lower())
 
-    return {
-        # NOT "items": Jinja resolves `gap.items` to dict.items() before it
-        # looks for a key of that name, so the template would silently iterate
-        # a bound method and blow up at render time.
-        "picks": top,
-        "drink_count": sum(len(g["drinks"]) for g in top),
-        "ingredient_count": len(top),
-        # How much is still on the table below the cut, for the "and more" line.
-        "remaining_ingredients": max(0, len(ranked) - len(top)),
-        "remaining_drinks": sum(len(g["drinks"]) for g in ranked[len(top):]),
-    }
+    best = sorted(eligible, key=rank)[0]
+
+    # The headline names one drink, so it should be the most tempting one:
+    # liked first, never a disliked one if there's a choice, then the LOWEST
+    # recipe id. The oldest rows are the original classics catalog, so for
+    # bourbon that's Old Fashioned rather than alphabetical Gold Rush.
+    bucket = {1: 0, 0: 1, -1: 2}
+    headline = min(best["drinks"], key=lambda r: (bucket[ratings.get(r["id"], 0)], r["id"]))
+    rest = sorted((r for r in best["drinks"] if r["id"] != headline["id"]),
+                  key=lambda r: (bucket[ratings.get(r["id"], 0)], r["name"].lower()))
+    best["drinks"] = [headline] + rest
+    best["headline_drink"] = headline
+    best["other_groups"] = len(groups) - 1
+    return best
 
 
 def get_recommendations(user_id, max_makeable=50, max_one_away=25):
@@ -559,9 +593,9 @@ def get_recommendations(user_id, max_makeable=50, max_one_away=25):
         elif status == "one_away":
             one_away.append({"recipe": r, "missing": missing[0]})
 
-    # Work out the mixer gap BEFORE one_away gets truncated for display, so
-    # the count reflects every blocked drink rather than the first handful.
-    mixer_gap = build_mixer_gap(one_away, ingredients)
+    # Pick the spotlight BEFORE one_away gets truncated for display, so the
+    # count reflects every blocked drink rather than the first handful.
+    spotlight = build_one_away_spotlight(one_away, ingredients, ratings)
 
     # Sort makeable by rating bucket: liked (1) -> unrated (0) -> disliked (-1).
     # bucket map keeps liked at top, disliked at bottom.
@@ -584,5 +618,5 @@ def get_recommendations(user_id, max_makeable=50, max_one_away=25):
         "total_makeable": len(makeable),
         "total_one_away": len(one_away),
         "ratings": ratings,
-        "mixer_gap": mixer_gap,
+        "spotlight": spotlight,
     }

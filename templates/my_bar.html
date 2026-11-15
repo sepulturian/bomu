@@ -611,7 +611,7 @@
         <form method="POST" action="/add" id="sheet-add-form">
             <div class="form-group">
                 <label for="sheet-name">Bottle Name</label>
-                <input type="text" id="sheet-name" name="name" placeholder="e.g. Bombay Sapphire" required>
+                <input type="text" id="sheet-name" name="name" placeholder="e.g. Bombay Sapphire" value="{{ prefill_name }}" required>
             </div>
             <div class="form-group">
                 <label for="sheet-type">Bottle Type</label>
@@ -622,14 +622,14 @@
                     <button type="button" class="quick-type-chip" data-pick-type="rum">Rum</button>
                     <button type="button" class="quick-type-chip" data-pick-type="tequila">Tequila</button>
                     <button type="button" class="quick-type-chip" data-pick-type="rye">Rye</button>
-                    <button type="button" class="quick-type-chip" data-pick-type="sweet_vermouth">Sweet Vermouth</button>
+                    <button type="button" class="quick-type-chip" data-pick-type="vermouth_sweet">Sweet Vermouth</button>
                     <button type="button" class="quick-type-chip" id="other-type-chip">Other type&hellip;</button>
                 </div>
                 <div class="sheet-type-select-wrap" id="sheet-type-wrap">
                     <select id="sheet-type" name="type" required>
                         <option value="">Choose type &mdash;</option>
                         {% for value, label in BOTTLE_TYPE_CHOICES %}
-                            <option value="{{ value }}">{{ label }}</option>
+                            <option value="{{ value }}" {% if value == prefill_type %}selected{% endif %}>{{ label }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -729,6 +729,16 @@
                 });
                 if (otherChip) otherChip.classList.toggle("active", !matchedChip && !!sheetSelect.value);
             });
+            // Arrived with a preselected type (e.g. from the Tonight spotlight):
+            // light up its chip, or reveal the dropdown if it has no chip.
+            if (sheetSelect.value) {
+                sheetSelect.dispatchEvent(new Event("change"));
+                var hasChip = false;
+                quickChips.forEach(function (c) {
+                    if (c.getAttribute("data-pick-type") === sheetSelect.value) hasChip = true;
+                });
+                if (!hasChip && selectWrap) selectWrap.classList.add("is-visible");
+            }
             if (addForm && selectWrap) {
                 addForm.addEventListener("submit", function (e) {
                     if (!sheetSelect.value) {
