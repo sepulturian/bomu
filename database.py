@@ -1,18 +1,214 @@
 import sqlite3
 import os
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "bomu.db")
+DEFAULT_DB_PATH = os.path.join(os.path.dirname(__file__), "bomu.db")
+DB_PATH = DEFAULT_DB_PATH
+
+
+def _pg_url():
+    if os.path.abspath(DB_PATH) != os.path.abspath(DEFAULT_DB_PATH):
+        return None  # verify_routes.py overrides DB_PATH to a scratch SQLite file
+    if os.environ.get("FORCE_SQLITE") == "1":
+        return None
+    return os.environ.get("DATABASE_URL") or os.environ.get("POSTGRES_URL")
+
+
+def _is_postgres():
+    return bool(_pg_url())
+
+
+def _integrity_errors():
+    if _is_postgres():
+        import psycopg2
+        return (sqlite3.IntegrityError, psycopg2.IntegrityError)
+    return (sqlite3.IntegrityError,)
+
+
+def _operational_errors():
+    if _is_postgres():
+        import psycopg2
+        return (sqlite3.OperationalError, psycopg2.Error)
+    return (sqlite3.OperationalError,)
+
+
+class _PgRow(dict):
+    """Row mapping supporting dict key lookup (`row['col']`), positional
+    indexing (`row[0]`), and `dict(row)` conversions like sqlite3.Row."""
+
+    def __init__(self, mapping):
+        super().__init__(mapping)
+        self._values = list(mapping.values())
+
+    def __getitem__(self, key):
+        if isinstance(key, int):
+            return self._values[key]
+        return super().__getitem__(key)
+
+
+class _PgCursor:
+    """Thin wrapper over psycopg2 RealDictCursor that wraps rows in _PgRow
+    and translates SQLite `?` placeholders into `%s`."""
+
+    def __init__(self, cur):
+        self._cur = cur
+
+    def execute(self, sql, params=None):
+        pg_sql = sql.replace("?", "%s")
+        if params is None:
+            self._cur.execute(pg_sql)
+        else:
+            self._cur.execute(pg_sql, params)
+        return self
+
+    def executemany(self, sql, seq_of_params):
+        pg_sql = sql.replace("?", "%s")
+        self._cur.executemany(pg_sql, seq_of_params)
+        return self
+
+    def fetchone(self):
+        row = self._cur.fetchone()
+        return _PgRow(row) if row is not None else None
+
+    def fetchall(self):
+        return [_PgRow(r) for r in self._cur.fetchall()]
+
+    @property
+    def rowcount(self):
+        return self._cur.rowcount
+
+    def close(self):
+        self._cur.close()
+
+
+class _PgConn:
+    """Minimal sqlite3.Connection-compatible wrapper around a psycopg2 connection."""
+
+    def __init__(self, raw_conn, real_dict_cursor):
+        self._conn = raw_conn
+        self._cursor_factory = real_dict_cursor
+
+    def cursor(self):
+        return _PgCursor(self._conn.cursor(cursor_factory=self._cursor_factory))
+
+    def execute(self, sql, params=None):
+        return self.cursor().execute(sql, params)
+
+    def executemany(self, sql, seq_of_params):
+        return self.cursor().executemany(sql, seq_of_params)
+
+    def commit(self):
+        self._conn.commit()
+
+    def rollback(self):
+        self._conn.rollback()
+
+    def close(self):
+        self._conn.close()
 
 
 def get_db():
-    """Open a connection to the database."""
+    """Open a connection to the database (Neon Postgres when configured, else SQLite)."""
+    pg_url = _pg_url()
+    if pg_url:
+        import psycopg2
+        import psycopg2.extras
+        raw = psycopg2.connect(pg_url)
+        return _PgConn(raw, psycopg2.extras.RealDictCursor)
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row  # lets us access columns by name
     return conn
 
 
-def init_db():
+def init_db(force=False, seed=True):
     """Create tables and seed ingredient data if they don't exist yet."""
+    if _is_postgres():
+        if not force:
+            return
+        conn = get_db()
+        c = conn.cursor()
+        ddl_statements = [
+            """CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                username TEXT NOT NULL UNIQUE,
+                password_hash TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )""",
+            "CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username_lower ON users (LOWER(username))",
+            """CREATE TABLE IF NOT EXISTS bottles (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                name TEXT NOT NULL,
+                type TEXT NOT NULL,
+                brand TEXT,
+                added_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )""",
+            """CREATE TABLE IF NOT EXISTS ingredients (
+                id SERIAL PRIMARY KEY,
+                name TEXT NOT NULL,
+                category TEXT NOT NULL,
+                in_stock INTEGER DEFAULT 0
+            )""",
+            """CREATE TABLE IF NOT EXISTS user_stock (
+                user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                ingredient_id INTEGER NOT NULL REFERENCES ingredients(id) ON DELETE CASCADE,
+                PRIMARY KEY (user_id, ingredient_id)
+            )""",
+            """CREATE TABLE IF NOT EXISTS recipes (
+                id SERIAL PRIMARY KEY,
+                name TEXT NOT NULL UNIQUE,
+                glass TEXT,
+                instructions TEXT NOT NULL,
+                image_url TEXT,
+                cocktaildb_id TEXT,
+                source TEXT DEFAULT 'thecocktaildb',
+                added_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                about TEXT,
+                tip TEXT
+            )""",
+            """CREATE TABLE IF NOT EXISTS recipe_ingredients (
+                id SERIAL PRIMARY KEY,
+                recipe_id INTEGER NOT NULL REFERENCES recipes(id) ON DELETE CASCADE,
+                raw_name TEXT NOT NULL,
+                raw_measure TEXT,
+                requirement_type TEXT NOT NULL,
+                bottle_type TEXT,
+                ingredient_name TEXT,
+                notes TEXT,
+                sort_order INTEGER DEFAULT 0
+            )""",
+            """CREATE TABLE IF NOT EXISTS ratings (
+                user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                recipe_id INTEGER NOT NULL REFERENCES recipes(id) ON DELETE CASCADE,
+                thumb INTEGER NOT NULL,
+                rated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (user_id, recipe_id)
+            )""",
+            """CREATE TABLE IF NOT EXISTS scan_log (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                scanned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )""",
+            """CREATE TABLE IF NOT EXISTS recipe_enhancements (
+                id SERIAL PRIMARY KEY,
+                recipe_id INTEGER NOT NULL REFERENCES recipes(id) ON DELETE CASCADE,
+                name TEXT NOT NULL,
+                ingredient_name TEXT,
+                measure TEXT,
+                note TEXT,
+                source TEXT,
+                sort_order INTEGER DEFAULT 0
+            )""",
+        ]
+        for stmt in ddl_statements:
+            c.execute(stmt)
+        if seed:
+            c.execute("SELECT COUNT(*) FROM ingredients")
+            if c.fetchone()[0] == 0:
+                seed_ingredients(c)
+        conn.commit()
+        conn.close()
+        return
+
     conn = get_db()
     c = conn.cursor()
 
@@ -124,9 +320,10 @@ def init_db():
     """)
 
     # Only seed if the table is empty (first run)
-    c.execute("SELECT COUNT(*) FROM ingredients")
-    if c.fetchone()[0] == 0:
-        seed_ingredients(c)
+    if seed:
+        c.execute("SELECT COUNT(*) FROM ingredients")
+        if c.fetchone()[0] == 0:
+            seed_ingredients(c)
 
     conn.commit()
     conn.close()
@@ -195,13 +392,22 @@ def create_user(username, password_hash):
     is already taken (case-insensitive)."""
     conn = get_db()
     try:
-        cur = conn.execute(
-            "INSERT INTO users (username, password_hash) VALUES (?, ?)",
-            (username, password_hash),
-        )
+        if _is_postgres():
+            cur = conn.execute(
+                "INSERT INTO users (username, password_hash) VALUES (?, ?) RETURNING id",
+                (username, password_hash),
+            )
+            user_id = cur.fetchone()[0]
+        else:
+            cur = conn.execute(
+                "INSERT INTO users (username, password_hash) VALUES (?, ?)",
+                (username, password_hash),
+            )
+            user_id = cur.lastrowid
         conn.commit()
-        return cur.lastrowid
-    except sqlite3.IntegrityError:
+        return user_id
+    except _integrity_errors():
+        conn.rollback()
         return None
     finally:
         conn.close()
@@ -210,7 +416,7 @@ def create_user(username, password_hash):
 def get_user_by_username(username):
     conn = get_db()
     row = conn.execute(
-        "SELECT * FROM users WHERE username = ?", (username,)
+        "SELECT * FROM users WHERE LOWER(username) = LOWER(?)", (username,)
     ).fetchone()
     conn.close()
     return row
@@ -236,10 +442,12 @@ def scans_today(user_id):
     """How many scans this user has done since midnight UTC (matches the
     CURRENT_TIMESTAMP default, which is UTC)."""
     conn = get_db()
-    n = conn.execute(
-        "SELECT COUNT(*) FROM scan_log WHERE user_id = ? AND scanned_at >= date('now')",
-        (user_id,),
-    ).fetchone()[0]
+    sql = (
+        "SELECT COUNT(*) FROM scan_log WHERE user_id = ? AND scanned_at >= CURRENT_DATE"
+        if _is_postgres()
+        else "SELECT COUNT(*) FROM scan_log WHERE user_id = ? AND scanned_at >= date('now')"
+    )
+    n = conn.execute(sql, (user_id,)).fetchone()[0]
     conn.close()
     return n
 
@@ -355,7 +563,7 @@ def add_ingredients_to_stock(user_id, ingredient_ids):
         return
     conn = get_db()
     conn.executemany(
-        "INSERT OR IGNORE INTO user_stock (user_id, ingredient_id) VALUES (?, ?)",
+        "INSERT INTO user_stock (user_id, ingredient_id) VALUES (?, ?) ON CONFLICT (user_id, ingredient_id) DO NOTHING",
         [(user_id, int(i)) for i in ingredient_ids],
     )
     conn.commit()
@@ -368,7 +576,7 @@ def set_all_ingredients_stock(user_id, checked_ids):
     conn.execute("DELETE FROM user_stock WHERE user_id = ?", (user_id,))
     if checked_ids:
         conn.executemany(
-            "INSERT OR IGNORE INTO user_stock (user_id, ingredient_id) VALUES (?, ?)",
+            "INSERT INTO user_stock (user_id, ingredient_id) VALUES (?, ?) ON CONFLICT (user_id, ingredient_id) DO NOTHING",
             [(user_id, i) for i in checked_ids],
         )
     conn.commit()
@@ -384,12 +592,20 @@ def add_recipe(name, glass, instructions, image_url, cocktaildb_id, ingredients)
     Returns the new recipe id, or None if name already exists."""
     conn = get_db()
     try:
-        cur = conn.execute(
-            """INSERT INTO recipes (name, glass, instructions, image_url, cocktaildb_id)
-               VALUES (?, ?, ?, ?, ?)""",
-            (name, glass, instructions, image_url, cocktaildb_id),
-        )
-        recipe_id = cur.lastrowid
+        if _is_postgres():
+            cur = conn.execute(
+                """INSERT INTO recipes (name, glass, instructions, image_url, cocktaildb_id)
+                   VALUES (?, ?, ?, ?, ?) RETURNING id""",
+                (name, glass, instructions, image_url, cocktaildb_id),
+            )
+            recipe_id = cur.fetchone()[0]
+        else:
+            cur = conn.execute(
+                """INSERT INTO recipes (name, glass, instructions, image_url, cocktaildb_id)
+                   VALUES (?, ?, ?, ?, ?)""",
+                (name, glass, instructions, image_url, cocktaildb_id),
+            )
+            recipe_id = cur.lastrowid
         for i, ing in enumerate(ingredients):
             conn.execute(
                 """INSERT INTO recipe_ingredients
@@ -409,7 +625,7 @@ def add_recipe(name, glass, instructions, image_url, cocktaildb_id, ingredients)
             )
         conn.commit()
         return recipe_id
-    except sqlite3.IntegrityError:
+    except _integrity_errors():
         # Recipe name already exists
         conn.rollback()
         return None
@@ -421,15 +637,17 @@ def get_all_recipes():
     """Return every recipe with its ingredients, used by the matcher."""
     conn = get_db()
     recipes = conn.execute("SELECT * FROM recipes ORDER BY name").fetchall()
-    result = []
-    for r in recipes:
-        ings = conn.execute(
-            "SELECT * FROM recipe_ingredients WHERE recipe_id = ? ORDER BY sort_order",
-            (r["id"],),
-        ).fetchall()
-        result.append({"recipe": dict(r), "ingredients": [dict(i) for i in ings]})
+    all_ings = conn.execute(
+        "SELECT * FROM recipe_ingredients ORDER BY recipe_id, sort_order"
+    ).fetchall()
     conn.close()
-    return result
+    ings_by_recipe = {}
+    for ing in all_ings:
+        ings_by_recipe.setdefault(ing["recipe_id"], []).append(dict(ing))
+    return [
+        {"recipe": dict(r), "ingredients": ings_by_recipe.get(r["id"], [])}
+        for r in recipes
+    ]
 
 
 def get_recipe(recipe_id):
@@ -471,7 +689,8 @@ def get_recipe_enhancements(conn, recipe_id):
             "SELECT * FROM recipe_enhancements WHERE recipe_id = ? ORDER BY sort_order",
             (recipe_id,),
         ).fetchall()
-    except sqlite3.OperationalError:
+    except _operational_errors():
+        conn.rollback()
         return []
     return [dict(r) for r in rows]
 

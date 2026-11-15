@@ -3,6 +3,7 @@ import re
 import base64
 import json
 import random
+import tempfile
 import uuid
 from functools import wraps
 from io import BytesIO
@@ -47,13 +48,17 @@ app.config["SESSION_COOKIE_SECURE"] = os.environ.get("SECURE_COOKIES", "0") == "
 # Per-user daily photo-scan cap: friends' scans bill Aaron's API key.
 SCAN_DAILY_LIMIT = int(os.environ.get("SCAN_DAILY_LIMIT", "15"))
 
-UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), "uploads")
+UPLOAD_FOLDER = (
+    os.path.join(tempfile.gettempdir(), "bomu_uploads")
+    if os.environ.get("VERCEL")
+    else os.path.join(os.path.dirname(__file__), "uploads")
+)
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 init_db()
 
-client = anthropic.Anthropic()
+client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY") or "missing-key")
 
 
 # --- Auth ---
