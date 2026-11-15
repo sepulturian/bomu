@@ -1043,3 +1043,30 @@ Phone (375px) layout checked.
 
 **Live today:** Aaron's spotlight is "Pick up Bourbon" (Old Fashioned headline,
 5 drinks); Maho's is Lemon juice (fresh) → Tom Collins, Bee's Knees.
+
+### 2026-11-15 (fourth session) — "Ready" / "One away" wording (Claude Code)
+
+Aaron liked the look of the Tonight stat line but not what it said:
+`34 make now · 70 1 away →`. Objective problems: "70 1 away" reads as one
+number ("701"); "make now" has no noun and disagreed with the "More ready"
+heading right below it; and the digit form "1 Ingredient Away" clashed with
+the new spotlight's spelled-out "One ingredient away".
+
+**Agreed:** keep both stats; **"Ready"** for makeable and **"One away"** for
+one-ingredient-short, used everywhere, not just on that line.
+
+**Changed (templates only, 14 lines):** Tonight stat line →
+`34 ready · 70 one away →`; Tonight row subtitles and carousel heading;
+Explore filter chips (`Ready (n)`, `One away (n)`) and row status; Saved row
+status; one-away page title and H1 (`One Away`). The URL stays `/one-away` and
+Explore's filters key off `data-val`, so no behaviour changed. The spotlight's
+"One ingredient away" / "One bottle away" kicker stays as is, being the
+specific form of the same idea.
+
+**Verified:** grep finds no remaining "make now", "1 away" or "1 Ingredient
+Away" in templates; `verify_routes.py` passes; checked Tonight, Explore and
+One Away in the browser on a scratch copy.
+
+**Open at close of day:** Hugo Spritz row 398 (#15), Shehan 0 from 16 (#2,
+the Amaretto spotlight may now help), never-started users (#1), and the leaked
+connection string + Neon password rotation (#17, Aaron's action).

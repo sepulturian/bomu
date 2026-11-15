@@ -30,10 +30,10 @@
                     </div>
                     {% if item.status == 'makeable' %}
                         <div class="drink-sub">
-                            Make now{% if item.your_bottles %} &middot; {{ item.your_bottles | join(' · ') }}{% endif %}
+                            Ready{% if item.your_bottles %} &middot; {{ item.your_bottles | join(' · ') }}{% endif %}
                         </div>
                     {% elif item.status == 'one_away' %}
-                        <div class="drink-sub is-missing">1 away &middot; Need {{ item.missing[0] }}</div>
+                        <div class="drink-sub is-missing">One away &middot; Need {{ item.missing[0] }}</div>
                     {% else %}
                         <div class="drink-sub is-dim">Missing {{ item.missing|length }} items</div>
                     {% endif %}

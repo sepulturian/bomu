@@ -95,8 +95,8 @@
 <div class="filter-block">
     <div class="chip-strip" data-filter-group="status">
         <button type="button" class="chip active" data-val="all">All</button>
-        <button type="button" class="chip" data-val="makeable">Make now ({{ makeable_total }})</button>
-        <button type="button" class="chip" data-val="one_away">1 away ({{ one_away_total }})</button>
+        <button type="button" class="chip" data-val="makeable">Ready ({{ makeable_total }})</button>
+        <button type="button" class="chip" data-val="one_away">One away ({{ one_away_total }})</button>
     </div>
 
     <div class="filter-dropdowns">
@@ -153,13 +153,13 @@
                 {% if e.status == 'makeable' %}
                     <div class="drink-sub">
                         {% if e.your_bottles %}
-                            Make now &middot; {{ e.your_bottles | join(' · ') }}
+                            Ready &middot; {{ e.your_bottles | join(' · ') }}
                         {% else %}
-                            Make now
+                            Ready
                         {% endif %}
                     </div>
                 {% elif e.status == 'one_away' %}
-                    <div class="drink-sub is-missing">1 away &middot; Need {{ e.missing[0] }}</div>
+                    <div class="drink-sub is-missing">One away &middot; Need {{ e.missing[0] }}</div>
                 {% else %}
                     <div class="drink-sub is-dim">Missing {{ e.missing|length }} items</div>
                 {% endif %}

@@ -450,10 +450,10 @@
     </div>
 
     <div class="stat-bar">
-        <span class="stat-ready">{{ recs.total_makeable }} make now</span>
+        <span class="stat-ready">{{ recs.total_makeable }} ready</span>
         {% if recs.total_one_away > 0 %}
             <span class="stat-sep">&middot;</span>
-            <a href="/one-away" style="color: var(--zest); font-weight: 600;">{{ recs.total_one_away }} 1 away &rarr;</a>
+            <a href="/one-away" style="color: var(--zest); font-weight: 600;">{{ recs.total_one_away }} one away &rarr;</a>
         {% endif %}
     </div>
 
@@ -537,7 +537,7 @@
         </section>
     {% endif %}
 
-    {# Make Now List (excluding featured drink if multiple ready) #}
+    {# Ready List (excluding featured drink if multiple ready) #}
     {% if recs.total_makeable > 0 %}
         {% set list_count = (recs.total_makeable - 1) if (featured and recs.total_makeable > 1) else recs.total_makeable %}
         <div class="section-row" style="margin: 0.65rem 0 0.5rem;">
@@ -571,7 +571,7 @@
                         {% endif %}
                     </div>
                     {% if r.your_bottles %}
-                        <div class="drink-sub">Make now &middot; {{ r.your_bottles | map('short_name') | join(' · ') }}</div>
+                        <div class="drink-sub">Ready &middot; {{ r.your_bottles | map('short_name') | join(' · ') }}</div>
                     {% endif %}
                     <div class="drink-glass-line">
                         {{ glass_icon(r.recipe.glass) }}
@@ -652,7 +652,7 @@
     {# Horizontal One-Away Carousel #}
     {% if recs.one_away %}
         <div class="section-row">
-            <h2>1 Ingredient Away</h2>
+            <h2>One away</h2>
             <a href="/one-away" class="section-link">See all {{ recs.total_one_away }} &rarr;</a>
         </div>
         <div class="hscroll-row">
