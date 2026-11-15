@@ -899,3 +899,21 @@ Variables, then Redeploy (env changes don't apply to existing deployments).
   `DATABASE_URL` unset to develop on local SQLite.
 - Debug a 500 on prod by checking Vercel -> project -> Logs first.
 - In Antigravity's sandbox, git and npm need to run outside the sandbox.
+
+## Session handoff protocol (applies to Claude Code AND Antigravity)
+
+This file is the shared memory between agents. Neither agent can see the
+other's chat, so anything not written here is lost.
+
+- **Start of session:** read this file, newest dated entry first.
+- **End of session ("close sesh", or any wrap-up):** append a dated `### YYYY-MM-DD`
+  entry under the log: what changed, why, gotchas, open items / next steps.
+- **Never record secret values** (passwords, API keys, full DATABASE_URL). Names only.
+- **Commit and push the CLAUDE.md update** together with the session's work.
+- Antigravity picks this up via `AGENTS.md` (a pointer to this file).
+
+### 2026-11-15 — Open items at close
+- Local `.env` `DATABASE_URL` / `DATABASE_URL_UNPOOLED` still hold the dead
+  pre-claim Neon password. Replace from Neon Console -> Connect, or delete them to
+  use local SQLite. (Antigravity's sandbox could not edit `.env`.)
+- Optional: switch Porkbun DNS to the newer Vercel targets shown on its Domains page.
