@@ -267,21 +267,21 @@
         gap: 0.3rem;
         min-height: 44px;
         padding: 0 0.95rem 0 0.72rem;
-        border-radius: var(--radius-pill);
-        background: linear-gradient(180deg, #33261d 0%, #221913 100%);
-        border: 1px solid #4a3728;
-        box-shadow: inset 0 1px 0 rgba(255, 236, 214, 0.12), 0 2px 6px rgba(0, 0, 0, 0.4);
+        border-radius: var(--radius-btn);
+        background: var(--bg-pill);
+        border: 1.5px solid var(--border-highlight);
+        box-shadow: 3px 3px 0 rgba(255, 236, 214, 0.16);
         color: var(--ink);
         font-family: var(--font-display);
         font-weight: 700;
         font-size: 0.95rem;
         letter-spacing: 0.04em;
         text-transform: uppercase;
-        transition: transform var(--dur-snap) var(--ease-snap), filter var(--dur-snap) var(--ease-snap);
+        transition: transform var(--dur-snap) var(--ease-snap), box-shadow var(--dur-snap) var(--ease-snap), background-color var(--dur-snap) var(--ease-snap);
     }
 
-    .dock-back:hover { filter: brightness(1.08); }
-    .dock-back:active { transform: translateY(1px) scale(0.97); }
+    .dock-back:hover { background: var(--bg-pill-hover); }
+    .dock-back:active { transform: translate(3px, 3px); box-shadow: 0 0 0 transparent; }
 
     .dock-rate-group {
         display: flex;
@@ -295,22 +295,23 @@
         gap: 0.38rem;
         min-height: 44px;
         padding: 0 0.98rem;
-        border-radius: var(--radius-pill);
-        border: 1px solid #4d3929;
-        background: linear-gradient(180deg, #35281e 0%, #241b14 100%);
+        --dock-shadow: rgba(255, 236, 214, 0.16);
+        border-radius: var(--radius-btn);
+        border: 1.5px solid var(--border-highlight);
+        background: var(--bg-pill);
         color: var(--ink);
         font-family: var(--font-display);
         font-weight: 700;
         font-size: 0.94rem;
         letter-spacing: 0.04em;
         text-transform: uppercase;
-        box-shadow: inset 0 1px 0 rgba(255, 236, 214, 0.14), 0 3px 8px rgba(0, 0, 0, 0.45);
+        box-shadow: 3px 3px 0 var(--dock-shadow);
         cursor: pointer;
-        transition: transform var(--dur-snap) var(--ease-snap), filter var(--dur-snap) var(--ease-snap);
+        transition: transform var(--dur-snap) var(--ease-snap), box-shadow var(--dur-snap) var(--ease-snap), background-color var(--dur-snap) var(--ease-snap);
     }
 
     .dock-rate-btn:hover { filter: brightness(1.08); }
-    .dock-rate-btn:active { transform: translateY(1px) scale(0.97); }
+    .dock-rate-btn:active { transform: translate(3px, 3px); box-shadow: 0 0 0 transparent; }
 
     .dock-rate-btn svg {
         width: 17px;
@@ -318,8 +319,8 @@
     }
 
     .dock-rate-btn.dock-like-idle {
+        --dock-shadow: var(--zest-border);
         border-color: var(--zest-border);
-        box-shadow: inset 0 1px 0 rgba(244, 196, 48, 0.2), 0 3px 10px rgba(0, 0, 0, 0.48);
     }
 
     .dock-rate-btn.dock-like-idle svg {
@@ -327,17 +328,17 @@
     }
 
     .dock-rate-btn.is-up {
-        background: linear-gradient(180deg, rgba(149, 213, 178, 0.25) 0%, rgba(149, 213, 178, 0.12) 100%);
+        --dock-shadow: var(--sage-border);
+        background: var(--sage-soft);
         border-color: var(--sage);
         color: var(--sage);
-        box-shadow: inset 0 1px 0 rgba(149, 213, 178, 0.35), 0 4px 12px rgba(149, 213, 178, 0.18);
     }
 
     .dock-rate-btn.is-down {
-        background: linear-gradient(180deg, rgba(231, 111, 81, 0.24) 0%, rgba(231, 111, 81, 0.12) 100%);
+        --dock-shadow: var(--terracotta-border);
+        background: var(--terracotta-soft);
         border-color: var(--terracotta);
         color: var(--terracotta);
-        box-shadow: inset 0 1px 0 rgba(231, 111, 81, 0.32), 0 4px 12px rgba(231, 111, 81, 0.18);
     }
 
     @media (min-width: 520px) {

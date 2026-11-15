@@ -52,6 +52,7 @@
             --radius-pill: 999px;
             --radius-card: 20px;
             --radius-control: 14px;
+            --radius-btn: 4px;
 
             --ease-snap: cubic-bezier(0.2, 0, 0, 1);
             --dur-snap: 150ms;
@@ -122,62 +123,79 @@
             flex-shrink: 0;
         }
 
-        .account-menu {
-            position: relative;
-        }
-
-        .account-avatar {
-            width: 34px;
-            height: 34px;
-            border-radius: 50%;
-            background: var(--bg-pill);
-            border: 1px solid var(--border-highlight);
-            color: var(--ink);
-            font-family: var(--font-display);
-            font-weight: 700;
-            font-size: 0.95rem;
+        /* "aaron · out": plain text, no avatar */
+        .account-line {
             display: inline-flex;
             align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            user-select: none;
+            gap: 0.4rem;
+            min-width: 0;
+            font-size: 0.86rem;
+            color: var(--ink-dim);
         }
 
-        .account-popover {
-            position: absolute;
-            right: 0;
-            top: calc(100% + 6px);
-            min-width: 150px;
+        .account-user {
+            max-width: 16ch;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .account-sep { color: var(--ink-faint); }
+
+        .account-out {
+            background: none;
+            border: none;
+            color: var(--ink-dim);
+            font: inherit;
+            min-height: 40px;
+            padding: 0 0.15rem;
+            cursor: pointer;
+            text-underline-offset: 3px;
+            transition: color var(--dur-snap) var(--ease-snap);
+        }
+
+        .account-out:hover,
+        .account-out:focus-visible {
+            color: var(--zest);
+            text-decoration: underline;
+        }
+
+        /* Sign-out confirm */
+        .signout-dialog {
+            margin: auto;
+            width: min(340px, calc(100vw - 2rem));
             background: var(--bg-elevated);
+            color: var(--ink);
             border: 1px solid var(--border-highlight);
             border-radius: var(--radius-control);
-            padding: 0.55rem;
-            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.65);
-            z-index: 250;
+            padding: 1.35rem 1.25rem 1.25rem;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.7);
         }
 
-        .account-name {
-            font-size: 0.78rem;
-            color: var(--ink-dim);
-            padding: 0.2rem 0.45rem 0.4rem;
-            border-bottom: 1px solid var(--border-subtle);
+        .signout-dialog::backdrop {
+            background: rgba(8, 6, 4, 0.72);
+        }
+
+        .signout-dialog h2 {
+            font-size: 1.6rem;
+            color: var(--ink);
             margin-bottom: 0.35rem;
         }
 
-        .account-logout {
-            width: 100%;
-            text-align: left;
-            background: none;
-            border: none;
-            color: var(--ink);
-            font-size: 0.84rem;
-            font-weight: 600;
-            padding: 0.4rem 0.45rem;
-            border-radius: 8px;
-            cursor: pointer;
+        .signout-dialog p {
+            font-size: 0.88rem;
+            color: var(--ink-dim);
+            margin-bottom: 1.25rem;
         }
 
-        .account-logout:hover { background: var(--bg-pill); }
+        .signout-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        .signout-actions form { margin: 0; display: flex; }
+        .signout-actions .btn { width: 100%; padding-inline: 0.5rem; }
 
         .container {
             max-width: 600px;
@@ -228,60 +246,80 @@
             gap: 0.2rem;
         }
 
-        /* Sculpted Tactile Capsule CTAs (>= 46px height) */
+        /* Stamped buttons: flat face, small corners, solid offset shadow with
+           no blur. Pressing slides the face into its shadow. Each variant
+           only sets --btn-shadow; .btn-sm shrinks --btn-offset. */
         .btn {
+            --btn-offset: 4px;
+            --btn-shadow: #b07d0c;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 0.45rem;
             min-height: 46px;
             padding: 0.6rem 1.35rem;
-            border-radius: var(--radius-pill);
-            border: 1px solid rgba(255, 238, 173, 0.45);
-            background: linear-gradient(180deg, #ffdf6b 0%, #f4c430 52%, #e0ae19 100%);
+            border-radius: var(--radius-btn);
+            border: 1.5px solid var(--zest);
+            background: var(--zest);
             color: var(--ink-on-zest);
             font-family: var(--font-display);
             font-weight: 800;
             font-size: 0.98rem;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.06em;
             text-transform: uppercase;
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 6px 18px rgba(244, 196, 48, 0.24), 0 2px 6px rgba(0, 0, 0, 0.5);
+            box-shadow: var(--btn-offset) var(--btn-offset) 0 var(--btn-shadow);
             cursor: pointer;
-            transition: transform var(--dur-snap) var(--ease-snap), filter var(--dur-snap) var(--ease-snap), box-shadow var(--dur-snap) var(--ease-snap);
+            transition: transform var(--dur-snap) var(--ease-snap), box-shadow var(--dur-snap) var(--ease-snap), background-color var(--dur-snap) var(--ease-snap);
         }
 
-        .btn:hover { filter: brightness(1.06); }
+        .btn:hover { background: var(--zest-hover); border-color: var(--zest-hover); }
         .btn:active {
-            transform: translateY(1px) scale(0.98);
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 2px 8px rgba(244, 196, 48, 0.18);
+            transform: translate(var(--btn-offset), var(--btn-offset));
+            box-shadow: 0 0 0 var(--btn-shadow);
+        }
+        .btn:focus-visible {
+            outline: 2px solid var(--ink);
+            outline-offset: 3px;
+        }
+        .btn:disabled,
+        .btn[aria-disabled="true"] {
+            opacity: 0.55;
+            cursor: default;
+            transform: none;
         }
 
         .btn-secondary {
-            background: linear-gradient(180deg, #35281e 0%, #241b14 100%);
-            border: 1px solid #4d3929;
+            --btn-shadow: rgba(255, 236, 214, 0.16);
+            background: var(--bg-pill);
+            border-color: var(--border-highlight);
             color: var(--ink);
             font-family: var(--font-body);
             font-weight: 600;
             font-size: 0.88rem;
             letter-spacing: 0.01em;
             text-transform: none;
-            box-shadow: inset 0 1px 0 rgba(255, 236, 214, 0.14), 0 4px 12px rgba(0, 0, 0, 0.45);
         }
 
         .btn-secondary:hover {
-            background: linear-gradient(180deg, #3e2f23 0%, #2b2017 100%);
-            border-color: #634a36;
-            filter: none;
+            background: var(--bg-pill-hover);
+            border-color: rgba(255, 236, 214, 0.28);
         }
 
         .btn-danger {
+            --btn-shadow: var(--terracotta-border);
             background: var(--terracotta-soft);
             border-color: var(--terracotta-border);
             color: var(--terracotta);
             font-weight: 600;
         }
 
+        .btn-danger:hover {
+            background: rgba(231, 111, 81, 0.22);
+            border-color: var(--terracotta);
+        }
+
         .btn-sm {
+            --btn-offset: 3px;
             min-height: 40px;
             padding: 0.35rem 0.95rem;
             font-size: 0.82rem;
@@ -812,19 +850,26 @@
             <span>Bomu</span>
         </a>
         {% if current_username and not hide_account %}
-            <details class="account-menu">
-                <summary class="bare account-avatar" title="Account ({{ current_username }})" aria-label="Account menu">
-                    {{ current_username[:1]|upper }}
-                </summary>
-                <div class="account-popover">
-                    <div class="account-name">Signed in as <strong>{{ current_username }}</strong></div>
-                    <form method="POST" action="/logout" style="margin: 0;">
-                        <button type="submit" class="account-logout">Sign out</button>
-                    </form>
-                </div>
-            </details>
+            <div class="account-line">
+                <span class="account-user" title="Signed in as {{ current_username }}">{{ current_username }}</span>
+                <span class="account-sep" aria-hidden="true">&middot;</span>
+                <button type="button" class="account-out" id="signout-open" aria-haspopup="dialog" aria-label="Sign out">out</button>
+            </div>
         {% endif %}
     </header>
+    {% endif %}
+
+    {% if current_username %}
+    <dialog class="signout-dialog" id="signout-dialog" aria-labelledby="signout-title" closedby="any">
+        <h2 id="signout-title">Calling it a night?</h2>
+        <p>Your bar stays stocked for next time.</p>
+        <div class="signout-actions">
+            <button type="button" class="btn btn-secondary" id="signout-stay" autofocus>One more round</button>
+            <form method="POST" action="/logout">
+                <button type="submit" class="btn">Close my tab</button>
+            </form>
+        </div>
+    </dialog>
     {% endif %}
 
     <main class="container">
@@ -869,6 +914,19 @@
                 setTimeout(function () { el.remove(); }, 400);
             }, 4000);
         });
+        (function () {
+            var dlg = document.getElementById("signout-dialog");
+            var open = document.getElementById("signout-open");
+            if (!dlg || !open || typeof dlg.showModal !== "function") return;
+            open.addEventListener("click", function () { dlg.showModal(); });
+            document.getElementById("signout-stay").addEventListener("click", function () { dlg.close(); });
+            // Tap outside the box = stay (for browsers without closedby support).
+            dlg.addEventListener("click", function (e) {
+                if (e.target !== dlg) return;
+                var r = dlg.getBoundingClientRect();
+                if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) dlg.close();
+            });
+        })();
         if ("serviceWorker" in navigator) {
             navigator.serviceWorker.register("/sw.js").catch(function () {});
         }
