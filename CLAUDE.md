@@ -1,13 +1,31 @@
 # Bomu
 
 A web app for finding cocktails you can actually make from the bottles you own.
-Flask + SQLite, hosted on PythonAnywhere. Built for Aaron and his friends.
+Flask + Neon Postgres (with SQLite local fallback), hosted on Vercel at https://www.bomu.lol. Built for Aaron and his friends.
 
 > **Note:** this file was rewritten from scratch on 2026-07-24. The previous
 > CLAUDE.md went missing (untracked, never committed, so unrecoverable). Anything
 > it recorded before this date — earlier session log entries, older decisions — is
 > lost. **Commit this file.** It is the durable substitute for chat history and it
 > is only safe once git is tracking it.
+
+---
+
+## Session handoff protocol (Claude Code & Antigravity)
+
+This file is the shared memory between **Claude Code** (which auto-loads `CLAUDE.md`)
+and **Antigravity** (which auto-loads `AGENTS.md` -> `CLAUDE.md`). Neither agent can
+see the other's chat history, so anything not written here is lost.
+
+- **At session start:** Read `## Where things stand`, `## Running it`, and the
+  newest `### YYYY-MM-DD` entries at the bottom of `CLAUDE.md` before running
+  commands or editing code.
+- **At session close ("close sesh" or wrap-up):** Always append a dated
+  `### YYYY-MM-DD` entry at the bottom of `CLAUDE.md` (and update
+  `## Where things stand` / `## Running it` if hosting, schema, or counts changed).
+  Cover what changed, why, gotchas hit, and open items / next steps.
+- **Never write secret values** (passwords, API keys, full `DATABASE_URL`). Names only.
+- **Commit and push `CLAUDE.md`** together with the session's work.
 
 ---
 
@@ -43,61 +61,48 @@ double-numbered steps fixed) but **no session log entry was written for them**,
 so their details live only in the commit messages. The user counts above have
 not been re-read since 2026-07-26.
 
-### In progress: UI/UX overhaul (planned 2026-11-14, not started)
+### Completed 2026-11-15: UI/UX overhaul + Vercel / Neon / bomu.lol migration
 
-A full redesign is being run in Antigravity from `redesign/REDESIGN_BRIEF.md`,
-with the reviewer prompt in `redesign/CRITIC_PROMPT.md` and the moodboard in
-`redesign/inspiration/`. UI only: matching, database and schema are off-limits.
-Phase 1 ends with a hard stop for Aaron to pick a direction. Check
-`redesign/rounds/` for how far it got.
+- **Espresso & Zest UI redesign (`07db78f`)**: Responsive phone + desktop templates
+  (`base.html`, `tonight.html`, `explore.html`, `my_bar.html`, `saved.html`,
+  `one_away.html`, `recipe.html`), custom nav icons (`static/nav/*.webp`), and
+  complete studio cocktail photography coverage (`static/recipes/*.webp`, 98 WebP files).
+- **Production migration (`295e47b`, `9a335ba`)**: Moved live hosting from
+  PythonAnywhere to **Vercel** (`sepulturian/bomu`) at **https://www.bomu.lol**,
+  backed by **Neon Postgres** (`broad-water-80207736`) migrated 1:1 from `bomu_live.db`.
 
 ### Uncommitted image changes of unknown origin
 
-As of 2026-11-14, ~40 files in `static/` (icons, auth images, hero, ingredient
-photos) show as modified in git and are all smaller than the committed versions,
-i.e. recompressed by something. Not from the 2026-11-14 session. Look at them
-before committing; don't sweep them in with `git add -A` blind.
+As of 2026-11-14, ~40 older files in `static/` (`*.jpg` and `static/icon-*.png`)
+and untracked `redesign/` working files sit dirty in the local working tree. Leave
+them unstaged when committing unless intentionally updating them; don't sweep blindly
+with `git add -A`.
 
 ---
 
 ## Running it
 
-Live: https://sepulturian.pythonanywhere.com
-Server path: `/home/sepulturian/bomu`, deployed by `git pull` from GitHub.
+- **Live:** https://www.bomu.lol (`https://bomu.lol` 308-redirects to `www.bomu.lol`; Vercel preview/alias: `https://bomu.vercel.app`)
+- **Hosting & Auto-Deploy:** Vercel project `sepulturian/bomu` (Flask preset, `vercel.json` -> `app.py`). Every push to `main` on `https://github.com/sepulturian/bomu.git` builds and deploys to production automatically.
+- **Database:** **Neon Postgres** project `broad-water-80207736` in production (`DATABASE_URL`), with automatic local SQLite fallback when `DATABASE_URL` is unset (or `FORCE_SQLITE=1`).
+- **Local Dev Data & Env:**
+  - `.env` (gitignored) holds `DATABASE_URL`, `DATABASE_URL_UNPOOLED`, and `ANTHROPIC_API_KEY` pointing to the active Neon Postgres database (verify with `matching.get_recommendations(1)`). Unset `DATABASE_URL` (or pass `FORCE_SQLITE=1`) to run against local SQLite.
+  - `bomu_live.db` (gitignored) is the full 171-recipe multi-user SQLite snapshot downloaded from PythonAnywhere on 2026-11-15 (`venv\Scripts\python.exe verify_routes.py --db bomu_live.db`).
+- **Vercel Environment Variables (names only):** `DATABASE_URL`, `ANTHROPIC_API_KEY`, `SECRET_KEY`, `SECURE_COOKIES`. Updated under Vercel -> Project Settings -> Environment Variables (requires a Redeploy to take effect).
 
 ### Deploy sequence
 
-**Two machines. Say which one every time.** On 2026-07-25 a deploy block was
-handed over without that label and got pasted into PowerShell on the laptop,
-where `python3` doesn't exist, `&&` isn't a separator in Windows PowerShell 5.1,
-and `~/bomu` is the wrong path anyway. Nothing broke, but nothing worked either.
-
-**Laptop, PowerShell — commit and push only.** Never run migrations here: the
-local `bomu.db` is the stale pre-multi-user copy (see Gotchas).
+**Production deploys on Vercel automatically on push to `main`:**
 
 ```powershell
 cd "C:\Users\sepulturian\Documents\Claude\projects\bomu"
-del .git\index.lock
-git add -A                    # -A matters: picks up deleted files too
+git status -s                  # avoid sweeping dirty static/*.jpg or redesign/
+git add <changed files>
 git commit -m "..."
-git push origin main
+git push origin main           # triggers automatic Vercel production build
 ```
 
-**Server, PythonAnywhere Bash console — everything else.** In order; every step
-exists because skipping it has caused a problem.
-
-```bash
-cd ~/bomu
-python3 backup_db.py          # 1. ALWAYS back up before touching data
-git pull origin main          # 2. bomu.db is gitignored, so this is data-safe
-python3 <migration>.py        # 3. dry run first, read the output
-python3 <migration>.py --commit
-```
-
-Then hit **Reload** on the PythonAnywhere Web tab. Database changes take effect
-immediately because the app reads live, but Python code is held in memory by the
-running worker and needs the reload. A migration can therefore look like it
-worked while the UI changes in the same commit are still not being served.
+**Legacy host note (PythonAnywhere, retired 2026-11-15):** Before moving to Vercel + Neon, the app ran at `https://sepulturian.pythonanywhere.com` (`/home/sepulturian/bomu`) with manual `python3 backup_db.py`, `git pull`, `python3 <migration>.py --commit`, and Web tab Reload. Schema/data migrations targeting Postgres now run against `DATABASE_URL` instead (test first via `FORCE_SQLITE=1` / `verify_routes.py`).
 
 ### Verification
 
@@ -867,53 +872,56 @@ in the prompt. Recipe images: 6-image style test before generating the other 92.
 **Priorities, Aaron's call:** aesthetic, usability and navigation. Friends'
 feedback is explicitly not an input for this redesign.
 
-### 2026-11-15 — Moved to Vercel + Neon + bomu.lol (handoff)
+### 2026-11-15 — UI/UX Overhaul + Moved to Vercel, Neon Postgres & bomu.lol
 
-**Live site:** https://www.bomu.lol (apex `bomu.lol` 308-redirects to www). Replaces
-the old PythonAnywhere host.
+**Shipped commits (`main`):**
+- `07db78f` — **Espresso & Zest UI redesign**: responsive mobile + desktop
+  (`1280x800`) templates (`base.html`, `tonight.html`, `explore.html`, `my_bar.html`,
+  `saved.html`, `one_away.html`, `recipe.html`), custom nav icons (`static/nav/*.webp`),
+  `static/empty-bar.webp`, `manifest.json`, `sw.js`, and 94 newly generated studio
+  cocktail WebPs (`static/recipes/*.webp`, 98 total files covering 171/171 recipes).
+- `295e47b` — **Neon Postgres + Vercel setup**: dual-mode `database.py` (Postgres
+  when `DATABASE_URL`/`POSTGRES_URL` is set, SQLite fallback otherwise; batched
+  `get_all_recipes()` down to 2 queries), serverless `/tmp` upload handling in
+  `app.py`, `vercel.json` Flask routing, `requirements.txt` (`psycopg2-binary==2.9.13`),
+  and `migrate_to_postgres.py`. Migrated 1:1 from PythonAnywhere snapshot
+  `bomu_live.db` (`users=5`, `ingredients=51`, `recipes=171`, `recipe_ingredients=762`,
+  `recipe_enhancements=106`, `bottles=35`, `user_stock=32`, `ratings=4`, `scan_log=12`).
+- `9a335ba` — Hardened `_pg_url()` in `database.py` to strip whitespace/CR/LF,
+  surrounding quotes, and `channel_binding=` parameters for Vercel Linux `libpq`.
+- `e5f4e3b`, `ba53ac9` — Added `AGENTS.md` pointer and shared cross-agent
+  `Session handoff protocol` in `CLAUDE.md`.
 
-**Hosting:** Vercel project `sepulturian/bomu`, Flask preset, `vercel.json` routes
-to `app.py`. Pushing to `main` on `github.com/sepulturian/bomu` auto-deploys.
+**Production infrastructure & DNS:**
+- **Live URL:** `https://www.bomu.lol` (`https://bomu.lol` 308-redirects to `www`;
+  Vercel alias `https://bomu.vercel.app`). Auto-deploys on push to `main`.
+- **Porkbun DNS (`bomu.lol`):** Replaced default `pixie.porkbun.com` parking records
+  with `A @ -> 76.76.21.21` and `CNAME www -> cname.vercel-dns.com` (TTL 600).
+- **Neon Postgres (`broad-water-80207736`):** Claimed into Aaron's Neon account.
+- **Vercel env vars (names only):** `DATABASE_URL`, `ANTHROPIC_API_KEY`,
+  `SECRET_KEY`, `SECURE_COOKIES`.
 
-**DNS:** Domain registered at Porkbun. Records: `A @ -> 76.76.21.21`,
-`CNAME www -> cname.vercel-dns.com`. Vercel's Domains page suggests newer
-per-project targets (`216.198.79.1`, a `*.vercel-dns-017.com` CNAME); the old ones
-still work.
+**Gotchas hit & resolved:**
+- **Post-claim Neon password rotation:** Claiming `broad-water-80207736` rotated
+  `neondb_owner`'s password, causing `POST /login` on `www.bomu.lol` to return 500
+  (`password authentication failed`) while `GET /login` returned 200 (no DB query).
+  Retrieved the active pooled connection string from Neon Console, updated
+  `DATABASE_URL` in Vercel, redeployed to Production, and updated local `.env`
+  (`DATABASE_URL` and `DATABASE_URL_UNPOOLED`) to match.
+- **Sandbox constraints in Antigravity:** `.git`, `npm`/`npx`, network connections,
+  and `.env` writes require running commands outside the default sandbox.
 
-**Database:** Neon Postgres, project `broad-water-80207736`. `database.py` is
-dual-mode: Postgres when `DATABASE_URL` (or `POSTGRES_URL`) is set, SQLite
-otherwise. `verify_routes.py` forces a scratch SQLite DB. `_pg_url()` strips
-quotes/whitespace and `channel_binding=`. Production data was migrated from the
-PythonAnywhere copy (`bomu_live.db`, gitignored) with `migrate_to_postgres.py`.
+**Verified at close:**
+- Live site login (`https://www.bomu.lol`) verified working by Aaron after redeploy.
+- `venv\Scripts\python.exe verify_routes.py` -> `171 ok, 0 failed`.
+- `matching.get_recommendations(1)` against live Neon Postgres via updated `.env` ->
+  `34 makeable, 70 one-away`.
 
-**Vercel env vars (names only):** `DATABASE_URL`, `ANTHROPIC_API_KEY`,
-`SECRET_KEY`, `SECURE_COOKIES`. Edit under Vercel -> Settings -> Environment
-Variables, then Redeploy (env changes don't apply to existing deployments).
-
-**Gotchas:**
-- Claiming the Neon project rotated the `neondb_owner` password. That caused a
-  `POST /login` 500 (`password authentication failed`) until Vercel's
-  `DATABASE_URL` was updated. `GET /login` never touches the DB, so it looked fine.
-- The local `.env` `DATABASE_URL` still holds the OLD pre-claim password and no
-  longer works. Get the current string from Neon Console -> Connect, or leave
-  `DATABASE_URL` unset to develop on local SQLite.
-- Debug a 500 on prod by checking Vercel -> project -> Logs first.
-- In Antigravity's sandbox, git and npm need to run outside the sandbox.
-
-## Session handoff protocol (applies to Claude Code AND Antigravity)
-
-This file is the shared memory between agents. Neither agent can see the
-other's chat, so anything not written here is lost.
-
-- **Start of session:** read this file, newest dated entry first.
-- **End of session ("close sesh", or any wrap-up):** append a dated `### YYYY-MM-DD`
-  entry under the log: what changed, why, gotchas, open items / next steps.
-- **Never record secret values** (passwords, API keys, full DATABASE_URL). Names only.
-- **Commit and push the CLAUDE.md update** together with the session's work.
-- Antigravity picks this up via `AGENTS.md` (a pointer to this file).
-
-### 2026-11-15 — Open items at close
-- Local `.env` `DATABASE_URL` / `DATABASE_URL_UNPOOLED` still hold the dead
-  pre-claim Neon password. Replace from Neon Console -> Connect, or delete them to
-  use local SQLite. (Antigravity's sandbox could not edit `.env`.)
-- Optional: switch Porkbun DNS to the newer Vercel targets shown on its Domains page.
+**Open / optional items:**
+- Vercel's Domains settings suggest updating Porkbun DNS from `76.76.21.21` /
+  `cname.vercel-dns.com` to per-project targets (`216.198.79.1` /
+  `da4ba196cd936738.vercel-dns-017.com.`), though current records work with active SSL.
+- Local dirty files (`static/*.jpg`, `static/icon-*.png`, untracked `redesign/`)
+  remain intentionally unstaged.
+- Note: a browser subagent intermediate output (`179a4452-.../browser_sandbox/outputs/step_88.json`)
+  under AppData brain logs still holds the extracted connection string from recovery.
