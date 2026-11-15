@@ -1,86 +1,87 @@
 {% extends "base.html" %}
+{% set hide_topbar = true %}
+{% from "components/icons.html" import glass_icon, ui_icon %}
+
+{% block title %}1 Ingredient Away &middot; Bomu{% endblock %}
 
 {% block content %}
-<h1>One ingredient away</h1>
-<p style="color: var(--ink-dim); margin-bottom: 1.5rem;">
-    Grouped by what you need. Buy something near the top to unlock the most drinks.
+<a href="/" style="display: inline-flex; align-items: center; gap: 0.25rem; min-height: 44px; padding: 0 0.75rem 0 0.4rem; border-radius: var(--radius-pill); background: var(--bg-elevated); border: 1px solid var(--border-subtle); color: var(--ink-dim); font-size: 0.84rem; font-weight: 600; margin-bottom: 0.85rem;">
+    {{ ui_icon("back", "btn-icon") }}
+    <span>Tonight</span>
+</a>
+
+<h1>1 Ingredient Away</h1>
+<p style="color: var(--ink-dim); font-size: 0.9rem; margin-bottom: 1.15rem;">
+    Ranked by how many recipes a single bottle or mixer unlocks.
 </p>
 
 {% if not groups %}
-    <div class="empty-state">
-        <p>Nothing close right now. Add more bottles or stock more mixers.</p>
+    <div class="card empty-state">
+        <p>Nothing one ingredient away yet. Add a couple base bottles to see quick unlocks.</p>
     </div>
 {% endif %}
 
-{# Multi-drink unlocks get the full card treatment -- these are the buys
-   that pay off most, so they earn the space. #}
+<div class="drink-grid" style="align-items: start;">
 {% for g in groups if g.recipes|length > 1 %}
-    <div class="card" style="margin-bottom: 1rem;">
-        <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; margin-bottom: 0.5rem;">
-            <div style="flex: 1;">
-                <div style="font-size: 1.05rem; font-weight: 600; color: var(--coral);">
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.75rem; margin-bottom: 0.6rem;">
+            <div>
+                <div style="font-family: var(--font-display); font-weight: 700; font-size: 1.3rem; letter-spacing: 0.02em; text-transform: uppercase; color: var(--zest);">
                     {{ g.missing.name|type_label }}
                 </div>
-                <div style="font-size: 0.8rem; color: var(--ink-dim); margin-top: 0.15rem;">
-                    {% if g.missing.type == 'bottle_type' %}
-                        bottle
-                    {% else %}
-                        mixer / ingredient
-                    {% endif %}
+                <div style="font-size: 0.78rem; color: var(--ink-dim); margin-top: 0.15rem;">
+                    {% if g.missing.type == 'bottle_type' %}Bottle{% else %}Mixer / Ingredient{% endif %}
                 </div>
             </div>
-            <div style="font-size: 0.9rem; color: var(--ink-dim);">
-                {{ g.recipes|length }} drinks
-            </div>
+            <span class="pill pill-sage">+{{ g.recipes|length }} drinks</span>
         </div>
+
         {% set sugs = g.missing.name|suggestions %}
         {% if sugs %}
-            <div style="font-size: 0.85rem; color: var(--ink); margin-bottom: 0.75rem; padding: 0.5rem 0.75rem; background: rgba(0,0,0,0.25); border-radius: 8px;">
-                <span style="color: var(--ink-dim);">Try:</span> {{ sugs|join(' &middot; ')|safe }}
+            <div style="font-size: 0.82rem; color: var(--ink); margin-bottom: 0.75rem; padding: 0.5rem 0.8rem; background: var(--bg-pill); border-radius: 14px;">
+                <span style="color: var(--ink-dim);">Try:</span> {{ sugs | join(' · ') }}
             </div>
         {% endif %}
+
         <div style="display: flex; flex-direction: column; gap: 0.4rem;">
             {% for r in g.recipes %}
                 <a href="/recipe/{{ r.recipe.id }}"
-                   style="text-decoration: none; color: var(--ink); padding: 0.6rem 0.85rem; background: rgba(255,255,255,0.04); border: 1px solid var(--card-border); border-radius: 10px; display: flex; justify-content: space-between; align-items: center;">
-                    <span>{{ r.recipe.name }}</span>
-                    <span style="color: var(--ink-dim); font-size: 0.85rem;">{{ r.recipe.glass or '' }} &rsaquo;</span>
+                   style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; min-height: 46px; padding: 0.5rem 0.9rem; border-radius: var(--radius-pill); background: var(--bg-pill); border: 1px solid var(--border-subtle);">
+                    <span style="display: inline-flex; align-items: center; gap: 0.45rem; font-weight: 600; font-size: 0.92rem;">
+                        <span style="color: var(--zest); display: inline-flex; width: 16px; height: 16px;">{{ glass_icon(r.recipe.glass) }}</span>
+                        <span>{{ r.recipe.name }}</span>
+                    </span>
+                    {{ ui_icon("chevron", "row-chevron") }}
                 </a>
             {% endfor %}
         </div>
     </div>
 {% endfor %}
+</div>
 
-{# Single-drink unlocks collapse to one line each -- tap to expand. Keeps
-   the long tail from burying the page. #}
 {% set singles = [] %}
 {% for g in groups if g.recipes|length == 1 %}
     {% if singles.append(g) %}{% endif %}
 {% endfor %}
 {% if singles %}
-    <h2 style="margin-top: 2rem;">Unlocks one drink</h2>
-    <p style="color: var(--ink-dim); font-size: 0.85rem; margin-bottom: 0.75rem;">
-        Tap an ingredient for the drink and brand ideas.
-    </p>
+    <h2 style="margin-top: 1.5rem;">Unlocks 1 Drink</h2>
     {% for g in singles %}
-        <details style="border: 1px solid var(--card-border); border-radius: 12px; margin-bottom: 0.5rem; background: var(--card);">
-            <summary class="bare" style="cursor: pointer; padding: 0.7rem 1rem; display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-weight: 600; color: var(--coral);">{{ g.missing.name|type_label }}</span>
-                <span style="color: var(--ink-dim); font-size: 0.82rem;">
-                    {{ g.recipes[0].recipe.name }} &rsaquo;
-                </span>
+        <details style="background: var(--bg-elevated); border: 1px solid var(--border-subtle); border-radius: 22px; margin-bottom: 0.5rem;">
+            <summary class="bare" style="cursor: pointer; min-height: 50px; padding: 0.65rem 1rem; display: flex; justify-content: space-between; align-items: center; gap: 0.75rem;">
+                <span style="font-weight: 600; color: var(--zest);">{{ g.missing.name|type_label }}</span>
+                <span style="font-size: 0.82rem; color: var(--ink-dim);">{{ g.recipes[0].recipe.name }}</span>
             </summary>
-            <div style="padding: 0 1rem 0.85rem;">
+            <div style="padding: 0 0.9rem 0.9rem;">
                 {% set sugs = g.missing.name|suggestions %}
                 {% if sugs %}
-                    <div style="font-size: 0.85rem; color: var(--ink); margin-bottom: 0.6rem; padding: 0.5rem 0.75rem; background: rgba(0,0,0,0.25); border-radius: 8px;">
-                        <span style="color: var(--ink-dim);">Try:</span> {{ sugs|join(' &middot; ')|safe }}
+                    <div style="font-size: 0.82rem; color: var(--ink); margin-bottom: 0.6rem; padding: 0.5rem 0.8rem; background: var(--bg-pill); border-radius: 14px;">
+                        <span style="color: var(--ink-dim);">Try:</span> {{ sugs | join(' · ') }}
                     </div>
                 {% endif %}
                 <a href="/recipe/{{ g.recipes[0].recipe.id }}"
-                   style="text-decoration: none; color: var(--ink); padding: 0.6rem 0.85rem; background: rgba(255,255,255,0.04); border: 1px solid var(--card-border); border-radius: 10px; display: flex; justify-content: space-between; align-items: center;">
-                    <span>{{ g.recipes[0].recipe.name }}</span>
-                    <span style="color: var(--ink-dim); font-size: 0.85rem;">{{ g.recipes[0].recipe.glass or '' }} &rsaquo;</span>
+                   style="display: flex; align-items: center; justify-content: space-between; min-height: 46px; padding: 0.5rem 0.9rem; border-radius: var(--radius-pill); background: var(--bg-pill); border: 1px solid var(--border-subtle);">
+                    <span style="font-weight: 600;">{{ g.recipes[0].recipe.name }}</span>
+                    {{ ui_icon("chevron", "row-chevron") }}
                 </a>
             </div>
         </details>

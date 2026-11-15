@@ -1,67 +1,838 @@
 {% extends "base.html" %}
+{% from "components/icons.html" import ui_icon %}
+
+{% block title %}Your Bar &middot; Bomu{% endblock %}
+
+{% block extra_css %}
+<style>
+    .bar-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-bottom: 0.7rem;
+    }
+
+    .bar-head h1 { margin-bottom: 0; }
+    .is-hidden { display: none !important; }
+
+    .pane { display: none; }
+    .pane.is-active { display: block; }
+
+    /* Compact Bottle Rows (Tonal elevation, zero outer box borders) */
+    .bottle-row {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        min-height: 52px;
+        padding: 0.58rem 0.9rem;
+        background: var(--bg-elevated);
+        border-radius: var(--radius-control);
+        margin-bottom: 0.42rem;
+        transition: background var(--dur-snap) var(--ease-snap);
+    }
+
+    .bottle-row:hover {
+        background: var(--bg-pill);
+    }
+
+    .bottle-name {
+        font-weight: 600;
+        font-size: 0.94rem;
+        color: var(--ink);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .bottle-brand {
+        font-size: 0.74rem;
+        color: var(--ink-dim);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Mixer Sections & Rounded Checkboxes */
+    .mixer-section {
+        margin-bottom: 0.75rem;
+        background: var(--bg-elevated);
+        border-radius: var(--radius-card);
+        padding: 0.75rem 0.85rem;
+    }
+
+    .mixer-summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .mixer-summary-title {
+        font-family: var(--font-display);
+        font-weight: 700;
+        font-size: 1.05rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--ink);
+    }
+
+    .mixer-summary-right {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .mixer-chevron {
+        width: 16px;
+        height: 16px;
+        color: var(--ink-dim);
+        transition: transform var(--dur-snap) var(--ease-snap);
+    }
+
+    .mixer-section[open] .mixer-chevron {
+        transform: rotate(180deg);
+    }
+
+    .mixer-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.45rem;
+        margin-top: 0.65rem;
+    }
+
+    @media (max-width: 340px) {
+        .mixer-grid { grid-template-columns: 1fr; }
+    }
+
+    .mixer-pill {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.45rem;
+        min-height: 54px;
+        padding: 0.5rem 0.7rem;
+        border-radius: var(--radius-control);
+        background: var(--bg-pill);
+        border: 1px solid transparent;
+        cursor: pointer;
+        transition: border-color var(--dur-snap) var(--ease-snap), background var(--dur-snap) var(--ease-snap);
+    }
+
+    .mixer-pill input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .mixer-pill:has(input:checked),
+    .mixer-pill.is-checked {
+        background: var(--zest-soft);
+        border-color: var(--zest-border);
+    }
+
+    .mixer-label {
+        flex: 1;
+        min-width: 0;
+        font-size: 0.84rem;
+        font-weight: 500;
+        line-height: 1.24;
+        color: #e6ddd0;
+        overflow-wrap: break-word;
+    }
+
+    .mixer-pill:has(input:checked) .mixer-label,
+    .mixer-pill.is-checked .mixer-label {
+        color: var(--ink);
+        font-weight: 600;
+    }
+
+    .mixer-check {
+        width: 19px;
+        height: 19px;
+        border-radius: 5px;
+        border: 1.5px solid #6d5e4d;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        color: transparent;
+        transition: background var(--dur-snap) var(--ease-snap), border-color var(--dur-snap) var(--ease-snap);
+    }
+
+    .mixer-check svg { width: 12px; height: 12px; }
+
+    .mixer-pill:has(input:checked) .mixer-check,
+    .mixer-pill.is-checked .mixer-check {
+        background: var(--zest);
+        border-color: var(--zest);
+        color: var(--ink-on-zest);
+    }
+
+    /* Subtle Auto-Save Toast */
+    .autosave-toast {
+        position: fixed;
+        left: 50%;
+        bottom: calc(74px + env(safe-area-inset-bottom, 0px));
+        transform: translateX(-50%) translateY(8px);
+        z-index: 210;
+        padding: 0.42rem 0.9rem;
+        border-radius: var(--radius-pill);
+        background: var(--bg-elevated);
+        border: 1px solid var(--sage-border);
+        color: var(--sage);
+        font-size: 0.78rem;
+        font-weight: 600;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity var(--dur-snap) var(--ease-snap), transform var(--dur-snap) var(--ease-snap);
+    }
+
+    .autosave-toast.is-visible {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+
+    /* Add Bottle Bottom Sheet */
+    .sheet-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 260;
+        background: rgba(12, 8, 5, 0.78);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        display: none;
+        align-items: flex-end;
+        justify-content: center;
+        padding: 0;
+    }
+
+    .sheet-backdrop.is-open { display: flex; }
+
+    body:has(#add-sheet.is-open) .tabbar,
+    body:has(#add-sheet.is-open) .tabbar-scrim {
+        display: none;
+    }
+
+    .sheet-panel {
+        width: 100%;
+        max-width: 600px;
+        max-height: 92vh;
+        overflow-y: auto;
+        scrollbar-width: none;
+        background: var(--bg-elevated);
+        border: 1px solid var(--border-highlight);
+        border-bottom: none;
+        border-radius: 24px 24px 0 0;
+        padding: 0.7rem 1.15rem calc(1.35rem + env(safe-area-inset-bottom, 0px));
+        box-shadow: 0 -18px 50px rgba(0, 0, 0, 0.65);
+    }
+
+    .sheet-panel::-webkit-scrollbar { display: none; }
+
+    .sheet-handle {
+        width: 40px;
+        height: 4px;
+        border-radius: var(--radius-pill);
+        background: var(--border-highlight);
+        margin: 0 auto 0.8rem;
+    }
+
+    .sheet-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.85rem;
+    }
+
+    .sheet-title {
+        font-family: var(--font-display);
+        font-weight: 800;
+        font-size: 1.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+    }
+
+    .scan-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.6rem;
+        margin-bottom: 0.9rem;
+    }
+
+    .scan-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.35rem;
+        min-height: 78px;
+        padding: 0.65rem;
+        border-radius: var(--radius-control);
+        background: linear-gradient(180deg, #2f2319 0%, #211811 100%);
+        border: 1px solid var(--zest-border);
+        box-shadow: inset 0 1px 0 rgba(255, 236, 214, 0.12), 0 4px 12px rgba(0, 0, 0, 0.45);
+        text-align: center;
+        font-family: var(--font-display);
+        font-weight: 700;
+        font-size: 0.96rem;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        color: var(--ink);
+        transition: transform var(--dur-snap) var(--ease-snap), filter var(--dur-snap) var(--ease-snap);
+    }
+
+    .scan-card:hover { filter: brightness(1.06); }
+    .scan-card:active { transform: translateY(1px) scale(0.98); }
+
+    .scan-card svg {
+        width: 22px;
+        height: 22px;
+        color: var(--zest);
+    }
+
+    .sheet-divider {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        color: var(--ink-dim);
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 0.8rem;
+    }
+
+    .sheet-divider::before,
+    .sheet-divider::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: var(--border-subtle);
+    }
+
+    .quick-type-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        margin-bottom: 0.55rem;
+    }
+
+    .quick-type-chip {
+        padding: 0.42rem 0.78rem;
+        border-radius: var(--radius-pill);
+        background: linear-gradient(180deg, #2b2017 0%, #1e1610 100%);
+        border: 1px solid rgba(255, 236, 214, 0.14);
+        box-shadow: inset 0 1px 0 rgba(255, 236, 214, 0.08), 0 2px 6px rgba(0, 0, 0, 0.35);
+        color: var(--ink);
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        min-height: 36px;
+        transition: transform var(--dur-snap) var(--ease-snap), background var(--dur-snap) var(--ease-snap), border-color var(--dur-snap) var(--ease-snap);
+    }
+
+    .quick-type-chip:active { transform: translateY(1px) scale(0.97); }
+
+    .quick-type-chip.active {
+        background: linear-gradient(180deg, #ffdf6b 0%, #f4c430 55%, #e0ae19 100%);
+        border-color: rgba(255, 238, 173, 0.5);
+        color: var(--ink-on-zest);
+        font-weight: 700;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 3px 10px rgba(244, 196, 48, 0.25);
+    }
+
+    .sheet-type-select-wrap {
+        display: none;
+        margin-top: 0.45rem;
+    }
+
+    .sheet-type-select-wrap.is-visible {
+        display: block;
+    }
+
+    @media (min-width: 768px) {
+        .mixer-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0.6rem;
+        }
+
+        .sheet-backdrop {
+            align-items: center;
+            padding: 1.5rem;
+        }
+
+        .sheet-panel {
+            max-width: 520px;
+            border-radius: 24px;
+            border-bottom: 1px solid var(--border-highlight);
+        }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<h1>My Bar</h1>
-
-{# Bar management actions -- moved here from the home page so home stays
-   focused on "what can I drink tonight". #}
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-bottom: 1.75rem;">
-    <a href="/scan" class="btn btn-secondary" style="text-align: center;">Scan a Bottle</a>
-    <a href="/scan-bulk" class="btn btn-secondary" style="text-align: center;">Scan Multiple</a>
-    <a href="/add" class="btn btn-secondary" style="text-align: center;">+ Add Manually</a>
-    <a href="/checklist" class="btn btn-secondary" style="text-align: center;">
-        Mixers
-        {% if new_ingredient_count %}
-            <span style="background: var(--gold); color: #1a140f; font-size: 0.72rem; padding: 0.12rem 0.5rem; border-radius: 999px; margin-left: 0.3rem; font-weight: 700; vertical-align: middle;">{{ new_ingredient_count }} new</span>
-        {% endif %}
-    </a>
+<div class="bar-head">
+    <h1>Your Bar</h1>
+    <button type="button" class="btn btn-sm {% if active_tab != 'bottles' %}is-hidden{% endif %}" id="open-add-sheet">
+        {{ ui_icon("plus", "btn-icon") }}
+        <span>Add Bottle</span>
+    </button>
 </div>
 
-<h2>Bottles{% if bottles %} <span style="color: var(--ink-faint); font-size: 0.9rem; font-weight: normal; text-transform: none; letter-spacing: normal;">&middot; {{ bottles|length }}</span>{% endif %}</h2>
-{% if bottles %}
-    {# Grouped by type so a growing bar stays scannable. Deleting moved to
-       the edit page -- no more fat-finger deletes from the list. #}
-    {% for type, group in bottles|groupby('type') %}
-        {# type_label, not the raw value: the sub-types added 2026-07-24 store
-           slugs, so this heading read "vermouth_sweet" until it was filtered. #}
-        <div class="category-title">{{ type|type_label }} <span style="color: var(--ink-faint); font-size: 0.85rem; text-transform: none; letter-spacing: normal; font-weight: normal;">&middot; {{ group|length }}</span></div>
-        {% for bottle in group %}
-            <a href="/edit/{{ bottle.id }}" style="text-decoration: none; color: inherit;">
-                <div class="card">
-                    <div class="card-header">
-                        <div>
-                            <strong>{{ bottle.name }}</strong>
-                            {% if bottle.brand and bottle.brand != bottle.name %}
-                                <span style="color: var(--ink-faint);"> / {{ bottle.brand }}</span>
-                            {% endif %}
-                        </div>
-                        <div style="color: var(--ink-dim);">&rsaquo;</div>
+<div class="segmented" style="margin-bottom: 0.9rem;" role="tablist">
+    <button type="button" class="segmented-item {% if active_tab == 'bottles' %}active{% endif %}"
+            data-tab="bottles" role="tab" aria-selected="{{ 'true' if active_tab == 'bottles' else 'false' }}">
+        Bottles ({{ total_count }})
+    </button>
+    <button type="button" class="segmented-item {% if active_tab == 'mixers' %}active{% endif %}"
+            data-tab="mixers" role="tab" aria-selected="{{ 'true' if active_tab == 'mixers' else 'false' }}" id="tab-btn-mixers">
+        Mixers (<span id="mixer-tab-count">{{ stocked_count }}/{{ total_ingredients }}</span>)
+    </button>
+</div>
+
+{# Pane 1: Bottles #}
+<section class="pane {% if active_tab == 'bottles' %}is-active{% endif %}" id="pane-bottles">
+    <form method="GET" action="/bar" style="margin-bottom: 0.6rem;">
+        <input type="hidden" name="tab" value="bottles">
+        {% if grouped %}<input type="hidden" name="group" value="spirit">{% endif %}
+        <div class="search-wrap" style="margin-bottom: 0;">
+            {{ ui_icon("search", "search-icon") }}
+            <input type="search" name="q" id="bottle-search" value="{{ q }}"
+                   placeholder="Search your bottles or spirits..." autocomplete="off">
+        </div>
+    </form>
+
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.75rem;">
+        <div class="chip-strip">
+            <a href="/bar?tab=bottles{% if q %}&q={{ q|urlencode }}{% endif %}"
+               class="chip {% if not grouped %}active{% endif %}">A&ndash;Z ({{ filtered_count }})</a>
+            <a href="/bar?tab=bottles&group=spirit{% if q %}&q={{ q|urlencode }}{% endif %}"
+               class="chip {% if grouped %}active{% endif %}">By type</a>
+        </div>
+        {% if q %}
+            <a href="/bar?tab=bottles{% if grouped %}&group=spirit{% endif %}" class="section-link" style="font-size: 0.8rem;">Clear</a>
+        {% endif %}
+    </div>
+
+    {% macro bottle_item(b) -%}
+        <a href="/edit/{{ b.id }}" class="bottle-row"
+           data-search="{{ b.name|lower }} {{ (b.brand or '')|lower }} {{ (b.type|type_label)|lower }}">
+            <div style="min-width: 0; flex: 1;">
+                <div class="bottle-name">{{ b.name }}</div>
+                {% if b.brand and b.brand|lower != b.name|lower %}
+                    <div class="bottle-brand">{{ b.brand }}</div>
+                {% endif %}
+            </div>
+            <span class="pill">{{ b.type|type_label }}</span>
+            {{ ui_icon("chevron", "row-chevron") }}
+        </a>
+    {%- endmacro %}
+
+    {% if bottles %}
+        {% if grouped %}
+            {% for label, group in grouped_bottles %}
+                <div class="bottle-group" style="margin-bottom: 0.9rem;">
+                    <div style="font-family: var(--font-display); font-weight: 700; font-size: 0.92rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--zest); margin: 0.55rem 0 0.4rem;">
+                        {{ label }} &middot; {{ group|length }}
+                    </div>
+                    <div class="bottle-grid">
+                        {% for b in group %}
+                            {{ bottle_item(b) }}
+                        {% endfor %}
                     </div>
                 </div>
-            </a>
-        {% endfor %}
-    {% endfor %}
-    <p style="color: var(--ink-faint); font-size: 0.82rem; margin-top: 0.75rem;">Tap a bottle to edit or remove it.</p>
-{% else %}
-    <div class="empty-state">
-        <p>No bottles yet!</p>
-        <a href="/add" class="btn" style="margin-top: 1rem; display: inline-block;">+ Add Your First Bottle</a>
-    </div>
-{% endif %}
+            {% endfor %}
+        {% else %}
+            <div class="bottle-grid">
+                {% for b in bottles %}
+                    {{ bottle_item(b) }}
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="card empty-state">
+            {% if q %}
+                <p style="margin-bottom: 0.9rem;">No bottles match &ldquo;{{ q }}&rdquo;.</p>
+                <a href="/bar?tab=bottles{% if grouped %}&group=spirit{% endif %}" class="btn btn-secondary">Show All Bottles</a>
+            {% else %}
+                <h2 style="margin-bottom: 0.35rem;">Shelf is empty</h2>
+                <p style="margin-bottom: 1rem;">Add or scan bottles to see what you can pour.</p>
+                <button type="button" class="btn" id="empty-open-add">Add Your First Bottle</button>
+            {% endif %}
+        </div>
+    {% endif %}
+</section>
 
-<h2 style="margin-top: 2rem;">Ingredients In Stock</h2>
-{% if stocked_ingredients %}
-    <div class="card">
-        {% for item in stocked_ingredients %}
-            <span style="display: inline-block; background: rgba(255,255,255,0.05); border: 1px solid var(--card-border); padding: 0.3rem 0.8rem; border-radius: 999px; margin: 0.2rem; font-size: 0.85rem;">
-                {{ item.name }}
-            </span>
+{# Pane 2: Mixers & Pantry #}
+<section class="pane {% if active_tab == 'mixers' %}is-active{% endif %}" id="pane-mixers">
+    <form method="POST" action="/checklist" id="mixers-form">
+        <div class="search-wrap">
+            {{ ui_icon("search", "search-icon") }}
+            <input type="search" id="mixer-search" placeholder="Filter mixers, citrus, bitters..." autocomplete="off">
+        </div>
+
+        {% set essential_keys = [
+            'lemon juice (fresh)', 'lime juice (fresh)', 'simple syrup',
+            'angostura bitters', 'soda water / club soda', 'tonic water',
+            'powdered sugar', 'grenadine'
+        ] %}
+        {% set essentials = [] %}
+        {% set rest_ingredients = [] %}
+        {% for item in ingredients %}
+            {% if item.name|lower in essential_keys %}
+                {% if essentials.append(item) %}{% endif %}
+            {% else %}
+                {% if rest_ingredients.append(item) %}{% endif %}
+            {% endif %}
         {% endfor %}
+
+        {% if essentials %}
+            {% set in_ess = essentials | selectattr("in_stock") | list | length %}
+            <details class="mixer-section" open>
+                <summary class="bare mixer-summary">
+                    <span class="mixer-summary-title">Bar Essentials</span>
+                    <span class="mixer-summary-right">
+                        <span class="pill cat-count-pill" data-total="{{ essentials|length }}">{{ in_ess }} / {{ essentials|length }}</span>
+                        {{ ui_icon("chevron-down", "mixer-chevron") }}
+                    </span>
+                </summary>
+                <div class="mixer-grid">
+                    {% for item in essentials %}
+                        <label class="mixer-pill mixer-filter-item {% if item.in_stock %}is-checked{% endif %}"
+                               data-name="{{ item.name|lower }}" for="ess-{{ item.id }}">
+                            <input type="checkbox" name="ingredient" value="{{ item.id }}" id="ess-{{ item.id }}"
+                                   {% if item.in_stock %}checked{% endif %}>
+                            <span class="mixer-label">{{ item.name|title }}</span>
+                            <span class="mixer-check">{{ ui_icon("check") }}</span>
+                        </label>
+                    {% endfor %}
+                </div>
+            </details>
+        {% endif %}
+
+        {% set cat_order = ["mixer", "bitter", "garnish", "pantry", "auto"] %}
+        {% set plural = {
+            "mixer": "Sodas & Juices",
+            "bitter": "Bitters",
+            "garnish": "Garnishes & Citrus",
+            "pantry": "Pantry Staples",
+            "auto": "Specialty & Syrups"
+        } %}
+        {% for category in cat_order %}
+            {% set cat_items = rest_ingredients | selectattr("category", "equalto", category) | list %}
+            {% if cat_items %}
+                {% set in_cat = cat_items | selectattr("in_stock") | list | length %}
+                <details class="mixer-section" {% if category in ['mixer', 'bitter'] or in_cat > 0 %}open{% endif %}>
+                    <summary class="bare mixer-summary">
+                        <span class="mixer-summary-title">{{ plural.get(category, category ~ "s") }}</span>
+                        <span class="mixer-summary-right">
+                            <span class="pill cat-count-pill" data-total="{{ cat_items|length }}">{{ in_cat }} / {{ cat_items|length }}</span>
+                            {{ ui_icon("chevron-down", "mixer-chevron") }}
+                        </span>
+                    </summary>
+                    <div class="mixer-grid">
+                        {% for item in cat_items %}
+                            <label class="mixer-pill mixer-filter-item {% if item.in_stock %}is-checked{% endif %}"
+                                   data-name="{{ item.name|lower }}" for="ing-{{ item.id }}">
+                                <input type="checkbox" name="ingredient" value="{{ item.id }}" id="ing-{{ item.id }}"
+                                       {% if item.in_stock %}checked{% endif %}>
+                                <span class="mixer-label">{{ item.name|title }}</span>
+                                <span class="mixer-check">{{ ui_icon("check") }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                </details>
+            {% endif %}
+        {% endfor %}
+
+        {% if new_ingredients %}
+            <details class="accordion-bar mixer-section" style="padding: 0; border-color: var(--zest-border);">
+                <summary class="bare accordion-summary">
+                    <span class="accordion-title" style="color: var(--zest);">Added from recipes</span>
+                    <span class="accordion-right">
+                        <span class="pill pill-zest">{{ new_ingredients|length }}</span>
+                        {{ ui_icon("chevron-down", "accordion-chev") }}
+                    </span>
+                </summary>
+                <div style="padding: 0 0.85rem 0.85rem;">
+                    <div class="mixer-grid" style="margin-top: 0;">
+                        {% for item in new_ingredients %}
+                            <label class="mixer-pill mixer-filter-item {% if item.in_stock %}is-checked{% endif %}"
+                                   data-name="{{ item.name|lower }}" for="new-{{ item.id }}">
+                                <input type="checkbox" name="ingredient" value="{{ item.id }}" id="new-{{ item.id }}"
+                                       {% if item.in_stock %}checked{% endif %}>
+                                <span class="mixer-label">{{ item.name|title }}</span>
+                                <span class="mixer-check">{{ ui_icon("check") }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                </div>
+            </details>
+        {% endif %}
+
+        <div style="margin-top: 0.9rem;">
+            <button type="submit" class="btn btn-secondary" style="width: 100%;">Save Mixers</button>
+        </div>
+    </form>
+</section>
+
+<div class="autosave-toast" id="mixer-toast" role="status" aria-live="polite">Saved</div>
+
+{# Unified Add Bottle Bottom Sheet #}
+<div class="sheet-backdrop {% if sheet_open %}is-open{% endif %}" id="add-sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+    <div class="sheet-panel">
+        <div class="sheet-handle"></div>
+        <div class="sheet-head">
+            <div class="sheet-title" id="sheet-title">Add Bottle</div>
+            <button type="button" id="close-add-sheet" aria-label="Close"
+                    style="min-width: 44px; min-height: 44px; border-radius: 50%; border: 1px solid var(--border-subtle); background: var(--bg-pill); color: var(--ink); display: inline-flex; align-items: center; justify-content: center; cursor: pointer;">
+                {{ ui_icon("close", "btn-icon") }}
+            </button>
+        </div>
+
+        <div class="scan-grid">
+            <a href="/scan" class="scan-card">
+                {{ ui_icon("camera") }}
+                <span>Scan 1 Bottle</span>
+            </a>
+            <a href="/scan-bulk" class="scan-card">
+                {{ ui_icon("shelf") }}
+                <span>Scan Shelf</span>
+            </a>
+        </div>
+
+        <div class="sheet-divider">or type it in</div>
+
+        <form method="POST" action="/add" id="sheet-add-form">
+            <div class="form-group">
+                <label for="sheet-name">Bottle Name</label>
+                <input type="text" id="sheet-name" name="name" placeholder="e.g. Bombay Sapphire" required>
+            </div>
+            <div class="form-group">
+                <label for="sheet-type">Bottle Type</label>
+                <div class="quick-type-row" aria-label="Quick bottle type">
+                    <button type="button" class="quick-type-chip" data-pick-type="gin">Gin</button>
+                    <button type="button" class="quick-type-chip" data-pick-type="bourbon">Bourbon</button>
+                    <button type="button" class="quick-type-chip" data-pick-type="vodka">Vodka</button>
+                    <button type="button" class="quick-type-chip" data-pick-type="rum">Rum</button>
+                    <button type="button" class="quick-type-chip" data-pick-type="tequila">Tequila</button>
+                    <button type="button" class="quick-type-chip" data-pick-type="rye">Rye</button>
+                    <button type="button" class="quick-type-chip" data-pick-type="sweet_vermouth">Sweet Vermouth</button>
+                    <button type="button" class="quick-type-chip" id="other-type-chip">Other type&hellip;</button>
+                </div>
+                <div class="sheet-type-select-wrap" id="sheet-type-wrap">
+                    <select id="sheet-type" name="type" required>
+                        <option value="">Choose type &mdash;</option>
+                        {% for value, label in BOTTLE_TYPE_CHOICES %}
+                            <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="btn" style="width: 100%; margin-top: 0.65rem;">Add to My Bar</button>
+        </form>
     </div>
-{% else %}
-    <div class="empty-state">
-        <p>No ingredients checked off yet.</p>
-        <a href="/checklist" class="btn btn-secondary" style="margin-top: 1rem; display: inline-block;">Go to Checklist</a>
-    </div>
-{% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    (function () {
+        var openBtn = document.getElementById("open-add-sheet");
+
+        // Tab switcher
+        var tabs = document.querySelectorAll("[data-tab]");
+        var panes = {
+            bottles: document.getElementById("pane-bottles"),
+            mixers: document.getElementById("pane-mixers")
+        };
+        tabs.forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                var target = btn.getAttribute("data-tab");
+                tabs.forEach(function (t) {
+                    var on = t.getAttribute("data-tab") === target;
+                    t.classList.toggle("active", on);
+                    t.setAttribute("aria-selected", on ? "true" : "false");
+                });
+                Object.keys(panes).forEach(function (k) {
+                    panes[k].classList.toggle("is-active", k === target);
+                });
+                if (openBtn) {
+                    openBtn.classList.toggle("is-hidden", target !== "bottles");
+                }
+                var u = new URL(window.location.href);
+                u.searchParams.set("tab", target);
+                history.replaceState({}, "", u.pathname + u.search);
+            });
+        });
+
+        // Add Bottle sheet open/close
+        var sheet = document.getElementById("add-sheet");
+        function openSheet() {
+            sheet.classList.add("is-open");
+            var inp = document.getElementById("sheet-name");
+            if (inp) setTimeout(function () { inp.focus(); }, 60);
+        }
+        function closeSheet() {
+            sheet.classList.remove("is-open");
+            var u = new URL(window.location.href);
+            if (u.searchParams.has("sheet")) {
+                u.searchParams.delete("sheet");
+                history.replaceState({}, "", u.pathname + u.search);
+            }
+        }
+        if (openBtn) openBtn.addEventListener("click", openSheet);
+        var emptyBtn = document.getElementById("empty-open-add");
+        if (emptyBtn) emptyBtn.addEventListener("click", openSheet);
+        var closeBtn = document.getElementById("close-add-sheet");
+        if (closeBtn) closeBtn.addEventListener("click", closeSheet);
+        sheet.addEventListener("click", function (e) {
+            if (e.target === sheet) closeSheet();
+        });
+
+        // Quick spirit-type chips + "Other type..." disclosure wired to mandatory select
+        var sheetSelect = document.getElementById("sheet-type");
+        var selectWrap = document.getElementById("sheet-type-wrap");
+        var otherChip = document.getElementById("other-type-chip");
+        var quickChips = document.querySelectorAll(".quick-type-chip[data-pick-type]");
+        var addForm = document.getElementById("sheet-add-form");
+
+        if (sheetSelect) {
+            quickChips.forEach(function (chip) {
+                chip.addEventListener("click", function () {
+                    var val = chip.getAttribute("data-pick-type");
+                    sheetSelect.value = val;
+                    quickChips.forEach(function (c) { c.classList.toggle("active", c === chip); });
+                    if (otherChip) otherChip.classList.remove("active");
+                    if (selectWrap) selectWrap.classList.remove("is-visible");
+                });
+            });
+            if (otherChip && selectWrap) {
+                otherChip.addEventListener("click", function () {
+                    quickChips.forEach(function (c) { c.classList.remove("active"); });
+                    otherChip.classList.add("active");
+                    selectWrap.classList.add("is-visible");
+                    sheetSelect.focus();
+                });
+            }
+            sheetSelect.addEventListener("change", function () {
+                var matchedChip = false;
+                quickChips.forEach(function (c) {
+                    var match = c.getAttribute("data-pick-type") === sheetSelect.value;
+                    c.classList.toggle("active", match);
+                    if (match) matchedChip = true;
+                });
+                if (otherChip) otherChip.classList.toggle("active", !matchedChip && !!sheetSelect.value);
+            });
+            if (addForm && selectWrap) {
+                addForm.addEventListener("submit", function (e) {
+                    if (!sheetSelect.value) {
+                        e.preventDefault();
+                        selectWrap.classList.add("is-visible");
+                        sheetSelect.focus();
+                    }
+                });
+            }
+        }
+
+        // Live client-side bottle filter
+        var bottleSearch = document.getElementById("bottle-search");
+        if (bottleSearch) {
+            bottleSearch.addEventListener("input", function () {
+                var q = bottleSearch.value.trim().toLowerCase();
+                document.querySelectorAll(".bottle-row").forEach(function (row) {
+                    row.style.display = row.dataset.search.includes(q) ? "" : "none";
+                });
+                document.querySelectorAll(".bottle-group").forEach(function (g) {
+                    var any = Array.prototype.some.call(
+                        g.querySelectorAll(".bottle-row"),
+                        function (row) { return row.style.display !== "none"; }
+                    );
+                    g.style.display = any ? "" : "none";
+                });
+            });
+        }
+
+        // Mixers live filter + duplicate sync + silent auto-save
+        var mixerSearch = document.getElementById("mixer-search");
+        if (mixerSearch) {
+            mixerSearch.addEventListener("input", function () {
+                var q = mixerSearch.value.trim().toLowerCase();
+                document.querySelectorAll(".mixer-section").forEach(function (det) {
+                    var any = false;
+                    det.querySelectorAll(".mixer-filter-item").forEach(function (el) {
+                        var hit = el.dataset.name.includes(q);
+                        el.style.display = hit ? "" : "none";
+                        if (hit) any = true;
+                    });
+                    det.style.display = any ? "" : "none";
+                    if (q && any) det.open = true;
+                });
+            });
+        }
+
+        var mixersForm = document.getElementById("mixers-form");
+        var toast = document.getElementById("mixer-toast");
+        var tabCountEl = document.getElementById("mixer-tab-count");
+        var totalIng = {{ total_ingredients|int }};
+        var toastTimer = null;
+
+        function updateCounts() {
+            var seen = {};
+            document.querySelectorAll('input[name="ingredient"]:checked').forEach(function (el) {
+                seen[el.value] = true;
+            });
+            var stockedNow = Object.keys(seen).length;
+            if (tabCountEl) tabCountEl.textContent = stockedNow + "/" + totalIng;
+            document.querySelectorAll(".mixer-section").forEach(function (det) {
+                var pill = det.querySelector(".cat-count-pill");
+                if (!pill) return;
+                var total = pill.getAttribute("data-total");
+                var checkedInCat = det.querySelectorAll('input[name="ingredient"]:checked').length;
+                pill.textContent = checkedInCat + " / " + total;
+            });
+            return stockedNow;
+        }
+
+        function showToast(msg) {
+            if (!toast) return;
+            toast.textContent = msg;
+            toast.classList.add("is-visible");
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(function () {
+                toast.classList.remove("is-visible");
+            }, 1800);
+        }
+
+        var boxes = document.querySelectorAll('input[name="ingredient"]');
+        boxes.forEach(function (cb) {
+            cb.addEventListener("change", function () {
+                boxes.forEach(function (other) {
+                    if (other.value === cb.value) {
+                        other.checked = cb.checked;
+                        var lbl = other.closest(".mixer-pill");
+                        if (lbl) lbl.classList.toggle("is-checked", cb.checked);
+                    }
+                });
+                var stockedNow = updateCounts();
+                if (mixersForm) {
+                    fetch(mixersForm.action, {
+                        method: "POST",
+                        body: new FormData(mixersForm),
+                        credentials: "same-origin"
+                    }).then(function (resp) {
+                        if (resp.ok) {
+                            showToast("Saved \u00b7 " + stockedNow + " stocked");
+                        }
+                    }).catch(function () {});
+                }
+            });
+        });
+    })();
+</script>
 {% endblock %}

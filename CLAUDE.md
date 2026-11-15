@@ -34,22 +34,29 @@ Landed 2026-07-26: commits `e4ead3b` and `9c034e0` (About + Worth knowing on
 every recipe, plus the catalog audit that came out of writing it,
 `check_specs.py` 37 flagged → 0), then `055a96c` and `2745190`.
 
-### One thing IS half-finished
+### Since 2026-07-26
 
-`sweep_namematch.py` is committed and deployed at `2745190`, **and the deployed
-copy is wrong.** It reads the `ingredient_name` column where it must read
-`raw_name`, which makes it report roughly 35 false BROKEN rows out of 87. The
-corrected version is sitting uncommitted on the laptop. Next session:
+The `sweep_namematch.py` fix landed in `7b6fa39`, so the deployed copy now reads
+`raw_name` (backlog #14 done). Two more commits followed on 2026-07-29
+(`20747dc`, `80d4f63`: documented enhancements, normalized optional garnishes,
+double-numbered steps fixed) but **no session log entry was written for them**,
+so their details live only in the commit messages. The user counts above have
+not been re-read since 2026-07-26.
 
-```powershell
-cd "C:\Users\sepulturian\Documents\Claude\projects\bomu"
-del .git\index.lock
-git add -A
-git commit -m "sweep_namematch: read raw_name, not ingredient_name"
-git push origin main
-```
+### In progress: UI/UX overhaul (planned 2026-11-14, not started)
 
-Do not trust any output from the server copy until that lands.
+A full redesign is being run in Antigravity from `redesign/REDESIGN_BRIEF.md`,
+with the reviewer prompt in `redesign/CRITIC_PROMPT.md` and the moodboard in
+`redesign/inspiration/`. UI only: matching, database and schema are off-limits.
+Phase 1 ends with a hard stop for Aaron to pick a direction. Check
+`redesign/rounds/` for how far it got.
+
+### Uncommitted image changes of unknown origin
+
+As of 2026-11-14, ~40 files in `static/` (icons, auth images, hero, ingredient
+photos) show as modified in git and are all smaller than the committed versions,
+i.e. recompressed by something. Not from the 2026-11-14 session. Look at them
+before committing; don't sweep them in with `git add -A` blind.
 
 ---
 
@@ -521,7 +528,7 @@ without it keep the triangle deliberately, since it's the only affordance saying
     2026-07-26 for correctness, which *removes* the drink from a bourbon-only
     shelf. `SAZERAC_BASE_TYPE` at the top of `fix_recipe_specs.py` reverts it in
     one line. Revisit if anyone complains.
-14. **Push the corrected `sweep_namematch.py`.** The deployed copy at `2745190`
+14. ~~**Push the corrected `sweep_namematch.py`.**~~ Done in `7b6fa39`. The deployed copy at `2745190`
     reads the wrong column and reports ~35 false BROKEN rows. Fix is written and
     sitting uncommitted on the laptop. Do this before running it again. See
     "Where things stand".
@@ -836,3 +843,26 @@ wrong step this session came from developing against a 100-recipe pre-multi-user
 copy where `ingredient_name` being NULL looked normal. Backlog #4 has been
 sitting at "highest-value chore outstanding" since 2026-07-24. It just cost a
 session.
+
+### 2026-11-14
+
+Planning session only, no app code changed. Read Lenny's Newsletter piece on
+pushing AI design past its defaults (seed strings for randomness, a fresh-context
+critic reviewing screenshots only, image/video generation, a final cut pass) and
+turned it into a brief for a full UI/UX overhaul to run in Antigravity.
+
+**Written:** `redesign/REDESIGN_BRIEF.md`, `redesign/CRITIC_PROMPT.md`,
+`redesign/inspiration/` (two coffee-app mockups Aaron likes the feel of), and
+`redesign/dev.db` added to `.gitignore`.
+
+**Decisions.** Stay on Flask: the look lives in templates and CSS, and the
+"feels like a website" problem is handled with cross-document View Transitions
+and optionally htmx, not a React rewrite. Phone-first. The agent may merge pages
+and change routes (old URLs redirect); proposed nav is four tabs, Tonight / Bar /
+Explore / Saved. Randomness is bounded: fixed anchors from the moodboard, seeded
+variables for accent, type, shape, texture, motion and a signature element. Two
+review rounds on Argon, screenshots only, same prompt both times, no target score
+in the prompt. Recipe images: 6-image style test before generating the other 92.
+
+**Priorities, Aaron's call:** aesthetic, usability and navigation. Friends'
+feedback is explicitly not an input for this redesign.

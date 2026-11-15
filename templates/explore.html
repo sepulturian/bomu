@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+{% from "components/icons.html" import glass_icon, ui_icon %}
+
+{% block title %}Explore &middot; Bomu{% endblock %}
+
+{% block extra_css %}
+<style>
+    .explore-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-bottom: 0.65rem;
+    }
+
+    .explore-head h1 { margin-bottom: 0; }
+
+    .filter-block {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 0.65rem;
+    }
+
+    .filter-dropdowns {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+    }
+
+    .filter-dropdowns select {
+        min-height: 44px;
+        padding: 0.45rem 2.1rem 0.45rem 0.85rem;
+        font-size: 0.84rem;
+        font-weight: 600;
+        border-radius: var(--radius-control);
+        margin-bottom: 0;
+    }
+
+    .explore-count-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.55rem;
+        font-size: 0.8rem;
+        color: var(--ink-dim);
+        font-weight: 600;
+    }
+
+    .drink-style-line {
+        margin-top: 0.16rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        font-size: 0.74rem;
+        color: var(--ink-dim);
+    }
+
+    .style-dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--zest);
+        opacity: 0.7;
+        flex-shrink: 0;
+    }
+
+    .drink-card.is-disliked { opacity: 0.48; }
+
+    @media (min-width: 768px) {
+        .filter-block {
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.85rem;
+        }
+
+        .filter-dropdowns {
+            min-width: 340px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="explore-head">
+    <h1>Explore</h1>
+</div>
+
+<div class="search-wrap">
+    {{ ui_icon("search", "search-icon") }}
+    <input type="search" id="explore-search" placeholder="Search cocktails or ingredients..." autocomplete="off">
+</div>
+
+<div class="filter-block">
+    <div class="chip-strip" data-filter-group="status">
+        <button type="button" class="chip active" data-val="all">All</button>
+        <button type="button" class="chip" data-val="makeable">Make now ({{ makeable_total }})</button>
+        <button type="button" class="chip" data-val="one_away">1 away ({{ one_away_total }})</button>
+    </div>
+
+    <div class="filter-dropdowns">
+        <select id="explore-spirit-select" aria-label="Filter by base spirit">
+            <option value="all">All Spirits</option>
+            {% for sp in spirit_filters %}
+                <option value="{{ sp }}">{{ sp }}</option>
+            {% endfor %}
+        </select>
+
+        <select id="explore-style-select" aria-label="Filter by drink style">
+            <option value="all">All Styles</option>
+            {% for st in style_filters %}
+                <option value="{{ st }}">{{ st }}</option>
+            {% endfor %}
+        </select>
+    </div>
+</div>
+
+<div class="explore-count-row">
+    <span id="explore-visible-count">{{ total_count }} cocktails</span>
+    <button type="button" class="section-link" id="explore-reset" style="background: none; border: none; cursor: pointer; display: none;">
+        Reset filters
+    </button>
+</div>
+
+<div id="explore-list" class="drink-grid">
+    {% for e in entries %}
+        {% set img_url = e.recipe|recipe_image %}
+        <a href="/recipe/{{ e.recipe.id }}"
+           class="drink-card explore-item {% if e.thumb == -1 %}is-disliked{% endif %}"
+           data-search="{{ e.search_text }}"
+           data-status="{{ e.status }}"
+           data-spirit="{{ e.spirit_group }}"
+           data-style="{{ e.style_group }}">
+            <div class="drink-thumb">
+                {% if img_url %}
+                    <img src="{{ img_url }}" alt="{{ e.recipe.name }}" loading="lazy"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                {% endif %}
+                <div class="drink-thumb-fallback" {% if img_url %}style="display: none;"{% endif %}>
+                    {{ glass_icon(e.recipe.glass) }}
+                </div>
+            </div>
+            <div class="drink-meta">
+                <div class="drink-title">
+                    <span>{{ e.recipe.name }}</span>
+                    {% if e.thumb == 1 %}
+                        <span style="color: var(--sage); display: inline-flex;" title="Liked">
+                            {{ ui_icon("thumb-up", "btn-icon") }}
+                        </span>
+                    {% endif %}
+                </div>
+                {% if e.status == 'makeable' %}
+                    <div class="drink-sub">
+                        {% if e.your_bottles %}
+                            Make now &middot; {{ e.your_bottles | join(' · ') }}
+                        {% else %}
+                            Make now
+                        {% endif %}
+                    </div>
+                {% elif e.status == 'one_away' %}
+                    <div class="drink-sub is-missing">1 away &middot; Need {{ e.missing[0] }}</div>
+                {% else %}
+                    <div class="drink-sub is-dim">Missing {{ e.missing|length }} items</div>
+                {% endif %}
+                <div class="drink-style-line">
+                    <span class="style-dot"></span>
+                    <span>{{ e.style_group }} &middot; {{ e.spirit_group }}</span>
+                </div>
+            </div>
+            {{ ui_icon("chevron", "row-chevron") }}
+        </a>
+    {% endfor %}
+</div>
+
+<div class="card empty-state" id="explore-empty" style="display: none;">
+    <h2 style="margin-bottom: 0.35rem;">No matches</h2>
+    <p style="margin-bottom: 1rem;">No recipes match that combination of filters.</p>
+    <button type="button" class="btn btn-secondary" id="explore-empty-reset">Reset Filters</button>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    (function () {
+        var total = {{ total_count|int }};
+        var state = { q: "", status: "all", spirit: "all", style: "all" };
+        var search = document.getElementById("explore-search");
+        var spiritSel = document.getElementById("explore-spirit-select");
+        var styleSel = document.getElementById("explore-style-select");
+        var items = document.querySelectorAll(".explore-item");
+        var countEl = document.getElementById("explore-visible-count");
+        var resetBtn = document.getElementById("explore-reset");
+        var emptyResetBtn = document.getElementById("explore-empty-reset");
+        var emptyBox = document.getElementById("explore-empty");
+
+        function apply() {
+            var shown = 0;
+            items.forEach(function (el) {
+                var ok = true;
+                if (state.q && !el.dataset.search.includes(state.q)) ok = false;
+                if (state.status !== "all" && el.dataset.status !== state.status) ok = false;
+                if (state.spirit !== "all" && el.dataset.spirit !== state.spirit) ok = false;
+                if (state.style !== "all" && el.dataset.style !== state.style) ok = false;
+                el.style.display = ok ? "" : "none";
+                if (ok) shown++;
+            });
+            var dirty = state.q !== "" || state.status !== "all" || state.spirit !== "all" || state.style !== "all";
+            countEl.textContent = dirty ? (shown + " of " + total + " cocktails") : (total + " cocktails");
+            resetBtn.style.display = dirty ? "inline-flex" : "none";
+            emptyBox.style.display = shown === 0 ? "block" : "none";
+        }
+
+        function resetAll() {
+            state = { q: "", status: "all", spirit: "all", style: "all" };
+            search.value = "";
+            if (spiritSel) spiritSel.value = "all";
+            if (styleSel) styleSel.value = "all";
+            document.querySelectorAll("[data-filter-group]").forEach(function (grp) {
+                grp.querySelectorAll(".chip").forEach(function (c) {
+                    c.classList.toggle("active", c.dataset.val === "all");
+                });
+            });
+            apply();
+        }
+
+        search.addEventListener("input", function () {
+            state.q = search.value.trim().toLowerCase();
+            apply();
+        });
+
+        document.querySelectorAll("[data-filter-group]").forEach(function (grp) {
+            var key = grp.getAttribute("data-filter-group");
+            grp.querySelectorAll(".chip").forEach(function (chip) {
+                chip.addEventListener("click", function () {
+                    grp.querySelectorAll(".chip").forEach(function (c) { c.classList.remove("active"); });
+                    chip.classList.add("active");
+                    state[key] = chip.dataset.val;
+                    apply();
+                });
+            });
+        });
+
+        if (spiritSel) {
+            spiritSel.addEventListener("change", function () {
+                state.spirit = spiritSel.value;
+                apply();
+            });
+        }
+
+        if (styleSel) {
+            styleSel.addEventListener("change", function () {
+                state.style = styleSel.value;
+                apply();
+            });
+        }
+
+        resetBtn.addEventListener("click", resetAll);
+        emptyResetBtn.addEventListener("click", resetAll);
+    })();
+</script>
+{% endblock %}

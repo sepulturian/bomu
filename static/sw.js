@@ -6,12 +6,16 @@
 //   - Static assets (/static/): cache-first, they rarely change.
 // Bump CACHE_VERSION whenever cached behavior needs a hard reset.
 
-const CACHE_VERSION = "bomu-v2";
+const CACHE_VERSION = "bomu-v5";
 
 const PRECACHE = [
     "/static/manifest.json",
     "/static/icon-192.png",
     "/static/icon-512.png",
+    "/static/nav/tonight.webp",
+    "/static/nav/bar.webp",
+    "/static/nav/explore.webp",
+    "/static/nav/saved.webp",
 ];
 
 self.addEventListener("install", (event) => {
@@ -58,9 +62,9 @@ self.addEventListener("fetch", (event) => {
         // offline, show a tiny friendly page instead of the browser error.
         event.respondWith(
             fetch(request).catch(() => new Response(
-                "<html><body style=\"background:#1a1a2e;color:#e0e0e0;" +
+                "<html><body style=\"background:#140e0a;color:#f7f1e8;" +
                 "font-family:sans-serif;text-align:center;padding-top:4rem\">" +
-                "<h1>Bomu</h1><p>You're offline. Reconnect and try again " +
+                "<h1>BOMU</h1><p>You're offline. Reconnect and try again " +
                 "&mdash; the bar's still here.</p></body></html>",
                 { headers: { "Content-Type": "text/html" } }
             ))

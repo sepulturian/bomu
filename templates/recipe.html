@@ -1,185 +1,616 @@
 {% extends "base.html" %}
+{% from "components/icons.html" import glass_icon, ui_icon %}
+{% set hide_topbar = true %}
+{% set hide_tabbar = true %}
+
+{% block title %}{{ recipe.name }} &middot; Bomu{% endblock %}
+
+{% block extra_css %}
+<style>
+    .recipe-hero {
+        position: relative;
+        border-radius: var(--radius-card);
+        overflow: hidden;
+        background: var(--bg-elevated);
+        margin-bottom: 0.85rem;
+    }
+
+    .recipe-hero-media {
+        height: 140px;
+        position: relative;
+        overflow: hidden;
+        background: #110d0a;
+    }
+
+    .recipe-hero-media img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .recipe-hero-media::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(17, 13, 10, 0.08) 25%, #1b1510 100%);
+    }
+
+    .recipe-hero-noimg {
+        height: 96px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(155deg, #2b2017 0%, #17110c 100%);
+        color: rgba(244, 196, 48, 0.38);
+    }
+
+    .recipe-sig-circle {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        border: 1px solid var(--border-subtle);
+        background: rgba(244, 196, 48, 0.06);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .recipe-sig-circle .glass-sig {
+        width: 30px;
+        height: 30px;
+    }
+
+    .recipe-hero-body {
+        padding: 0.45rem 1rem 0.8rem;
+    }
+
+    .recipe-hero-body h1 {
+        font-size: 1.85rem;
+        margin-bottom: 0.35rem;
+    }
+
+    .recipe-meta-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+        align-items: center;
+    }
+
+    /* Compact Interactive Pour List */
+    .pour-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+        margin-bottom: 1rem;
+    }
+
+    .pour-row {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        min-height: 46px;
+        padding: 0.46rem 0.85rem;
+        border-radius: var(--radius-control);
+        background: var(--bg-elevated);
+        border: 1px solid transparent;
+        text-align: left;
+        cursor: pointer;
+        color: var(--ink);
+        transition: border-color var(--dur-snap) var(--ease-snap), background var(--dur-snap) var(--ease-snap), opacity var(--dur-snap) var(--ease-snap);
+    }
+
+    .pour-row.is-missing {
+        border-color: var(--terracotta-border);
+        background: rgba(231, 111, 81, 0.07);
+    }
+
+    .pour-row.is-checked {
+        opacity: 0.45;
+        background: var(--bg-base);
+    }
+
+    .pour-row.is-checked .pour-name {
+        text-decoration: line-through;
+    }
+
+    .pour-circle {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        border: 1.75px solid #6d5e4d;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: transparent;
+        flex-shrink: 0;
+    }
+
+    .pour-circle svg {
+        width: 12px;
+        height: 12px;
+    }
+
+    .pour-row.is-checked .pour-circle {
+        background: var(--zest);
+        border-color: var(--zest);
+        color: var(--ink-on-zest);
+    }
+
+    .pour-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .pour-name {
+        font-size: 0.94rem;
+        font-weight: 600;
+        color: var(--ink);
+    }
+
+    .pour-row.is-missing .pour-name {
+        color: var(--terracotta);
+    }
+
+    .pour-sub {
+        font-size: 0.76rem;
+        color: var(--sage);
+        margin-top: 0.08rem;
+    }
+
+    .pour-sub.is-missing { color: var(--terracotta); }
+
+    .pour-sub.is-dim {
+        color: var(--ink-dim);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .pour-measure {
+        text-align: right;
+        flex-shrink: 0;
+        padding-left: 0.45rem;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .pour-oz {
+        font-family: var(--font-display);
+        font-weight: 700;
+        font-size: 1.08rem;
+        letter-spacing: 0.02em;
+        color: var(--zest);
+        line-height: 1.05;
+    }
+
+    .pour-ml {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #d6cec2;
+        line-height: 1.15;
+    }
+
+    /* Arm's-length mixing steps */
+    .step-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.48rem;
+        margin-bottom: 1.15rem;
+    }
+
+    .step-card {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.8rem;
+        padding: 0.82rem 0.95rem;
+        border-radius: var(--radius-control);
+        background: var(--bg-elevated);
+    }
+
+    .step-badge {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: var(--zest-soft);
+        border: 1px solid var(--zest-border);
+        color: var(--zest);
+        font-family: var(--font-display);
+        font-weight: 800;
+        font-size: 0.96rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        margin-top: 0.08rem;
+    }
+
+    .step-text {
+        font-size: 1.02rem;
+        line-height: 1.48;
+        color: var(--ink);
+    }
+
+    .tip-card {
+        border-radius: var(--radius-card);
+        background: var(--bg-elevated);
+        border: 1px solid var(--zest-border);
+        padding: 0.9rem 1rem;
+        margin-bottom: 1rem;
+    }
+
+    /* Flush Pill-Free Dark Espresso Bartender Dock */
+    .bartender-dock {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        max-width: 480px;
+        margin: 0 auto;
+        z-index: 90;
+        background: linear-gradient(180deg, rgba(26, 19, 14, 0.97) 0%, rgba(15, 11, 8, 0.99) 100%);
+        border-top: 1px solid rgba(244, 196, 48, 0.18);
+        border-radius: 0;
+        padding: 0.65rem 1rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
+        box-shadow: 0 -10px 28px rgba(0, 0, 0, 0.65);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+    }
+
+    .dock-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        min-height: 44px;
+        padding: 0 0.95rem 0 0.72rem;
+        border-radius: var(--radius-pill);
+        background: linear-gradient(180deg, #33261d 0%, #221913 100%);
+        border: 1px solid #4a3728;
+        box-shadow: inset 0 1px 0 rgba(255, 236, 214, 0.12), 0 2px 6px rgba(0, 0, 0, 0.4);
+        color: var(--ink);
+        font-family: var(--font-display);
+        font-weight: 700;
+        font-size: 0.95rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        transition: transform var(--dur-snap) var(--ease-snap), filter var(--dur-snap) var(--ease-snap);
+    }
+
+    .dock-back:hover { filter: brightness(1.08); }
+    .dock-back:active { transform: translateY(1px) scale(0.97); }
+
+    .dock-rate-group {
+        display: flex;
+        align-items: center;
+        gap: 0.42rem;
+    }
+
+    .dock-rate-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.38rem;
+        min-height: 44px;
+        padding: 0 0.98rem;
+        border-radius: var(--radius-pill);
+        border: 1px solid #4d3929;
+        background: linear-gradient(180deg, #35281e 0%, #241b14 100%);
+        color: var(--ink);
+        font-family: var(--font-display);
+        font-weight: 700;
+        font-size: 0.94rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        box-shadow: inset 0 1px 0 rgba(255, 236, 214, 0.14), 0 3px 8px rgba(0, 0, 0, 0.45);
+        cursor: pointer;
+        transition: transform var(--dur-snap) var(--ease-snap), filter var(--dur-snap) var(--ease-snap);
+    }
+
+    .dock-rate-btn:hover { filter: brightness(1.08); }
+    .dock-rate-btn:active { transform: translateY(1px) scale(0.97); }
+
+    .dock-rate-btn svg {
+        width: 17px;
+        height: 17px;
+    }
+
+    .dock-rate-btn.dock-like-idle {
+        border-color: var(--zest-border);
+        box-shadow: inset 0 1px 0 rgba(244, 196, 48, 0.2), 0 3px 10px rgba(0, 0, 0, 0.48);
+    }
+
+    .dock-rate-btn.dock-like-idle svg {
+        color: var(--zest);
+    }
+
+    .dock-rate-btn.is-up {
+        background: linear-gradient(180deg, rgba(149, 213, 178, 0.25) 0%, rgba(149, 213, 178, 0.12) 100%);
+        border-color: var(--sage);
+        color: var(--sage);
+        box-shadow: inset 0 1px 0 rgba(149, 213, 178, 0.35), 0 4px 12px rgba(149, 213, 178, 0.18);
+    }
+
+    .dock-rate-btn.is-down {
+        background: linear-gradient(180deg, rgba(231, 111, 81, 0.24) 0%, rgba(231, 111, 81, 0.12) 100%);
+        border-color: var(--terracotta);
+        color: var(--terracotta);
+        box-shadow: inset 0 1px 0 rgba(231, 111, 81, 0.32), 0 4px 12px rgba(231, 111, 81, 0.18);
+    }
+
+    @media (min-width: 520px) {
+        .bartender-dock {
+            max-width: 620px;
+            border-radius: 20px 20px 0 0;
+            border-left: 1px solid rgba(244, 196, 48, 0.18);
+            border-right: 1px solid rgba(244, 196, 48, 0.18);
+        }
+    }
+
+    @media (min-width: 768px) {
+        .recipe-hero {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            align-items: center;
+            background: #1b1510;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .recipe-hero-media {
+            height: 210px;
+        }
+
+        .recipe-hero-media::after {
+            background: linear-gradient(90deg, rgba(17, 13, 10, 0) 48%, #1b1510 100%);
+        }
+
+        .recipe-hero-noimg {
+            height: 210px;
+        }
+
+        .recipe-hero-body {
+            padding: 1.25rem 1.75rem;
+        }
+
+        .recipe-hero-body h1 {
+            font-size: 2.35rem;
+        }
+
+        .recipe-desktop-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.1fr;
+            gap: 1.5rem;
+            align-items: start;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<h1>{{ recipe.name }}</h1>
-<p style="color: var(--ink-dim); margin-bottom: 1.5rem;">
-    {% if recipe.glass %}{{ recipe.glass }}{% endif %}
-</p>
+{% set img_url = recipe|recipe_image %}
 
-{% if recipe.image_url %}
-    <img src="{{ recipe.image_url }}" alt="{{ recipe.name }}"
-         style="width: 100%; max-width: 400px; border-radius: 8px; margin-bottom: 1.5rem;">
-{% endif %}
+<section class="recipe-hero" style="margin-top: 0.35rem;">
+    {% if img_url %}
+        <div class="recipe-hero-media">
+            <img src="{{ img_url }}" alt="{{ recipe.name }}"
+                 onerror="this.parentElement.style.display='none';">
+        </div>
+    {% else %}
+        <div class="recipe-hero-noimg">
+            <div class="recipe-sig-circle">
+                {{ glass_icon(recipe.glass) }}
+            </div>
+        </div>
+    {% endif %}
+    <div class="recipe-hero-body">
+        <h1>{{ recipe.name }}</h1>
+        <div class="recipe-meta-row">
+            {% if recipe.glass %}
+                <span class="pill">
+                    <span style="color: var(--zest); display: inline-flex;">{{ glass_icon(recipe.glass) }}</span>
+                    <span>{{ recipe.glass|glass_label }}</span>
+                </span>
+            {% endif %}
+            {% if missing_ids %}
+                <span class="pill pill-terra">Missing {{ missing_ids|length }}</span>
+            {% endif %}
+        </div>
+    </div>
+</section>
 
-{# About sits above the ingredients so it reads as an introduction rather than
-   an afterthought. Both fields are nullable, so a recipe without them renders
-   exactly as it did before this shipped. #}
-{% if recipe.about %}
-<h2>About this drink</h2>
-<div class="card" style="margin-bottom: 1.5rem;">
-    <p style="line-height: 1.65; margin: 0; color: var(--ink);">{{ recipe.about }}</p>
+<div class="recipe-desktop-grid">
+<div class="recipe-col-left">
+<div class="section-row" style="margin: 0.35rem 0 0.4rem;">
+    <h2>Pour list</h2>
+    <button type="button" id="reset-pours" class="section-link" style="background: none; border: none; cursor: pointer; display: none; min-height: 28px;">
+        Reset checks
+    </button>
 </div>
-{% endif %}
 
-<h2>Ingredients</h2>
-<div class="card" style="margin-bottom: 1.5rem;">
+<div class="pour-list">
     {% for i in ingredients %}
         {% set is_missing = i.id in missing_ids %}
         {% set is_optional = i.requirement_type == 'optional' %}
         {% set clean_note = i.notes|clean_notes %}
-        <div style="padding: 0.5rem 0; {% if is_optional %}opacity: 0.78;{% endif %} {% if not loop.last %}border-bottom: 1px solid var(--card-border);{% endif %}">
-            <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 1rem;">
-                <div style="flex: 1;">
-                    <div style="font-size: 1rem; {% if is_missing %}color: var(--coral); font-weight: 600;{% endif %}">
-                        {{ i.raw_name }}{% if is_optional %} <span style="font-size: 0.72rem; font-weight: normal; color: var(--ink-dim); background: rgba(255,255,255,0.06); padding: 0.1rem 0.4rem; border-radius: 4px; margin-left: 0.25rem; vertical-align: middle;">optional</span>{% endif %}{% if is_missing %} <span style="font-size: 0.75rem; font-weight: normal; color: var(--coral-dark);">(missing)</span>{% endif %}
-                    </div>
+        <div class="pour-wrap">
+            <button type="button" class="pour-row {% if is_missing %}is-missing{% endif %}"
+                    data-pour-id="{{ i.id }}" aria-pressed="false"
+                    {% if is_optional %}style="opacity: 0.84;"{% endif %}>
+                <span class="pour-circle">{{ ui_icon("check") }}</span>
+                <span class="pour-info">
+                    <span class="pour-name">
+                        {{ i.raw_name }}{% if is_optional %} <span class="pill" style="font-size: 0.66rem; padding: 0.08rem 0.42rem; vertical-align: middle;">optional</span>{% endif %}
+                    </span>
                     {% if clean_note %}
-                        <div style="font-size: 0.8rem; color: var(--ink-dim); margin-top: 0.15rem;">{{ clean_note }}</div>
+                        <span class="pour-sub is-dim" style="display: block;">{{ clean_note }}</span>
                     {% endif %}
                     {% if bottle_hints.get(i.id) %}
-                        <div style="font-size: 0.85rem; color: var(--green); margin-top: 0.25rem;">
-                            Use your:
-                            {% for b in bottle_hints[i.id] %}
-                                <strong>{{ b|short_name }}</strong>{% if not loop.last %}, {% endif %}
-                            {% endfor %}
-                        </div>
-                    {% elif ingredient_have.get(i.id) %}
-                        <div style="font-size: 0.85rem; color: var(--green); margin-top: 0.25rem;">
-                            &#10003; In your stock
-                        </div>
+                        <span class="pour-sub" style="display: block;">
+                            Use your: {% for b in bottle_hints[i.id] %}<strong>{{ b|short_name }}</strong>{% if not loop.last %}, {% endif %}{% endfor %}
+                        </span>
+                    {% elif is_missing %}
+                        <span class="pour-sub is-missing" style="display: block;">Missing from bar</span>
                     {% endif %}
-                    {% if is_missing %}
-                        {% set sugs = i.raw_name|suggestions %}
-                        {% if sugs %}
-                            <div style="font-size: 0.82rem; color: var(--gold); margin-top: 0.3rem; padding: 0.4rem 0.6rem; background: rgba(214, 168, 78, 0.1); border-radius: 8px;">
-                                <span style="color: var(--ink-dim);">Try:</span> {{ sugs|join(' &middot; ')|safe }}
-                            </div>
-                        {% endif %}
-                    {% endif %}
-                </div>
-                <div style="text-align: right; font-size: 0.9rem; color: var(--ink); min-width: 110px;">
+                </span>
+                <span class="pour-measure">
                     {% if i.raw_measure %}
-                        <div>{{ i.raw_measure }}</div>
+                        <span class="pour-oz" style="display: block;">{{ i.raw_measure }}</span>
                         {% set metric = i.raw_measure|metric(i.raw_name) %}
                         {% if metric != i.raw_measure %}
-                            <div style="color: var(--ink-dim); font-size: 0.85rem;">{{ metric }}</div>
+                            <span class="pour-ml" style="display: block;">{{ metric }}</span>
                         {% endif %}
                     {% else %}
-                        <div style="color: var(--ink-dim);">to taste</div>
+                        <span class="pour-ml" style="display: block;">to taste</span>
+                    {% endif %}
+                </span>
+            </button>
+            {% if is_missing %}
+                {% set sugs = i.raw_name|suggestions %}
+                {% if sugs %}
+                    <div style="margin: 0.25rem 0.4rem 0.15rem; padding: 0.4rem 0.75rem; border-radius: 12px; background: var(--zest-soft); font-size: 0.78rem; color: var(--zest);">
+                        <span style="color: var(--ink-dim);">Try:</span> {{ sugs | join(' · ') }}
+                    </div>
+                {% endif %}
+            {% endif %}
+        </div>
+    {% endfor %}
+</div>
+</div>
+
+<div class="recipe-col-right">
+<h2>How to mix</h2>
+{% set step_list = recipe.instructions|steps %}
+<div class="step-list">
+    {% for step in step_list %}
+        <div class="step-card">
+            <span class="step-badge">{{ loop.index }}</span>
+            <p class="step-text">{{ step }}</p>
+        </div>
+    {% endfor %}
+</div>
+
+{% if recipe.tip %}
+    <div class="tip-card">
+        <div style="font-family: var(--font-display); font-weight: 700; font-size: 0.9rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--zest); margin-bottom: 0.35rem;">
+            Worth knowing
+        </div>
+        <p style="font-size: 0.94rem; line-height: 1.55; color: var(--ink);">{{ recipe.tip }}</p>
+    </div>
+{% endif %}
+
+{% if recipe.about %}
+    <div class="card">
+        <div style="font-family: var(--font-display); font-weight: 700; font-size: 0.88rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-dim); margin-bottom: 0.35rem;">
+            About this cocktail
+        </div>
+        <p style="font-size: 0.92rem; line-height: 1.56; color: var(--ink);">{{ recipe.about }}</p>
+    </div>
+{% endif %}
+
+{% if enhancements %}
+    <h2>Make it your own</h2>
+    <div class="card">
+        <p style="font-size: 0.82rem; color: var(--ink-dim); margin-bottom: 0.75rem;">
+            Optional bartender riffs &mdash; the cocktail is complete without them.
+        </p>
+        {% for e in enhancements %}
+            <div style="padding: 0.6rem 0; {% if not loop.last %}border-bottom: 1px solid var(--border-subtle);{% endif %}">
+                <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 0.75rem;">
+                    <span style="font-weight: 600; color: var(--ink);">{{ e.name }}</span>
+                    {% if e.measure %}
+                        <span style="font-size: 0.82rem; color: var(--zest); white-space: nowrap;">{{ e.measure }}</span>
                     {% endif %}
                 </div>
-            </div>
-        </div>
-    {% endfor %}
-</div>
-
-<h2>How to make it</h2>
-<div class="card" style="margin-bottom: 1.5rem;">
-    {% set step_list = recipe.instructions|steps %}
-    {% if step_list|length > 1 %}
-        <ol style="padding-left: 1.4rem; margin: 0;">
-            {% for step in step_list %}
-                <li style="line-height: 1.55; margin-bottom: 0.6rem; {% if loop.last %}margin-bottom: 0;{% endif %} padding-left: 0.25rem;">{{ step }}</li>
-            {% endfor %}
-        </ol>
-    {% else %}
-        <p style="line-height: 1.6; white-space: pre-wrap;">{{ recipe.instructions|clean_instructions }}</p>
-    {% endif %}
-</div>
-
-{# The tip goes AFTER the steps but is written to be read before you start.
-   Gold rather than coral: coral means missing or wrong in this app and this is
-   neither. #}
-{% if recipe.tip %}
-<div class="card" style="margin-bottom: 1.5rem; border-left: 3px solid var(--gold);
-                         background: rgba(214, 168, 78, 0.07);">
-    <div style="font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase;
-                color: var(--gold); margin-bottom: 0.4rem;">Worth knowing</div>
-    <p style="line-height: 1.6; margin: 0; color: var(--ink);">{{ recipe.tip }}</p>
-</div>
-{% endif %}
-
-{# "Make it your own" is deliberately BELOW the method and visually separate
-   from the Ingredients card. Everything here is a documented variation, not
-   part of the drink, and putting it in the ingredient list would re-blur the
-   line the 2026-07-26 bitters cleanup drew. Nullable by construction: a recipe
-   with no enhancements renders exactly the page it rendered before this
-   shipped, and so does an older database with no enhancements table at all. #}
-{% if enhancements %}
-<h2>Make it your own</h2>
-<div class="card" style="margin-bottom: 1.5rem;">
-    <p style="font-size: 0.85rem; color: var(--ink-dim); margin: 0 0 0.9rem; line-height: 1.5;">
-        Optional. The drink is complete without all of these. Every one says where
-        it comes from, so you can tell a printed recipe from something bartenders
-        just do.
-    </p>
-    {% for e in enhancements %}
-        <div style="padding: 0.6rem 0; {% if not loop.last %}border-bottom: 1px solid var(--card-border);{% endif %}">
-            <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 1rem;">
-                <div style="font-size: 0.98rem; color: var(--ink);">{{ e.name }}</div>
-                {% if e.measure %}
-                    <div style="font-size: 0.85rem; color: var(--ink-dim); white-space: nowrap;">{{ e.measure }}</div>
+                {% if e.note %}
+                    <p style="font-size: 0.84rem; color: var(--ink-dim); margin-top: 0.2rem;">{{ e.note }}</p>
+                {% endif %}
+                {% if e.id in enhancement_have %}
+                    <div style="font-size: 0.78rem; color: var(--sage); margin-top: 0.25rem;">In your bar</div>
+                {% elif e.ingredient_name %}
+                    <div style="font-size: 0.78rem; color: var(--ink-faint); margin-top: 0.25rem;">Needs: {{ e.ingredient_name }}</div>
+                {% endif %}
+                {% if e.source %}
+                    <div style="font-size: 0.74rem; color: var(--ink-faint); margin-top: 0.22rem;">
+                        {% if 'Common bar practice' in e.source %}{{ e.source }}{% else %}Source: {{ e.source }}{% endif %}
+                    </div>
                 {% endif %}
             </div>
-            {% if e.note %}
-                <div style="font-size: 0.85rem; color: var(--ink-dim); margin-top: 0.2rem; line-height: 1.5;">{{ e.note }}</div>
-            {% endif %}
-            {% if e.id in enhancement_have %}
-                <div style="font-size: 0.85rem; color: var(--green); margin-top: 0.25rem;">
-                    &#10003; In your stock
-                </div>
-            {% elif e.ingredient_name %}
-                <div style="font-size: 0.85rem; color: var(--ink-dim); margin-top: 0.25rem;">
-                    Not on your list yet: {{ e.ingredient_name }}
-                </div>
-            {% endif %}
-            {# A citation and "this is just what people do" must not look alike.
-               A named source gets "Source:"; unsourced practice says so in its
-               own words and drops the label, because prefixing it with "Source:"
-               is exactly the dressing-up that rule 1 forbids. #}
-            {% if e.source %}
-                {% set is_practice = 'Common bar practice' in e.source %}
-                <div style="font-size: 0.75rem; margin-top: 0.3rem; color: var(--ink-dim);
-                            {% if is_practice %}opacity: 0.6; font-style: italic;{% else %}opacity: 0.8;{% endif %}">
-                    {% if is_practice %}{{ e.source }}{% else %}Source: {{ e.source }}{% endif %}
-                </div>
-            {% endif %}
-        </div>
-    {% endfor %}
-</div>
+        {% endfor %}
+    </div>
 {% endif %}
-
-<h2>What did you think?</h2>
-<div style="display: flex; gap: 0.75rem; margin-bottom: 1.5rem;">
-    <form method="POST" action="/rate/{{ recipe.id }}" style="flex: 1; margin: 0;">
-        <input type="hidden" name="thumb" value="1">
-        <button type="submit" class="btn"
-            style="width: 100%; padding: 0.9rem; font-size: 1.1rem; border-radius: 999px;
-                   {% if rating == 1 %}
-                       background: #2d6a4f; border: 2px solid var(--green); color: var(--ink);
-                   {% else %}
-                       background: rgba(255,255,255,0.04); border: 1px solid var(--card-border); color: var(--ink-dim);
-                   {% endif %}">
-            {% if rating == 1 %}&#9989;{% endif %} &#128077; Liked it
-        </button>
-    </form>
-    <form method="POST" action="/rate/{{ recipe.id }}" style="flex: 1; margin: 0;">
-        <input type="hidden" name="thumb" value="-1">
-        <button type="submit" class="btn"
-            style="width: 100%; padding: 0.9rem; font-size: 1.1rem; border-radius: 999px;
-                   {% if rating == -1 %}
-                       background: #661111; border: 2px solid var(--coral-dark); color: var(--ink);
-                   {% else %}
-                       background: rgba(255,255,255,0.04); border: 1px solid var(--card-border); color: var(--ink-dim);
-                   {% endif %}">
-            {% if rating == -1 %}&#9989;{% endif %} &#128078; Not for me
-        </button>
-    </form>
 </div>
-{% if rating != 0 %}
-    <p style="font-size: 0.85rem; color: var(--ink-dim); margin-bottom: 1.5rem; text-align: center;">
-        Tap the same button again to clear your rating.
-    </p>
-{% endif %}
+</div>
 
+<div class="tabbar-scrim" aria-hidden="true"></div>
+<nav class="bartender-dock" aria-label="Cocktail actions">
+    <a href="/" class="dock-back"
+       onclick="if (document.referrer && document.referrer.indexOf(window.location.host) !== -1) { history.back(); return false; }">
+        {{ ui_icon("back", "btn-icon") }}
+        <span>Back</span>
+    </a>
+    <div class="dock-rate-group">
+        <form method="POST" action="/rate/{{ recipe.id }}" style="margin: 0;">
+            <input type="hidden" name="thumb" value="1">
+            <button type="submit" class="dock-rate-btn {% if rating == 1 %}is-up{% else %}dock-like-idle{% endif %}"
+                    title="{{ 'Tap again to clear rating' if rating == 1 else 'Like cocktail' }}">
+                {{ ui_icon("thumb-up") }}
+                <span>{{ 'Liked' if rating == 1 else 'Like' }}</span>
+            </button>
+        </form>
+        <form method="POST" action="/rate/{{ recipe.id }}" style="margin: 0;">
+            <input type="hidden" name="thumb" value="-1">
+            <button type="submit" class="dock-rate-btn {% if rating == -1 %}is-down{% endif %}"
+                    title="{{ 'Tap again to clear rating' if rating == -1 else 'Not for me' }}">
+                {{ ui_icon("thumb-down") }}
+                <span>Pass</span>
+            </button>
+        </form>
+    </div>
+</nav>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    (function () {
+        var key = "bomu_pour_{{ recipe.id }}";
+        var saved = {};
+        try {
+            saved = JSON.parse(sessionStorage.getItem(key) || "{}");
+        } catch (e) { saved = {}; }
+
+        var rows = document.querySelectorAll(".pour-row");
+        var resetBtn = document.getElementById("reset-pours");
+
+        function syncUI() {
+            var anyChecked = false;
+            rows.forEach(function (row) {
+                var id = row.getAttribute("data-pour-id");
+                var on = !!saved[id];
+                row.classList.toggle("is-checked", on);
+                row.setAttribute("aria-pressed", on ? "true" : "false");
+                if (on) anyChecked = true;
+            });
+            resetBtn.style.display = anyChecked ? "inline-flex" : "none";
+        }
+
+        rows.forEach(function (row) {
+            row.addEventListener("click", function () {
+                var id = row.getAttribute("data-pour-id");
+                saved[id] = !saved[id];
+                try { sessionStorage.setItem(key, JSON.stringify(saved)); } catch (e) {}
+                syncUI();
+            });
+        });
+
+        resetBtn.addEventListener("click", function () {
+            saved = {};
+            try { sessionStorage.removeItem(key); } catch (e) {}
+            syncUI();
+        });
+
+        syncUI();
+    })();
+</script>
 {% endblock %}

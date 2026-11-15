@@ -1,481 +1,833 @@
+{% from "components/icons.html" import glass_icon, ui_icon %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Bomu</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- PWA: installable to home screen -->
+    <meta charset="utf-8">
+    <title>{% block title %}Bomu{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <link rel="manifest" href="/static/manifest.json">
-    <meta name="theme-color" content="#1a140f">
+    <meta name="theme-color" content="#140e0a">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Bomu">
     <link rel="apple-touch-icon" href="/static/icon-180.png">
     <link rel="icon" type="image/png" sizes="192x192" href="/static/icon-192.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,600;6..96,700;6..96,800;6..96,900&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
+        /* Direction 4 — Espresso & Zest (Refined)
+           Deep espresso surfaces + citrus lemon zest + condensed grotesk + selective capsule CTAs */
         :root {
-            /* Warm editorial palette -- amber/coral over dark charcoal-brown */
-            --bg-base: #1a140f;
-            --bg-glow-top: #6b3d14;
-            --bg-glow-mid: #3a2410;
-            --card: #241b14;
-            --card-border: #3a2c1e;
-            --ink: #f5ead9;
-            --ink-dim: #b8a894;
-            --ink-faint: #7a6b58;
-            --coral: #e9694a;
-            --coral-dark: #c94f36;
-            --gold: #d6a84e;
-            --green: #7ed6a5;
+            --bg-base: #110d0a;
+            --bg-elevated: #1b1510;
+            --bg-card: #211a13;
+            --bg-pill: #2a2018;
+            --bg-pill-hover: #35281f;
+            --border-subtle: rgba(255, 236, 214, 0.08);
+            --border-highlight: rgba(255, 236, 214, 0.18);
 
-            --font-display: "Bodoni Moda", "Playfair Display", Georgia, serif;
-            --font-body: "Poppins", -apple-system, BlinkMacSystemFont, sans-serif;
+            --ink: #f4ede2;
+            --ink-dim: #bba996;
+            --ink-faint: #8e7c6a;
+
+            --zest: #f4c430;
+            --zest-hover: #ffd34d;
+            --zest-soft: rgba(244, 196, 48, 0.13);
+            --zest-border: rgba(244, 196, 48, 0.36);
+            --ink-on-zest: #140e0a;
+
+            --sage: #95d5b2;
+            --sage-soft: rgba(149, 213, 178, 0.13);
+            --sage-border: rgba(149, 213, 178, 0.34);
+
+            --terracotta: #e76f51;
+            --terracotta-soft: rgba(231, 111, 81, 0.14);
+            --terracotta-border: rgba(231, 111, 81, 0.42);
+
+            --font-display: "Barlow Condensed", "Bahnschrift", "Oswald", "Arial Narrow", sans-serif;
+            --font-body: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+            --radius-pill: 999px;
+            --radius-card: 20px;
+            --radius-control: 14px;
+
+            --ease-snap: cubic-bezier(0.2, 0, 0, 1);
+            --dur-snap: 150ms;
+        }
+
+        @view-transition { navigation: auto; }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html {
+            background: var(--bg-base);
+            color: var(--ink);
+            font-size: 16px;
+            scrollbar-width: none;
+        }
+
+        html::-webkit-scrollbar,
+        body::-webkit-scrollbar {
+            display: none;
         }
 
         body {
             font-family: var(--font-body);
-            /* Full-page warm glow: bright golden core in the upper third (it
-               reads as light spilling from behind the hero card), fading to
-               dark edges */
-            background:
-                radial-gradient(ellipse 700px 620px at 50% 22%, var(--bg-glow-top) 0%, transparent 62%),
-                radial-gradient(ellipse 900px 1000px at 50% 45%, var(--bg-glow-mid) 0%, transparent 68%),
-                var(--bg-base);
-            background-attachment: fixed;
+            background: var(--bg-base);
             color: var(--ink);
             min-height: 100vh;
+            line-height: 1.45;
+            overflow-x: hidden;
+            font-variant-numeric: tabular-nums;
         }
 
-        nav {
-            padding: 1.25rem 1.5rem 0.5rem;
+        a { color: inherit; text-decoration: none; }
+        button, input, select { font-family: inherit; }
+
+        /* Quiet top app bar on primary screens */
+        .topbar {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 0.65rem 1rem 0.2rem;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 0.5rem;
+            justify-content: space-between;
+            gap: 0.75rem;
         }
 
-        nav .logo {
-            font-family: var(--font-body);
-            font-size: 1.4rem;
+        .wordmark {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.42rem;
+            min-height: 40px;
+            font-family: var(--font-display);
             font-weight: 800;
+            font-size: 1.45rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
             color: var(--ink);
-            text-decoration: none;
-            letter-spacing: -0.01em;
         }
 
-        nav .logo::after {
-            content: "\1F378";
-            margin-left: 0.3rem;
-            font-size: 1.1rem;
+        .wordmark .glass-sig {
+            width: 20px;
+            height: 20px;
+            color: var(--zest);
+            flex-shrink: 0;
         }
 
-        nav .links {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
+        .account-menu {
+            position: relative;
         }
 
-        nav a {
-            color: var(--ink-dim);
-            text-decoration: none;
+        .account-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: var(--bg-pill);
+            border: 1px solid var(--border-highlight);
+            color: var(--ink);
+            font-family: var(--font-display);
+            font-weight: 700;
             font-size: 0.95rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            user-select: none;
         }
 
-        nav a:hover { color: var(--ink); }
+        .account-popover {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 6px);
+            min-width: 150px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-highlight);
+            border-radius: var(--radius-control);
+            padding: 0.55rem;
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.65);
+            z-index: 250;
+        }
+
+        .account-name {
+            font-size: 0.78rem;
+            color: var(--ink-dim);
+            padding: 0.2rem 0.45rem 0.4rem;
+            border-bottom: 1px solid var(--border-subtle);
+            margin-bottom: 0.35rem;
+        }
+
+        .account-logout {
+            width: 100%;
+            text-align: left;
+            background: none;
+            border: none;
+            color: var(--ink);
+            font-size: 0.84rem;
+            font-weight: 600;
+            padding: 0.4rem 0.45rem;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .account-logout:hover { background: var(--bg-pill); }
 
         .container {
             max-width: 600px;
             margin: 0 auto;
-            padding: 1.5rem;
+            padding: 0.25rem 1rem 92px;
         }
 
-        h1 {
-            /* Bold condensed-feel serif masthead -- editorial/awards-plaque energy */
+        /* Condensed Grotesk Display System */
+        .display-title, h1 {
             font-family: var(--font-display);
-            font-weight: 900;
-            font-size: 2.5rem;
-            line-height: 1.02;
-            letter-spacing: 0.01em;
+            font-weight: 800;
+            font-size: clamp(2rem, 7vw, 2.55rem);
+            line-height: 0.96;
+            letter-spacing: 0.015em;
             text-transform: uppercase;
-            margin-bottom: 0.6rem;
             color: var(--ink);
+            margin-bottom: 0.45rem;
         }
 
-        h2 {
+        .section-heading, h2 {
             font-family: var(--font-display);
             font-weight: 700;
-            font-size: 1.3rem;
-            letter-spacing: 0.04em;
+            font-size: 1.15rem;
+            line-height: 1.1;
+            letter-spacing: 0.05em;
             text-transform: uppercase;
-            margin-bottom: 0.75rem;
-            color: var(--gold);
+            color: var(--zest);
+            margin-bottom: 0.55rem;
         }
 
-        .btn {
-            display: inline-block;
-            background: var(--coral);
-            color: #1a140f;
+        .section-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            margin: 1.25rem 0 0.6rem;
+        }
+
+        .section-row h2 { margin-bottom: 0; }
+
+        .section-link {
+            font-size: 0.82rem;
             font-weight: 600;
-            padding: 0.7rem 1.3rem;
-            border: none;
-            border-radius: 999px;
-            font-size: 1rem;
-            cursor: pointer;
-            text-decoration: none;
+            color: var(--zest);
+            min-height: 40px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.2rem;
         }
 
-        .btn:hover { background: var(--coral-dark); color: #fff; }
+        /* Sculpted Tactile Capsule CTAs (>= 46px height) */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.45rem;
+            min-height: 46px;
+            padding: 0.6rem 1.35rem;
+            border-radius: var(--radius-pill);
+            border: 1px solid rgba(255, 238, 173, 0.45);
+            background: linear-gradient(180deg, #ffdf6b 0%, #f4c430 52%, #e0ae19 100%);
+            color: var(--ink-on-zest);
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: 0.98rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 6px 18px rgba(244, 196, 48, 0.24), 0 2px 6px rgba(0, 0, 0, 0.5);
+            cursor: pointer;
+            transition: transform var(--dur-snap) var(--ease-snap), filter var(--dur-snap) var(--ease-snap), box-shadow var(--dur-snap) var(--ease-snap);
+        }
+
+        .btn:hover { filter: brightness(1.06); }
+        .btn:active {
+            transform: translateY(1px) scale(0.98);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 2px 8px rgba(244, 196, 48, 0.18);
+        }
 
         .btn-secondary {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid var(--card-border);
-            color: var(--ink);
-        }
-
-        .btn-secondary:hover { background: rgba(255, 255, 255, 0.08); }
-
-        .btn-danger {
-            background: #661111;
-            color: var(--ink);
-        }
-
-        .btn-danger:hover { background: #881111; }
-
-        .btn-small {
-            padding: 0.35rem 0.8rem;
-            font-size: 0.85rem;
-        }
-
-        input[type="text"], input[type="password"], input[type="file"],
-        input[type="search"], select {
-            width: 100%;
-            padding: 0.7rem 1rem;
-            background: rgba(0, 0, 0, 0.25);
-            border: 1px solid var(--card-border);
-            border-radius: 999px;
+            background: linear-gradient(180deg, #35281e 0%, #241b14 100%);
+            border: 1px solid #4d3929;
             color: var(--ink);
             font-family: var(--font-body);
-            font-size: 1rem;
-            margin-bottom: 1rem;
+            font-weight: 600;
+            font-size: 0.88rem;
+            letter-spacing: 0.01em;
+            text-transform: none;
+            box-shadow: inset 0 1px 0 rgba(255, 236, 214, 0.14), 0 4px 12px rgba(0, 0, 0, 0.45);
         }
 
-        input[type="text"]:focus, input[type="password"]:focus,
-        input[type="search"]:focus, select:focus {
-            outline: none;
-            border-color: var(--coral);
+        .btn-secondary:hover {
+            background: linear-gradient(180deg, #3e2f23 0%, #2b2017 100%);
+            border-color: #634a36;
+            filter: none;
         }
+
+        .btn-danger {
+            background: var(--terracotta-soft);
+            border-color: var(--terracotta-border);
+            color: var(--terracotta);
+            font-weight: 600;
+        }
+
+        .btn-sm {
+            min-height: 40px;
+            padding: 0.35rem 0.95rem;
+            font-size: 0.82rem;
+        }
+
+        .btn-icon { width: 16px; height: 16px; flex-shrink: 0; }
+
+        /* Status Pills */
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.28rem 0.7rem;
+            border-radius: var(--radius-pill);
+            background: var(--bg-pill);
+            border: 1px solid var(--border-subtle);
+            color: var(--ink-dim);
+            font-size: 0.75rem;
+            font-weight: 600;
+            line-height: 1.2;
+            white-space: nowrap;
+        }
+
+        .pill .glass-sig, .pill svg {
+            width: 15px;
+            height: 15px;
+            flex-shrink: 0;
+        }
+
+        .pill-zest {
+            background: var(--zest-soft);
+            border-color: var(--zest-border);
+            color: var(--zest);
+        }
+
+        .pill-sage {
+            background: var(--sage-soft);
+            border-color: var(--sage-border);
+            color: var(--sage);
+        }
+
+        .pill-terra {
+            background: var(--terracotta-soft);
+            border-color: var(--terracotta-border);
+            color: var(--terracotta);
+        }
+
+        /* Filter Chips */
+        .chip-strip {
+            display: flex;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            gap: 0.45rem;
+            scrollbar-width: none;
+        }
+
+        .chip-strip::-webkit-scrollbar { display: none; }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 40px;
+            padding: 0.35rem 0.9rem;
+            border-radius: var(--radius-pill);
+            background: linear-gradient(180deg, #261d15 0%, #1c150f 100%);
+            border: 1px solid rgba(255, 236, 214, 0.11);
+            color: var(--ink-dim);
+            font-size: 0.8rem;
+            font-weight: 600;
+            white-space: nowrap;
+            box-shadow: inset 0 1px 0 rgba(255, 236, 214, 0.07), 0 2px 6px rgba(0, 0, 0, 0.35);
+            cursor: pointer;
+            transition: background var(--dur-snap) var(--ease-snap), color var(--dur-snap) var(--ease-snap), border-color var(--dur-snap) var(--ease-snap);
+        }
+
+        .chip.active {
+            background: linear-gradient(180deg, #382a1e 0%, #281d15 100%);
+            border-color: var(--zest);
+            color: var(--zest);
+            box-shadow: inset 0 1px 0 rgba(244, 196, 48, 0.28), 0 3px 10px rgba(244, 196, 48, 0.14);
+        }
+
+        /* Recessed Segmented Switch with Warm Cream Active Pill */
+        .segmented {
+            display: flex;
+            padding: 4px;
+            border-radius: var(--radius-pill);
+            background: #15100c;
+            border: 1px solid rgba(255, 236, 214, 0.1);
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.65);
+            gap: 4px;
+        }
+
+        .segmented-item {
+            flex: 1;
+            min-height: 40px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            border-radius: var(--radius-pill);
+            border: 1px solid transparent;
+            background: transparent;
+            color: var(--ink-dim);
+            font-size: 0.84rem;
+            font-weight: 600;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: background var(--dur-snap) var(--ease-snap), color var(--dur-snap) var(--ease-snap), box-shadow var(--dur-snap) var(--ease-snap);
+        }
+
+        .segmented-item.active {
+            background: linear-gradient(180deg, #fbf6ee 0%, #e9dfd1 100%);
+            border-color: transparent;
+            color: #140e0a;
+            font-weight: 700;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5), inset 0 1px 0 #ffffff;
+        }
+
+        /* Standard Cards & Rows (14px-20px radius, not inflated pills) */
+        .card {
+            background: var(--bg-elevated);
+            border-radius: var(--radius-card);
+            padding: 1rem 1.05rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .drink-card {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            background: var(--bg-elevated);
+            border-radius: 18px;
+            padding: 0.55rem 0.85rem 0.55rem 0.55rem;
+            margin-bottom: 0.5rem;
+            transition: background var(--dur-snap) var(--ease-snap), transform var(--dur-snap) var(--ease-snap);
+        }
+
+        .drink-card:active {
+            transform: scale(0.985);
+            background: var(--bg-pill);
+        }
+
+        .drink-card.is-disliked { opacity: 0.55; }
+
+        .drink-thumb {
+            width: 60px;
+            height: 60px;
+            border-radius: 13px;
+            overflow: hidden;
+            background: var(--bg-pill);
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .drink-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* Tone down external bright CocktailDB studio cutouts on dark surfaces */
+        .drink-thumb img[src^="http"] {
+            filter: brightness(0.84) contrast(1.06) saturate(1.05);
+        }
+
+        .drink-thumb-fallback {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(150deg, #2b2017 0%, #17110c 100%);
+            color: rgba(244, 196, 48, 0.34);
+        }
+
+        .drink-thumb-fallback .glass-sig { width: 24px; height: 24px; }
+
+        .drink-meta { flex: 1; min-width: 0; }
+
+        .drink-title {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 1.2rem;
+            line-height: 1.05;
+            letter-spacing: 0.015em;
+            text-transform: uppercase;
+            color: var(--ink);
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .drink-sub {
+            margin-top: 0.22rem;
+            font-size: 0.78rem;
+            color: var(--sage);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .drink-sub.is-missing { color: var(--terracotta); }
+        .drink-sub.is-dim { color: var(--ink-dim); }
+
+        .drink-glass-line {
+            margin-top: 0.18rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.74rem;
+            color: var(--ink-dim);
+        }
+
+        .drink-glass-line .glass-sig {
+            width: 14px;
+            height: 14px;
+            color: var(--zest);
+            flex-shrink: 0;
+        }
+
+        .row-chevron { width: 17px; height: 17px; color: var(--ink-faint); flex-shrink: 0; }
+
+        /* Inputs & Search Bars (14px control radius so inputs never look like CTA pills) */
+        .search-wrap {
+            position: relative;
+            margin-bottom: 0.7rem;
+        }
+
+        .search-wrap svg {
+            position: absolute;
+            left: 0.9rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 17px;
+            height: 17px;
+            color: var(--ink-faint);
+            pointer-events: none;
+        }
+
+        .search-wrap input[type="search"] {
+            padding-left: 2.6rem;
+            margin-bottom: 0;
+        }
+
+        input[type="text"], input[type="password"], input[type="search"], select, input[type="file"] {
+            width: 100%;
+            min-height: 46px;
+            padding: 0.6rem 0.95rem;
+            border-radius: var(--radius-control);
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-subtle);
+            color: var(--ink);
+            font-size: 0.94rem;
+            margin-bottom: 0.8rem;
+            transition: border-color var(--dur-snap) var(--ease-snap), background var(--dur-snap) var(--ease-snap);
+        }
+
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 24 24'%3E%3Cpath stroke='%23f4c430' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.9rem center;
+            padding-right: 2.35rem;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--zest);
+            background: var(--bg-pill);
+        }
+
+        input::placeholder { color: var(--ink-faint); }
 
         label {
             display: block;
-            margin-bottom: 0.3rem;
+            font-size: 0.8rem;
+            font-weight: 600;
             color: var(--ink-dim);
-            font-size: 0.9rem;
+            margin-bottom: 0.3rem;
         }
 
-        .form-group {
-            margin-bottom: 1rem;
-        }
+        .form-group { margin-bottom: 0.25rem; }
 
         .flash {
-            background: rgba(233, 105, 74, 0.15);
-            border: 1px solid rgba(233, 105, 74, 0.35);
-            padding: 0.75rem 1rem;
-            border-radius: 10px;
-            margin-bottom: 1rem;
-        }
-
-        .card {
-            background: var(--card);
-            border: 1px solid var(--card-border);
-            border-radius: 14px;
-            padding: 1rem;
-            margin-bottom: 0.75rem;
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .card-actions {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .category-title {
-            /* Small-caps serif labels, matching the headline family */
-            font-family: var(--font-display);
-            font-size: 0.95rem;
-            font-weight: 700;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            color: var(--gold);
-            margin-top: 1.75rem;
-            margin-bottom: 0.85rem;
-        }
-
-        .category-title:first-child {
-            margin-top: 0;
-        }
-
-        .checklist-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.5rem 0;
-        }
-
-        .checklist-item input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-            accent-color: var(--coral);
-        }
-
-        /* --- Home hero photo card --- */
-        .hero-card {
-            max-width: 340px;
-            margin: 0 auto;
-            aspect-ratio: 1 / 1;
-            border-radius: 26px;
-            overflow: hidden;
-            /* Warm glow bleeding out from behind the photo, like the card is
-               the light source for the page gradient */
-            box-shadow: 0 0 60px rgba(214, 138, 62, 0.28),
-                        0 12px 40px rgba(0, 0, 0, 0.45);
-            border: 1px solid rgba(214, 168, 78, 0.18);
-        }
-
-        .hero-card img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-
-        /* --- Auth screens (login / signup) ---
-           Landscape band above the form. Deliberately a different shape from
-           the square hero on Home: signing in is its own moment, and the
-           wide crop reads as a bar you're walking into rather than a drink
-           you're about to make. Same warm bleed as the hero card so the two
-           screens feel lit by the same room. */
-        .auth-art {
-            position: relative;
-            margin: 0 auto 1.75rem;
-            aspect-ratio: 3 / 2;
-            max-height: 200px;
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 0 50px rgba(214, 138, 62, 0.22),
-                        0 10px 32px rgba(0, 0, 0, 0.45);
-            border: 1px solid rgba(214, 168, 78, 0.18);
-        }
-
-        .auth-art img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-
-        /* Scrim along the bottom edge so the wordmark sitting on the photo
-           stays readable no matter which part of the image lands there. */
-        .auth-art .art-scrim {
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(180deg,
-                        rgba(26, 20, 15, 0) 35%,
-                        rgba(26, 20, 15, 0.85) 100%);
-        }
-
-        .auth-art .art-caption {
-            position: absolute;
-            left: 1.1rem;
-            right: 1.1rem;
-            bottom: 0.9rem;
-        }
-
-        .auth-art .art-caption .art-title {
-            font-family: var(--font-display);
-            font-weight: 900;
-            font-size: 2rem;
-            line-height: 1;
-            text-transform: uppercase;
-            letter-spacing: 0.01em;
+            background: var(--bg-elevated);
+            border: 1px solid var(--zest-border);
             color: var(--ink);
+            padding: 0.65rem 1rem;
+            border-radius: var(--radius-control);
+            margin-bottom: 0.8rem;
+            font-size: 0.86rem;
+            font-weight: 500;
         }
 
-        .auth-art .art-caption .art-sub {
-            font-size: 0.85rem;
-            color: var(--ink-dim);
-            margin-top: 0.25rem;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 3rem 1rem;
-            color: var(--ink-faint);
-        }
-
-        /* Summaries that draw their own row layout opt out of the disclosure
-           triangle with this class. list-style: none alone isn't enough --
-           Safari keeps drawing a marker regardless, and Safari is what everyone
-           here is actually using. Summaries WITHOUT this class keep their
-           triangle on purpose; it's the only affordance saying "this opens". */
         summary.bare { list-style: none; }
         summary.bare::-webkit-details-marker { display: none; }
         summary.bare::marker { content: ""; }
 
-        /* --- Ingredient photo tiles (checklist) --- */
-        .tile-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
-            gap: 0.8rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .tile-cell { text-align: center; }
-
-        .ing-tile {
-            position: relative;
-            display: block;
-            aspect-ratio: 1;
-            border-radius: 18px;
+        /* Unified Accordion Disclosure Component */
+        .accordion-bar {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-control);
+            margin-bottom: 0.85rem;
             overflow: hidden;
-            background: var(--card);
-            cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
         }
 
-        .ing-tile img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
+        .accordion-bar.is-accent {
+            border-color: var(--zest-border);
         }
 
-        /* Hidden real checkbox; state drives the ring + badge below */
-        .ing-tile input {
-            position: absolute;
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        /* Border ring overlay: dim by default, coral glow when checked */
-        .ing-tile .tile-ring {
-            position: absolute;
-            inset: 0;
-            border-radius: 18px;
-            border: 1.5px solid var(--card-border);
-            transition: border-color 0.18s, box-shadow 0.18s;
-            pointer-events: none;
-        }
-
-        .ing-tile input:checked ~ .tile-ring {
-            border: 2px solid var(--coral);
-            box-shadow: 0 0 16px rgba(233, 105, 74, 0.45),
-                        inset 0 0 12px rgba(233, 105, 74, 0.12);
-        }
-
-        .ing-tile .check-badge {
-            position: absolute;
-            top: 7px;
-            right: 7px;
-            width: 25px;
-            height: 25px;
-            border-radius: 999px;
-            border: 1.5px solid rgba(245, 234, 217, 0.45);
-            background: rgba(10, 6, 3, 0.4);
-            color: transparent;
+        .accordion-summary {
             display: flex;
             align-items: center;
-            justify-content: center;
-            font-size: 0.8rem;
-            font-weight: 700;
-            transition: background 0.18s, color 0.18s;
+            justify-content: space-between;
+            gap: 0.65rem;
+            padding: 0.62rem 0.9rem;
+            cursor: pointer;
+            user-select: none;
+            min-height: 46px;
         }
 
-        .ing-tile input:checked ~ .check-badge {
-            background: var(--coral);
-            border-color: var(--coral);
-            color: #1a140f;
+        .accordion-title {
+            display: flex;
+            align-items: center;
+            gap: 0.48rem;
+            min-width: 0;
+            flex: 1;
+            font-size: 0.86rem;
+            font-weight: 600;
+            color: var(--ink);
         }
 
-        .tile-name {
-            display: block;
-            margin-top: 0.4rem;
-            font-size: 0.74rem;
+        .accordion-right {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            flex-shrink: 0;
+        }
+
+        .accordion-chev {
+            width: 16px;
+            height: 16px;
             color: var(--ink-dim);
-            line-height: 1.25;
+            transition: transform var(--dur-snap) var(--ease-snap);
         }
 
-        /* Bottom tab bar: floating black pill, thumb-reach navigation for phone use. */
+        details[open] > .accordion-summary .accordion-chev {
+            transform: rotate(180deg);
+        }
+
+        /* Flush Pill-Free Dark Espresso 4-Tab Bottom Bar */
+        .tabbar-scrim { display: none; }
+
         .tabbar {
             position: fixed;
-            bottom: 14px;
-            left: 14px;
-            right: 14px;
-            display: flex;
-            background: rgba(15, 10, 6, 0.92);
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--card-border);
-            border-radius: 999px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-            /* Respect iPhone home-indicator area when installed as a PWA */
-            padding-bottom: env(safe-area-inset-bottom, 0);
-            z-index: 100;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 90;
+            max-width: 480px;
+            margin: 0 auto;
+            height: 72px;
+            padding: 0 0.35rem env(safe-area-inset-bottom, 0px);
+            background: linear-gradient(180deg, rgba(26, 19, 14, 0.97) 0%, rgba(15, 11, 8, 0.99) 100%);
+            border-top: 1px solid rgba(244, 196, 48, 0.18);
+            box-shadow: 0 -10px 28px rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            align-items: stretch;
         }
 
         .tabbar a {
-            flex: 1;
-            text-align: center;
-            padding: 0.6rem 0 0.55rem;
-            margin: 6px;
-            border-radius: 999px;
-            color: var(--ink-dim);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            height: 100%;
+            color: var(--ink-faint);
             text-decoration: none;
-            font-size: 0.72rem;
+            font-family: var(--font-display);
+            font-size: 0.76rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            transition: color var(--dur-snap) var(--ease-snap), transform var(--dur-snap) var(--ease-snap);
         }
 
-        .tabbar a .tab-icon {
-            display: block;
-            font-size: 1.2rem;
-            line-height: 1.3;
+        .tabbar a .nav-icon-img {
+            width: 30px;
+            height: 30px;
+            object-fit: contain;
+            opacity: 0.62;
+            filter: saturate(0.72) brightness(0.9);
+            transition: transform 180ms var(--ease-snap), opacity 180ms var(--ease-snap), filter 180ms var(--ease-snap);
         }
+
+        .tabbar a:active { transform: scale(0.95); }
 
         .tabbar a.active {
-            color: #1a140f;
-            background: var(--coral);
-            font-weight: 600;
+            color: var(--zest);
+            font-weight: 800;
+            background: radial-gradient(circle at 50% 34%, rgba(244, 196, 48, 0.15) 0%, transparent 66%);
         }
 
-        /* Keep page content clear of the fixed tab bar */
-        .container {
-            padding-bottom: 100px;
+        .tabbar a.active::before {
+            content: "";
+            position: absolute;
+            top: -1px;
+            left: 22%;
+            right: 22%;
+            height: 2.5px;
+            border-radius: 0 0 3px 3px;
+            background: linear-gradient(90deg, rgba(244, 196, 48, 0.25), #ffdf6b 50%, rgba(244, 196, 48, 0.25));
+            box-shadow: 0 2px 10px rgba(244, 196, 48, 0.6);
+        }
+
+        .tabbar a.active::after {
+            content: "";
+            position: absolute;
+            bottom: 5px;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: var(--zest);
+            box-shadow: 0 0 6px var(--zest);
+        }
+
+        .tabbar a.active .nav-icon-img {
+            opacity: 1;
+            transform: translateY(-1px) scale(1.08);
+            filter: saturate(1.15) brightness(1.08) drop-shadow(0 3px 8px rgba(244, 196, 48, 0.35));
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 1.75rem 1rem;
+            color: var(--ink-dim);
+        }
+
+        .drink-grid {
+            display: block;
+        }
+
+        .bottle-grid {
+            display: block;
+        }
+
+        @media (min-width: 520px) {
+            .tabbar {
+                max-width: 560px;
+                height: 74px;
+                border-radius: 20px 20px 0 0;
+                border-left: 1px solid rgba(244, 196, 48, 0.18);
+                border-right: 1px solid rgba(244, 196, 48, 0.18);
+            }
+        }
+
+        @media (min-width: 768px) {
+            body {
+                background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(58, 39, 24, 0.36) 0%, rgba(26, 18, 12, 0.16) 55%, #110d0a 100%) fixed, var(--bg-base);
+            }
+
+            .topbar {
+                max-width: 960px;
+                padding: 1rem 2rem 0.4rem;
+            }
+
+            .container {
+                max-width: 960px;
+                padding: 0.4rem 2rem 110px;
+            }
+
+            .tabbar {
+                max-width: 620px;
+            }
+
+            .drink-grid {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 0.7rem;
+            }
+
+            .drink-grid .drink-card,
+            .drink-grid .card {
+                margin-bottom: 0;
+            }
+
+            .bottle-grid {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 0.6rem;
+            }
+
+            .bottle-grid .bottle-row {
+                margin-bottom: 0;
+            }
+
+            .form-page-narrow {
+                max-width: 520px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
         }
     </style>
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <nav>
-        <a href="/" class="logo">Bomu</a>
-        {% if current_username %}
-            <form method="POST" action="/logout" style="display: inline; margin: 0;">
-                <button type="submit"
-                        style="background: none; border: none; color: var(--ink-faint); cursor: pointer; font-size: 0.95rem; padding: 0; font-family: var(--font-body);"
-                        title="Logged in as {{ current_username }}">
-                    {{ current_username }} &middot; out
-                </button>
-            </form>
+    {% if not hide_topbar %}
+    <header class="topbar">
+        <a href="/" class="wordmark" aria-label="Bomu home">
+            {{ glass_icon("Coupe glass") }}
+            <span>Bomu</span>
+        </a>
+        {% if current_username and not hide_account %}
+            <details class="account-menu">
+                <summary class="bare account-avatar" title="Account ({{ current_username }})" aria-label="Account menu">
+                    {{ current_username[:1]|upper }}
+                </summary>
+                <div class="account-popover">
+                    <div class="account-name">Signed in as <strong>{{ current_username }}</strong></div>
+                    <form method="POST" action="/logout" style="margin: 0;">
+                        <button type="submit" class="account-logout">Sign out</button>
+                    </form>
+                </div>
+            </details>
         {% endif %}
-    </nav>
+    </header>
+    {% endif %}
 
-    <div class="container">
+    <main class="container">
         {% with messages = get_flashed_messages() %}
             {% if messages %}
                 {% for message in messages %}
@@ -485,43 +837,42 @@
         {% endwith %}
 
         {% block content %}{% endblock %}
-    </div>
+    </main>
 
-    {% if current_username %}
-    <div class="tabbar">
-        <a href="/" class="{% if request.path == '/' %}active{% endif %}">
-            <span class="tab-icon">&#127968;</span>Home
-        </a>
-        <a href="/recommend" class="{% if request.path.startswith('/recommend') or request.path.startswith('/recipe') or request.path.startswith('/one-away') %}active{% endif %}">
-            <span class="tab-icon">&#127864;</span>Make
-        </a>
-        <a href="/bar" class="{% if request.path.startswith('/bar') or request.path.startswith('/scan') or request.path.startswith('/add') or request.path.startswith('/edit') %}active{% endif %}">
-            <span class="tab-icon">&#129514;</span>My Bar
-        </a>
-        <a href="/checklist" class="{% if request.path.startswith('/checklist') %}active{% endif %}">
-            <span class="tab-icon">&#9989;</span>Mixers
-        </a>
-    </div>
+    {% if current_username and not hide_tabbar %}
+        {% set p = request.path %}
+        <nav class="tabbar" aria-label="Primary navigation">
+            <a href="/" class="{% if p == '/' or p == '/recommend' %}active{% endif %}">
+                <img src="/static/nav/tonight.webp" alt="" class="nav-icon-img" width="30" height="30">
+                <span>Tonight</span>
+            </a>
+            <a href="/bar" class="{% if p.startswith('/bar') or p.startswith('/add') or p.startswith('/edit') or p.startswith('/scan') or p.startswith('/confirm') or p.startswith('/checklist') %}active{% endif %}">
+                <img src="/static/nav/bar.webp" alt="" class="nav-icon-img" width="30" height="30">
+                <span>Bar</span>
+            </a>
+            <a href="/explore" class="{% if p.startswith('/explore') or p.startswith('/one-away') %}active{% endif %}">
+                <img src="/static/nav/explore.webp" alt="" class="nav-icon-img" width="30" height="30">
+                <span>Explore</span>
+            </a>
+            <a href="/saved" class="{% if p.startswith('/saved') or p.startswith('/favorites') %}active{% endif %}">
+                <img src="/static/nav/saved.webp" alt="" class="nav-icon-img" width="30" height="30">
+                <span>Saved</span>
+            </a>
+        </nav>
     {% endif %}
 
     <script>
-        // Flash messages fade out after a few seconds so they don't squat
-        // at the top of every page.
         document.querySelectorAll(".flash").forEach(function (el) {
             setTimeout(function () {
-                el.style.transition = "opacity 0.6s";
+                el.style.transition = "opacity 0.35s";
                 el.style.opacity = "0";
-                setTimeout(function () { el.remove(); }, 700);
+                setTimeout(function () { el.remove(); }, 400);
             }, 4000);
         });
-    </script>
-    <script>
-        // Service worker: only registers on secure contexts (HTTPS or localhost).
-        // Over plain HTTP on the LAN this is a silent no-op — the app still works,
-        // home-screen install still works, you just don't get offline caching.
         if ("serviceWorker" in navigator) {
             navigator.serviceWorker.register("/sw.js").catch(function () {});
         }
     </script>
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

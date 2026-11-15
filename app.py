@@ -16,7 +16,7 @@ from database import (
     init_db, get_all_bottles, get_bottle, add_bottle, update_bottle,
     delete_bottle, get_all_ingredients, set_all_ingredients_stock,
     add_ingredients_to_stock,
-    get_recipe, set_rating, get_rating, get_all_ratings, get_favorites,
+    get_recipe, get_all_recipes, set_rating, get_rating, get_all_ratings, get_favorites,
     get_auto_added_ingredients, is_auto_added,
     create_user, get_user_by_username, get_user,
     log_scan, scans_today,
@@ -24,6 +24,7 @@ from database import (
 from matching import (
     get_recommendations, get_recommendations_grouped, get_one_away_grouped,
     matching_user_bottles, missing_ingredient_ids,
+    classify_base_spirit, match_recipe, used_user_bottles,
 )
 from suggestions import get_suggestions
 
@@ -221,6 +222,9 @@ def short_bottle_name(bottle):
     brand = brand.strip()
     name = name.strip()
     if brand and len(brand) <= 24:
+        # "Martini" on its own looks like a cocktail name rather than vermouth
+        if brand.lower() == "martini" and name and len(name) <= 24:
+            return name
         return brand
     if name and len(name) <= 24:
         return name
@@ -357,6 +361,119 @@ def bottle_type_label(value):
     return value
 
 
+def recipe_slug(name):
+    """'Bee's Knees' -> 'bees_knees'. Used to match curated studio recipe images."""
+    s = re.sub(r"['\u2018\u2019]", "", (name or "").lower())
+    return re.sub(r"[^a-z0-9]+", "_", s).strip("_")
+
+
+def recipe_image_url(recipe):
+    """Prefer curated studio recipe assets in static/recipes/ when present,
+    falling back to recipe.image_url, then None."""
+    name = recipe["name"] if recipe and "name" in recipe else ""
+    slug = recipe_slug(name)
+    recipes_dir = os.path.join(app.static_folder, "recipes")
+    if slug and os.path.isdir(recipes_dir):
+        for ext in (".webp", ".jpg", ".jpeg", ".png"):
+            if os.path.isfile(os.path.join(recipes_dir, f"{slug}{ext}")):
+                return url_for("static", filename=f"recipes/{slug}{ext}")
+    img_url = recipe["image_url"] if recipe and "image_url" in recipe else None
+    return img_url or None
+
+
+def glass_kind(glass):
+    """Normalize recipe.glass into one of five silhouette keys:
+    coupe, rocks, highball, flute, hurricane."""
+    g = (glass or "").lower()
+    if any(k in g for k in ("coupe", "martini", "cocktail", "nick", "margarita")):
+        return "coupe"
+    if any(k in g for k in ("highball", "collins", "pint", "mason", "copper mug", "mule", "pilsner", "parfait")):
+        return "highball"
+    if any(k in g for k in ("flute", "champagne", "wine")):
+        return "flute"
+    if any(k in g for k in ("hurricane", "tiki", "goblet", "snifter", "pitcher", "punch")):
+        return "hurricane"
+    return "rocks"
+
+
+def format_glass_label(glass):
+    """Normalize inconsistent glassware strings for tidy display."""
+    if not glass:
+        return "Cocktail glass"
+    g = glass.strip()
+    gl = g.lower()
+    mapping = {
+        "old-fashioned glass": "Rocks glass",
+        "old fashioned": "Rocks glass",
+        "rocks glass": "Rocks glass",
+        "martini glass": "Cocktail glass",
+        "cocktail glass": "Cocktail glass",
+        "coupe": "Coupe glass",
+        "coupe glass": "Coupe glass",
+        "highball glass": "Highball glass",
+        "collins glass": "Collins glass",
+        "champagne flute": "Champagne flute",
+        "nick and nora glass": "Nick & Nora",
+    }
+    if gl in mapping:
+        return mapping[gl]
+    return g[0].upper() + g[1:]
+
+
+def explore_base_spirit(recipe_data):
+    """Identify the primary spirit bucket for Explore, prioritizing distilled
+    base spirits over modifiers like sweet/dry vermouth so Boulevardier/Manhattan
+    sit under Whiskey rather than Vermouth."""
+    primary_map = {
+        "gin": "Gin",
+        "vodka": "Vodka",
+        "rum": "Rum",
+        "tequila": "Tequila & Mezcal",
+        "mezcal": "Tequila & Mezcal",
+        "whiskey": "Whiskey",
+        "bourbon": "Whiskey",
+        "scotch": "Whiskey",
+        "rye": "Whiskey",
+        "irish": "Whiskey",
+        "brandy": "Brandy & Cognac",
+        "cognac": "Brandy & Cognac",
+    }
+    for ing in recipe_data.get("ingredients", []):
+        if ing.get("requirement_type") != "bottle_type":
+            continue
+        bt = (ing.get("bottle_type") or "").lower()
+        if bt in primary_map:
+            return primary_map[bt]
+    return classify_base_spirit(recipe_data)
+
+
+def classify_drink_style(recipe_data):
+    """Derive a drink style bucket dynamically from ingredients and glassware."""
+    ing_names = " ".join(
+        (i.get("raw_name") or "").lower()
+        for i in recipe_data.get("ingredients", [])
+    )
+    glass = (recipe_data.get("recipe", {}).get("glass") or "").lower()
+    if any(k in ing_names for k in (
+        "heavy cream", "light cream", "coconut", "vanilla ice cream", "ice cream",
+        "milk", "half-and-half", "coffee", "espresso", "baileys", "irish cream", "kahlua",
+    )):
+        return "Rich & Creamy"
+    if any(k in ing_names for k in ("champagne", "prosecco", "sparkling wine", "cava")) or "flute" in glass:
+        return "Bubbly & Spritz"
+    if any(k in ing_names for k in (
+        "tonic", "soda water", "club soda", "ginger beer", "ginger ale",
+        "cola", "grapefruit soda", "tomato juice", "root beer",
+    )) or any(k in glass for k in ("highball", "collins", "copper mug")):
+        return "Highball & Tall"
+    if any(k in ing_names for k in (
+        "lemon juice", "lime juice", "grapefruit juice", "pineapple juice",
+        "orange juice", "cranberry juice", "sour mix", "sweet and sour",
+    )):
+        return "Sour & Citrus"
+    return "Spirit-Forward"
+
+
 app.jinja_env.globals["BOTTLE_TYPE_CHOICES"] = BOTTLE_TYPE_CHOICES
 app.jinja_env.filters["type_label"] = bottle_type_label
 app.jinja_env.filters["short_name"] = short_bottle_name
@@ -364,6 +481,11 @@ app.jinja_env.filters["clean_instructions"] = clean_instructions
 app.jinja_env.filters["steps"] = instruction_steps
 app.jinja_env.filters["clean_notes"] = clean_notes
 app.jinja_env.filters["suggestions"] = get_suggestions
+app.jinja_env.filters["recipe_slug"] = recipe_slug
+app.jinja_env.filters["recipe_image"] = recipe_image_url
+app.jinja_env.filters["glass_kind"] = glass_kind
+app.jinja_env.filters["glass_label"] = format_glass_label
+app.jinja_env.filters["drink_style"] = classify_drink_style
 app.jinja_env.tests["auto_added"] = is_auto_added
 
 
@@ -544,14 +666,32 @@ def service_worker():
 @app.route("/")
 @login_required
 def home():
-    # Status line doubles as onboarding: "0 bottles" tells a new friend
-    # exactly what their first step is.
-    bottle_count = len(get_all_bottles(uid()))
-    makeable_count = get_recommendations(uid(), max_makeable=0, max_one_away=0)["total_makeable"]
+    user_id = uid()
+    grouped = request.args.get("group") == "spirit"
+    if grouped:
+        recs = get_recommendations_grouped(user_id, max_per_group=50)
+    else:
+        recs = get_recommendations(user_id, max_makeable=60, max_one_away=12)
+    bottles = get_all_bottles(user_id)
+    stocked_count = sum(1 for i in get_all_ingredients(user_id) if i["in_stock"])
+
+    rated = recs["ratings"]
+    pool = [r for r in recs["makeable"] if rated.get(r["recipe"]["id"], 0) != -1] or recs["makeable"]
+    featured = None
+    for r in pool:
+        if recipe_image_url(r["recipe"]):
+            featured = r
+            break
+    if not featured and pool:
+        featured = pool[0]
+
     return render_template(
-        "home.html",
-        bottle_count=bottle_count,
-        makeable_count=makeable_count,
+        "tonight.html",
+        recs=recs,
+        grouped=grouped,
+        featured=featured,
+        bottle_count=len(bottles),
+        stocked_count=stocked_count,
     )
 
 
@@ -710,53 +850,146 @@ def checklist():
     if request.method == "POST":
         checked_ids = [int(x) for x in request.form.getlist("ingredient")]
         set_all_ingredients_stock(uid(), checked_ids)
-        flash("Checklist saved!")
-        return redirect(url_for("bar"))
-    ingredients = get_all_ingredients(uid())
-    new_ingredients = get_auto_added_ingredients(uid(), only_unstocked=True)
-    return render_template(
-        "checklist.html",
-        ingredients=ingredients,
-        new_ingredients=new_ingredients,
-        ingredient_images=get_ingredient_images(),
-        ingredient_slug=ingredient_slug,
-    )
+        flash("Mixers saved!")
+        return redirect(url_for("bar", tab="mixers"))
+    return redirect(url_for("bar", tab="mixers"))
 
 
 @app.route("/bar")
 @login_required
 def bar():
-    bottles = get_all_bottles(uid())
-    all_ingredients = get_all_ingredients(uid())
-    stocked = [i for i in all_ingredients if i["in_stock"]]
-    # Badge on the Mixers button if recipes have introduced new ingredients
-    # the user hasn't reviewed yet. (Moved here from home when the manage
-    # buttons moved to this page.)
-    new_ingredient_count = len(get_auto_added_ingredients(uid(), only_unstocked=True))
+    user_id = uid()
+    active_tab = request.args.get("tab", "bottles")
+    if active_tab not in ("bottles", "mixers"):
+        active_tab = "bottles"
+    sheet_open = request.args.get("sheet") == "add"
+    q = request.args.get("q", "").strip()
+    grouped = request.args.get("group") == "spirit"
+
+    all_bottles = get_all_bottles(user_id)
+    if q:
+        ql = q.lower()
+        bottles = [
+            b for b in all_bottles
+            if ql in (b["name"] or "").lower()
+            or ql in (b["brand"] or "").lower()
+            or ql in bottle_type_label(b["type"]).lower()
+        ]
+    else:
+        bottles = list(all_bottles)
+
+    grouped_bottles = []
+    if grouped and bottles:
+        buckets = {}
+        for b in bottles:
+            lbl = bottle_type_label(b["type"]) or "Other"
+            buckets.setdefault(lbl, []).append(b)
+        grouped_bottles = sorted(buckets.items(), key=lambda kv: kv[0].lower())
+
+    ingredients = get_all_ingredients(user_id)
+    stocked = [i for i in ingredients if i["in_stock"]]
+    new_ingredients = get_auto_added_ingredients(user_id, only_unstocked=True)
+
     return render_template(
         "my_bar.html",
+        active_tab=active_tab,
+        sheet_open=sheet_open,
+        q=q,
+        grouped=grouped,
         bottles=bottles,
+        grouped_bottles=grouped_bottles,
+        total_count=len(all_bottles),
+        filtered_count=len(bottles),
+        ingredients=ingredients,
         stocked_ingredients=stocked,
-        new_ingredient_count=new_ingredient_count,
+        stocked_count=len(stocked),
+        total_ingredients=len(ingredients),
+        new_ingredients=new_ingredients,
+        new_ingredient_count=len(new_ingredients),
+        ingredient_images=get_ingredient_images(),
+        ingredient_slug=ingredient_slug,
     )
 
 
 @app.route("/recommend")
 @login_required
 def recommend():
-    grouped = request.args.get("group") == "spirit"
-    if grouped:
-        recs = get_recommendations_grouped(uid(), max_per_group=50)
-    else:
-        recs = get_recommendations(uid(), max_makeable=50, max_one_away=5)
-    return render_template("recommend.html", recs=recs, grouped=grouped)
+    return redirect(url_for("home", **request.args))
+
+
+@app.route("/explore")
+@login_required
+def explore():
+    user_id = uid()
+    bottles = get_all_bottles(user_id)
+    stocked = {i["name"].lower() for i in get_all_ingredients(user_id) if i["in_stock"]}
+    ratings = get_all_ratings(user_id)
+    all_recipes = get_all_recipes()
+
+    entries = []
+    spirits_seen = set()
+    styles_seen = set()
+    makeable_total = 0
+    one_away_total = 0
+
+    for r in all_recipes:
+        status, missing = match_recipe(r, bottles, stocked)
+        if status == "makeable":
+            makeable_total += 1
+            your_bottles = [short_bottle_name(b) for b in used_user_bottles(r, bottles)]
+        else:
+            if status == "one_away":
+                one_away_total += 1
+            your_bottles = []
+        spirit_group = explore_base_spirit(r)
+        style_group = classify_drink_style(r)
+        spirits_seen.add(spirit_group)
+        styles_seen.add(style_group)
+        ing_text = " ".join(
+            f"{i.get('raw_name') or ''} {i.get('ingredient_name') or ''}".lower()
+            for i in r["ingredients"]
+        )
+        entries.append({
+            "recipe": r["recipe"],
+            "status": status,
+            "missing": [bottle_type_label(m["name"]) for m in missing],
+            "spirit_group": spirit_group,
+            "style_group": style_group,
+            "your_bottles": your_bottles,
+            "thumb": ratings.get(r["recipe"]["id"], 0),
+            "search_text": f"{r['recipe']['name'].lower()} {ing_text} {spirit_group.lower()} {style_group.lower()}",
+        })
+
+    order_map = {"makeable": 0, "one_away": 1, "not_close": 2}
+    entries.sort(key=lambda e: (order_map.get(e["status"], 9), e["recipe"]["name"].lower()))
+
+    preferred_spirits = [
+        "Gin", "Whiskey", "Rum", "Tequila & Mezcal", "Vodka",
+        "Brandy & Cognac", "Liqueur-led", "Specialty", "Vermouth", "Other",
+    ]
+    spirit_filters = [s for s in preferred_spirits if s in spirits_seen]
+    preferred_styles = [
+        "Sour & Citrus", "Spirit-Forward", "Highball & Tall",
+        "Bubbly & Spritz", "Rich & Creamy",
+    ]
+    style_filters = [s for s in preferred_styles if s in styles_seen]
+
+    return render_template(
+        "explore.html",
+        entries=entries,
+        total_count=len(entries),
+        makeable_total=makeable_total,
+        one_away_total=one_away_total,
+        spirit_filters=spirit_filters,
+        style_filters=style_filters,
+    )
 
 
 @app.route("/stock-add", methods=["POST"])
 @login_required
 def stock_add():
-    """Quick-add for the mixer nudge on the Make page. Adds only, never clears,
-    so it can't undo whatever the user already ticked on the checklist."""
+    """Quick-add for the mixer nudge on Tonight. Adds only, never clears,
+    so it can't undo whatever the user already ticked on the Mixers tab."""
     try:
         ids = [int(x) for x in request.form.getlist("ingredient")]
     except ValueError:
@@ -765,7 +998,7 @@ def stock_add():
         add_ingredients_to_stock(uid(), ids)
         names = [i["name"] for i in get_all_ingredients(uid()) if i["id"] in ids]
         flash("Added to your bar: " + ", ".join(names))
-    return redirect(url_for("recommend"))
+    return redirect(url_for("home"))
 
 
 @app.route("/one-away")
@@ -775,12 +1008,56 @@ def one_away():
     return render_template("one_away.html", groups=groups)
 
 
+@app.route("/saved")
+@login_required
+def saved():
+    user_id = uid()
+    bottles = get_all_bottles(user_id)
+    stocked = {i["name"].lower() for i in get_all_ingredients(user_id) if i["in_stock"]}
+    ratings = get_all_ratings(user_id)
+    fav_rows = get_favorites(user_id)
+    fav_ids = {f["id"] for f in fav_rows}
+
+    all_by_id = {r["recipe"]["id"]: r for r in get_all_recipes()}
+
+    favorites_enriched = []
+    for f in fav_rows:
+        rdata = all_by_id.get(f["id"])
+        if rdata:
+            status, missing = match_recipe(rdata, bottles, stocked)
+            your_bottles = [short_bottle_name(b) for b in used_user_bottles(rdata, bottles)] if status == "makeable" else []
+            favorites_enriched.append({
+                "recipe": rdata["recipe"],
+                "status": status,
+                "missing": [bottle_type_label(m["name"]) for m in missing],
+                "your_bottles": your_bottles,
+                "rated_at": f.get("rated_at"),
+            })
+
+    disliked_enriched = []
+    for rid, thumb in ratings.items():
+        if thumb == -1 and rid not in fav_ids:
+            rdata = all_by_id.get(rid)
+            if rdata:
+                status, missing = match_recipe(rdata, bottles, stocked)
+                disliked_enriched.append({
+                    "recipe": rdata["recipe"],
+                    "status": status,
+                    "missing": [bottle_type_label(m["name"]) for m in missing],
+                })
+    disliked_enriched.sort(key=lambda d: d["recipe"]["name"].lower())
+
+    return render_template(
+        "saved.html",
+        favorites=favorites_enriched,
+        disliked=disliked_enriched,
+    )
+
+
 @app.route("/favorites")
 @login_required
 def favorites():
-    """Drinks you've thumbed up, most recent first."""
-    favs = get_favorites(uid())
-    return render_template("favorites.html", favorites=favs)
+    return redirect(url_for("saved"))
 
 
 @app.route("/surprise")
@@ -793,11 +1070,10 @@ def surprise():
     pool = [r for r in recs["makeable"]
             if recs["ratings"].get(r["recipe"]["id"], 0) != -1]
     if not pool:
-        # Fall back to thumbs-down too if nothing else is makeable
         pool = recs["makeable"]
     if not pool:
         flash("Nothing makeable yet. Add some bottles or check off mixers.")
-        return redirect(url_for("recommend"))
+        return redirect(url_for("home"))
     pick = random.choice(pool)
     return redirect(url_for("recipe", recipe_id=pick["recipe"]["id"]))
 
@@ -861,19 +1137,20 @@ def recipe(recipe_id):
 def rate(recipe_id):
     """Toggle thumb up or down for a recipe.
     Click the same thumb you already gave -> it clears (back to unrated)."""
+    next_url = _safe_next(request.form.get("next"))
     try:
         desired = int(request.form.get("thumb", 0))
     except ValueError:
         desired = 0
     if desired not in (1, -1):
         flash("Invalid rating.")
-        return redirect(url_for("recipe", recipe_id=recipe_id))
+        return redirect(next_url or url_for("recipe", recipe_id=recipe_id))
     current = get_rating(uid(), recipe_id)
     if current == desired:
         set_rating(uid(), recipe_id, 0)  # toggle off
     else:
         set_rating(uid(), recipe_id, desired)
-    return redirect(url_for("recipe", recipe_id=recipe_id))
+    return redirect(next_url or url_for("recipe", recipe_id=recipe_id))
 
 
 @app.route("/edit/<int:bottle_id>", methods=["GET", "POST"])

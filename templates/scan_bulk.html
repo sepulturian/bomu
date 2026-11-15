@@ -1,25 +1,42 @@
 {% extends "base.html" %}
+{% set hide_topbar = true %}
+{% set hide_tabbar = true %}
+{% from "components/icons.html" import ui_icon %}
+
+{% block title %}Scan Shelf &middot; Bomu{% endblock %}
 
 {% block content %}
-<h1>Scan Multiple Bottles</h1>
-<p style="color: var(--ink-dim); margin-bottom: 1.5rem;">Photograph a shelf or group of bottles. Claude will identify as many as it can.</p>
+<a href="/bar" style="display: inline-flex; align-items: center; gap: 0.25rem; min-height: 44px; padding: 0 0.75rem 0 0.4rem; border-radius: var(--radius-pill); background: var(--bg-elevated); border: 1px solid var(--border-subtle); color: var(--ink-dim); font-size: 0.84rem; font-weight: 600; margin-bottom: 0.85rem;">
+    {{ ui_icon("back", "btn-icon") }}
+    <span>Bar</span>
+</a>
 
-<form method="POST" enctype="multipart/form-data" id="scan-form">
-    <div class="form-group">
-        <label for="photo">Choose or take a photo</label>
-        <input type="file" id="photo" name="photo" accept="image/*" capture="environment">
-    </div>
-    <button type="submit" class="btn" id="scan-btn">Scan Bottles</button>
-</form>
+<h1>Scan Your Shelf</h1>
+<p style="color: var(--ink-dim); font-size: 0.92rem; margin-bottom: 1.25rem;">
+    Photograph a row or cabinet of bottles. We&rsquo;ll list every label we can read for you to confirm.
+</p>
 
-<p style="color: var(--ink-faint); margin-top: 2rem; font-size: 0.85rem;">Tip: Try to get all the labels visible. Claude will flag anything it's unsure about.</p>
+<div class="card">
+    <form method="POST" enctype="multipart/form-data" id="scan-form">
+        <div class="form-group">
+            <label for="photo">Shelf photo</label>
+            <input type="file" id="photo" name="photo" accept="image/*" capture="environment">
+        </div>
+        <button type="submit" class="btn" id="scan-btn" style="width: 100%;">
+            {{ ui_icon("shelf", "btn-icon") }}
+            <span>Scan Shelf</span>
+        </button>
+    </form>
+</div>
+{% endblock %}
 
+{% block extra_js %}
 <script>
     document.getElementById("scan-form").addEventListener("submit", function () {
         var btn = document.getElementById("scan-btn");
         btn.disabled = true;
         btn.style.opacity = "0.7";
-        btn.textContent = "Reading the labels…";
+        btn.textContent = "Reading the shelf...";
     });
 </script>
 {% endblock %}

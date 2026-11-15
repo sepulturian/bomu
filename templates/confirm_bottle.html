@@ -1,8 +1,12 @@
 {% extends "base.html" %}
 
+{% block title %}Confirm Bottle &middot; Bomu{% endblock %}
+
 {% block content %}
 <h1>Confirm Bottle</h1>
-<p style="color: var(--ink-dim); margin-bottom: 1.5rem;">Here's what Claude saw. Edit anything that's wrong, then add it.</p>
+<p style="color: var(--ink-dim); font-size: 0.9rem; margin-bottom: 1.15rem;">
+    Review what the label read, adjust if needed, then save.
+</p>
 
 <form method="POST" action="/add">
     <div class="form-group">
@@ -11,9 +15,9 @@
     </div>
 
     <div class="form-group">
-        <label for="type">Type</label>
+        <label for="type">Bottle Type</label>
         <select id="type" name="type" required>
-            <option value="">Pick a type...</option>
+            <option value="">Choose type &mdash;</option>
             {% for value, label in BOTTLE_TYPE_CHOICES %}
                 <option value="{{ value }}" {% if bottle.type == value %}selected{% endif %}>{{ label }}</option>
             {% endfor %}
@@ -21,12 +25,12 @@
     </div>
 
     <div class="form-group">
-        <label for="brand">Brand</label>
+        <label for="brand">Brand (optional)</label>
         <input type="text" id="brand" name="brand" value="{{ bottle.brand }}">
     </div>
 
-    <div style="display: flex; gap: 1rem;">
-        <button type="submit" class="btn">Add to My Bar</button>
+    <div style="display: flex; gap: 0.65rem; margin-top: 0.35rem;">
+        <button type="submit" class="btn" style="flex: 1;">Add to My Bar</button>
         <a href="/scan" class="btn btn-secondary">Scan Again</a>
     </div>
 </form>

@@ -29,3 +29,6 @@ sweep_namematch.json
 
 # Design mockups / explorations — reference only, not app code
 design_explorations/
+
+# redesign scratch db
+redesign/dev.db

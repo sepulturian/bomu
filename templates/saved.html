@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% from "components/icons.html" import glass_icon, ui_icon %}
+
+{% block title %}Saved &middot; Bomu{% endblock %}
+
+{% block content %}
+<h1>Saved</h1>
+
+{% if favorites %}
+    <p style="color: var(--ink-dim); font-size: 0.9rem; margin-bottom: 0.9rem;">
+        {{ favorites|length }} liked cocktail{{ 's' if favorites|length != 1 else '' }} in your rotation.
+    </p>
+    <div class="drink-grid">
+        {% for item in favorites %}
+            {% set r = item.recipe %}
+            {% set img_url = r|recipe_image %}
+            <a href="/recipe/{{ r.id }}" class="drink-card">
+                <div class="drink-thumb">
+                    {% if img_url %}
+                        <img src="{{ img_url }}" alt="{{ r.name }}" loading="lazy"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    {% endif %}
+                    <div class="drink-thumb-fallback" {% if img_url %}style="display: none;"{% endif %}>
+                        {{ glass_icon(r.glass) }}
+                    </div>
+                </div>
+                <div class="drink-meta">
+                    <div class="drink-title">
+                        <span>{{ r.name }}</span>
+                    </div>
+                    {% if item.status == 'makeable' %}
+                        <div class="drink-sub">
+                            Make now{% if item.your_bottles %} &middot; {{ item.your_bottles | join(' · ') }}{% endif %}
+                        </div>
+                    {% elif item.status == 'one_away' %}
+                        <div class="drink-sub is-missing">1 away &middot; Need {{ item.missing[0] }}</div>
+                    {% else %}
+                        <div class="drink-sub is-dim">Missing {{ item.missing|length }} items</div>
+                    {% endif %}
+                    <div class="drink-glass-line">
+                        {{ glass_icon(r.glass) }}
+                        <span>{{ r.glass|glass_label }}</span>
+                    </div>
+                </div>
+                {{ ui_icon("chevron", "row-chevron") }}
+            </a>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="card empty-state" style="margin-top: 0.5rem;">
+        <h2 style="margin-bottom: 0.4rem;">No favorites yet</h2>
+        <p style="color: var(--ink-dim); font-size: 0.9rem; margin-bottom: 1.1rem;">
+            Tap &ldquo;Like&rdquo; on any cocktail you mix to keep your personal favorites ready here.
+        </p>
+        <a href="/explore" class="btn">Browse 171 Cocktails</a>
+    </div>
+{% endif %}
+
+{% if disliked %}
+    <details class="accordion-bar" style="margin-top: 1.35rem;">
+        <summary class="bare accordion-summary">
+            <span class="accordion-title" style="color: var(--ink-dim);">Not for me</span>
+            <span class="accordion-right">
+                <span class="pill">{{ disliked|length }}</span>
+                {{ ui_icon("chevron-down", "accordion-chev") }}
+            </span>
+        </summary>
+        <div style="padding: 0 0.7rem 0.7rem;">
+            {% for d in disliked %}
+                {% set r = d.recipe %}
+                <div class="drink-card" style="justify-content: space-between;">
+                    <a href="/recipe/{{ r.id }}" style="display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 0;">
+                        <div class="drink-thumb" style="width: 48px; height: 48px; border-radius: 12px;">
+                            <div class="drink-thumb-fallback">
+                                {{ glass_icon(r.glass) }}
+                            </div>
+                        </div>
+                        <div class="drink-meta">
+                            <div class="drink-title" style="font-size: 1.1rem;">{{ r.name }}</div>
+                            <div class="drink-glass-line">
+                                <span>{{ r.glass|glass_label }}</span>
+                            </div>
+                        </div>
+                    </a>
+                    <form method="POST" action="/rate/{{ r.id }}" style="margin: 0; flex-shrink: 0;">
+                        <input type="hidden" name="thumb" value="-1">
+                        <input type="hidden" name="next" value="/saved">
+                        <button type="submit" class="btn btn-secondary btn-sm">Clear</button>
+                    </form>
+                </div>
+            {% endfor %}
+        </div>
+    </details>
+{% endif %}
+{% endblock %}

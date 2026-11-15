@@ -1,26 +1,61 @@
 {% extends "base.html" %}
+
+{% block title %}Join Bomu{% endblock %}
+
+{% block extra_css %}
+<style>
+    .auth-card {
+        position: relative;
+        aspect-ratio: 3 / 2;
+        max-height: 210px;
+        border-radius: var(--radius-card);
+        overflow: hidden;
+        background: var(--bg-elevated);
+        border: 1px solid var(--border-highlight);
+        margin-bottom: 1.5rem;
+    }
+
+    .auth-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .auth-scrim {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(20, 14, 10, 0.1) 30%, rgba(20, 14, 10, 0.92) 100%);
+    }
+
+    .auth-caption {
+        position: absolute;
+        left: 1.15rem;
+        right: 1.15rem;
+        bottom: 1rem;
+    }
+
+    .auth-caption h1 {
+        margin-bottom: 0.2rem;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div style="max-width: 400px; margin: 1rem auto 0;">
-    {# Blank-label bottles receding into the dark: the shelf you're about to
-       fill in, rather than a finished drink. Deliberately a different photo
-       from login so the two screens aren't interchangeable. #}
-    <div class="auth-art">
-        <img src="/static/auth-signup.jpg"
-             alt="A row of unlabelled spirit bottles on a dark bar shelf"
-             fetchpriority="high">
-        <div class="art-scrim"></div>
-        <div class="art-caption">
-            <div class="art-title">Join Bomu</div>
-            <div class="art-sub">your bar, your drinks, your terrible ratings</div>
+<div style="max-width: 420px; margin: 0.5rem auto 0;">
+    <div class="auth-card">
+        <img src="/static/auth-signup.jpg" alt="Bottles on a dark shelf" fetchpriority="high">
+        <div class="auth-scrim"></div>
+        <div class="auth-caption">
+            <h1>Join Bomu</h1>
+            <p style="font-size: 0.86rem; color: var(--ink-dim);">Set up your personal home bar</p>
         </div>
     </div>
 
     <form method="POST">
         <div class="form-group">
             <label for="invite">Invite code</label>
-            <input type="text" id="invite" name="invite" required
-                   autocapitalize="none" autocorrect="off"
-                   placeholder="ask Aaron">
+            <input type="text" id="invite" name="invite" required autocapitalize="none" autocorrect="off" placeholder="ask Aaron">
         </div>
         <div class="form-group">
             <label for="username">Pick a username</label>
@@ -30,22 +65,17 @@
         </div>
         <div class="form-group">
             <label for="password">Password (8+ characters)</label>
-            {# Inline styles dropped: input[type="password"] is already covered
-               by the shared rule in base.html, and the copies that used to sit
-               here hardcoded palette values. #}
-            <input type="password" id="password" name="password" required minlength="8"
-                   autocomplete="new-password">
+            <input type="password" id="password" name="password" required minlength="8" autocomplete="new-password">
         </div>
         <div class="form-group">
-            <label for="confirm">Same password again</label>
-            <input type="password" id="confirm" name="confirm" required minlength="8"
-                   autocomplete="new-password">
+            <label for="confirm">Confirm password</label>
+            <input type="password" id="confirm" name="confirm" required minlength="8" autocomplete="new-password">
         </div>
-        <button type="submit" class="btn" style="width: 100%; margin-top: 1rem;">Create account</button>
+        <button type="submit" class="btn" style="width: 100%; margin-top: 0.5rem;">Create account</button>
     </form>
 
-    <p style="text-align: center; margin-top: 1.5rem; color: var(--ink-dim);">
-        Already have an account? <a href="{{ url_for('login') }}" style="color: var(--coral);">Log in</a>
+    <p style="text-align: center; margin-top: 1.4rem; color: var(--ink-dim); font-size: 0.9rem;">
+        Already have an account? <a href="{{ url_for('login') }}" style="color: var(--zest); font-weight: 600;">Log in</a>
     </p>
 </div>
 {% endblock %}

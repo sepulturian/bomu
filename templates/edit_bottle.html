@@ -1,6 +1,16 @@
 {% extends "base.html" %}
+{% set hide_topbar = true %}
+{% set hide_tabbar = true %}
+{% from "components/icons.html" import ui_icon %}
+
+{% block title %}Edit Bottle &middot; Bomu{% endblock %}
 
 {% block content %}
+<a href="/bar" style="display: inline-flex; align-items: center; gap: 0.25rem; min-height: 44px; padding: 0 0.75rem 0 0.4rem; border-radius: var(--radius-pill); background: var(--bg-elevated); border: 1px solid var(--border-subtle); color: var(--ink-dim); font-size: 0.84rem; font-weight: 600; margin-bottom: 0.85rem;">
+    {{ ui_icon("back", "btn-icon") }}
+    <span>Bar</span>
+</a>
+
 <h1>Edit Bottle</h1>
 
 <form method="POST">
@@ -10,9 +20,9 @@
     </div>
 
     <div class="form-group">
-        <label for="type">Type</label>
+        <label for="type">Bottle Type</label>
         <select id="type" name="type" required>
-            <option value="">Pick a type...</option>
+            <option value="">Choose type &mdash;</option>
             {% for value, label in BOTTLE_TYPE_CHOICES %}
                 <option value="{{ value }}" {% if bottle.type == value %}selected{% endif %}>{{ label }}</option>
             {% endfor %}
@@ -24,19 +34,33 @@
         <input type="text" id="brand" name="brand" value="{{ bottle.brand or '' }}">
     </div>
 
-    <div style="display: flex; gap: 1rem;">
-        <button type="submit" class="btn">Save Changes</button>
+    <div style="display: flex; gap: 0.65rem; margin-top: 0.35rem;">
+        <button type="submit" class="btn" style="flex: 1;">Save Changes</button>
         <a href="/bar" class="btn btn-secondary">Cancel</a>
     </div>
 </form>
 
-{# Delete lives here (not on the bar list) so it takes two deliberate taps #}
-<div style="margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--card-border);">
-    <form method="POST" action="/delete/{{ bottle.id }}" style="margin: 0;">
-        <button type="submit" class="btn btn-danger"
-                onclick="return confirm('Delete {{ bottle.name }}? This can\'t be undone.')">
+<div style="margin-top: 2.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border-subtle);">
+    <form method="POST" action="/delete/{{ bottle.id }}" id="delete-bottle-form" data-name="{{ bottle.name }}" style="margin: 0;">
+        <button type="submit" class="btn btn-danger" style="width: 100%;">
             Delete this bottle
         </button>
     </form>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    (function () {
+        var f = document.getElementById("delete-bottle-form");
+        if (f) {
+            f.addEventListener("submit", function (e) {
+                var name = f.getAttribute("data-name") || "this bottle";
+                if (!window.confirm("Delete " + name + "? This can't be undone.")) {
+                    e.preventDefault();
+                }
+            });
+        }
+    })();
+</script>
 {% endblock %}
