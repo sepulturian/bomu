@@ -26,8 +26,9 @@
 
     .auth-art-col {
         position: relative;
-        max-width: 245px;
-        margin: -0.25rem auto 0.35rem;
+        max-width: 295px;
+        width: 82vw;
+        margin: -0.25rem auto 0;
     }
 
     .auth-art {
@@ -35,23 +36,37 @@
         aspect-ratio: 783 / 922;
     }
 
+    .auth-art::before {
+        content: "";
+        position: absolute;
+        inset: 14% 10% 12% 10%;
+        background: radial-gradient(ellipse 65% 60% at 50% 55%, rgba(244, 196, 48, 0.18) 0%, rgba(231, 111, 81, 0.09) 45%, transparent 72%);
+        filter: blur(28px);
+        z-index: 0;
+        pointer-events: none;
+    }
+
     .auth-art img {
+        position: relative;
+        z-index: 1;
         width: 100%;
         height: 100%;
         object-fit: contain;
         display: block;
-        filter: drop-shadow(0 24px 36px rgba(0, 0, 0, 0.72));
+        filter: drop-shadow(0 20px 32px rgba(0, 0, 0, 0.72));
     }
 
     .auth-editorial-col {
         position: relative;
+        z-index: 2;
+        margin-top: -2.25rem;
     }
 
     .bar-note {
-        padding: 1.05rem 0 1.15rem;
-        border-top: 1px solid var(--border-subtle);
+        padding: 0.55rem 0 0.95rem;
         border-bottom: 1px solid var(--border-subtle);
-        margin-bottom: 1.25rem;
+        margin-bottom: 1.05rem;
+        text-shadow: 0 2px 14px rgba(17, 13, 10, 0.95);
     }
 
     .bar-note-kicker {
@@ -171,8 +186,21 @@
             margin: 0 auto;
         }
 
+        .auth-art::before {
+            inset: 10% 6% 8% 6%;
+            filter: blur(36px);
+            background: radial-gradient(ellipse 70% 65% at 50% 55%, rgba(244, 196, 48, 0.18) 0%, rgba(231, 111, 81, 0.09) 45%, transparent 75%);
+        }
+
+        .auth-editorial-col {
+            margin-top: 0;
+        }
+
         .bar-note {
+            padding: 1.05rem 0 1.15rem;
+            border-top: 1px solid var(--border-subtle);
             margin-bottom: 1.35rem;
+            text-shadow: none;
         }
 
         .auth-form-card {

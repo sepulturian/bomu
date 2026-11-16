@@ -1280,3 +1280,19 @@ with no gradient or shadow.
   Tonight's line only. "One away" stays everywhere else (Explore chip, rows,
   the One Away page), where it never sits right after a number.
 - Login note: "Bar Note No. 09 · Unawatuna Shore" → "· South Coast".
+
+### 2026-11-15 (tenth session) — Mobile auth layout polish (Antigravity)
+
+Aaron pointed out that while desktop looked great, mobile felt awkward (small 245px diorama floating in a black void, harsh horizontal divider cutting across the note, disjointed stacked feel).
+
+**Changes:**
+- *Mobile diorama scale:* Increased from `max-width: 245px` to `295px` (`width: 82vw`), giving the miniature beach bar a confident hero presence on phone screens.
+- *Ambient warmth:* Added a soft radial amber/gold glow (`rgba(244, 196, 48, 0.18)`) via `.auth-art::before`, lifting the diorama off the obsidian background.
+- *Single divider:* Dropped the top horizontal border on `.bar-note` on mobile, keeping only a single subtle hairline under the note. Added a soft text shadow for crisp contrast.
+- *Tactile overlap:* Pulled the editorial note and form card UP via `margin-top: -2.25rem` on mobile, bridging 36px over the lower water and rocks of the diorama to mirror desktop's layered feel.
+- *Templates:* Applied to both `templates/login.html` and `templates/signup.html`.
+
+**Verified:**
+- `verify_routes.py` passes (171 ok, 0 failed).
+- Verified via browser subagent at mobile 375x812 (all content fits above the fold in 777px, zero horizontal overflow) and desktop 1280x800 (clean 34px horizontal card overlap).
+
