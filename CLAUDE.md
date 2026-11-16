@@ -1259,3 +1259,15 @@ cookies without `username`; #15 Hugo Spritz; #2 Shehan 0 from 16; #1
 never-started users; #17 leaked connection string and Neon password (Aaron's
 action). An untracked `.claude/launch.json` (local preview config pointing at a
 scratchpad runner) was deliberately left out of commits.
+
+### 2026-11-15 (ninth session, addendum) — Bottle type picker
+
+The Add Bottle sheet's type chips (round pills, gradient, glow under the
+selected one) broke the button rules above. Now an even 4×2 grid of flat 10px
+tiles in Barlow Condensed: Gin, Vodka, Rum, Tequila / Bourbon, Rye, **Scotch**
+(new; Shehan's shelf is mostly Scotch), Sweet vermouth. The chosen tile pours
+full of zest. "Other type…" became a quiet "More types ▾" text link that opens
+the full dropdown. Class names and ids unchanged, so the JS wiring is
+untouched. `verify_routes.py` passes; checked at 375px with `?type=rye`
+prefilled. Not changed: the sheet's "SCAN 1 BOTTLE / SCAN SHELF" cards still use
+all-caps condensed text.
