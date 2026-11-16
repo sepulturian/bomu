@@ -26,25 +26,21 @@
 
     .auth-art-col {
         position: relative;
-        max-width: 390px;
-        margin: -0.25rem auto -1rem;
+        max-width: 245px;
+        margin: -0.25rem auto 0.35rem;
     }
 
     .auth-art {
         position: relative;
-        aspect-ratio: 1264 / 848;
-        border-radius: 18px;
-        overflow: hidden;
-        border: 1px solid var(--border-highlight);
-        box-shadow: 0 20px 48px rgba(0, 0, 0, 0.6);
-        background: var(--bg-elevated);
+        aspect-ratio: 783 / 922;
     }
 
     .auth-art img {
         width: 100%;
         height: 100%;
-        object-fit: cover;
+        object-fit: contain;
         display: block;
+        filter: drop-shadow(0 24px 36px rgba(0, 0, 0, 0.72));
     }
 
     .auth-editorial-col {
@@ -164,15 +160,15 @@
         .auth-stage {
             width: 100%;
             display: grid;
-            grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
-            gap: 1.75rem;
+            grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+            gap: 1.5rem;
             align-items: center;
         }
 
         .auth-art-col {
-            max-width: none;
+            max-width: 440px;
             width: 100%;
-            margin: 0;
+            margin: 0 auto;
         }
 
         .bar-note {
@@ -180,7 +176,7 @@
         }
 
         .auth-form-card {
-            margin-left: -4.5rem;
+            margin-left: -4.25rem;
             padding: 1.05rem 1.15rem 1.2rem;
         }
 
@@ -201,16 +197,17 @@
 <div class="auth-stage">
     <div class="auth-art-col">
         <div class="auth-art">
-            <img src="/static/bar-watercolor.webp" alt="Watercolor illustration of a warm classic cocktail bar at night" fetchpriority="high">
+            <img src="/static/beach-bar-diorama.webp" alt="Isometric miniature diorama of an open-air Sri Lankan beach bar named Bomu" fetchpriority="high">
         </div>
     </div>
 
     <div class="auth-editorial-col">
         <div class="bar-note">
-            <p class="bar-note-kicker">First Pour &middot; Private Shelf</p>
+            <p class="bar-note-kicker" id="bar-time">5:15 PM &middot; Aperitivo</p>
             <h1 class="bar-note-title">Bar Note No. 01 &middot; Starting the Shelf</h1>
             <p class="bar-note-body">Every shelf starts with one bottle.</p>
         </div>
+        {% include "components/bar_clock.html" %}
 
         <div class="auth-form-card">
             <form method="POST">

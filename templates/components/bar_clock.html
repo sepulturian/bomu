@@ -1,0 +1,33 @@
+<script>
+(function () {
+    var el = document.getElementById("bar-time");
+    if (!el) return;
+    var moods = [
+        [0, 5, "Nightcap"],
+        [5, 11, "Quiet Counter"],
+        [11, 15, "Daylight Pour"],
+        [15, 17, "Golden Hour"],
+        [17, 19, "Aperitivo"],
+        [19, 22, "Evening Pour"],
+        [22, 24, "After Hours"]
+    ];
+    function update() {
+        var now = new Date();
+        var h = now.getHours();
+        var m = now.getMinutes();
+        var period = h >= 12 ? "PM" : "AM";
+        var h12 = h % 12 || 12;
+        var mm = m < 10 ? "0" + m : "" + m;
+        var mood = "After Hours";
+        for (var i = 0; i < moods.length; i++) {
+            if (h >= moods[i][0] && h < moods[i][1]) {
+                mood = moods[i][2];
+                break;
+            }
+        }
+        el.textContent = h12 + ":" + mm + " " + period + " \u00b7 " + mood;
+    }
+    update();
+    setInterval(update, 15000);
+})();
+</script>

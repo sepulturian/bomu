@@ -1125,21 +1125,22 @@ logged-in header was not checked on live.
 **Open:** #19 below, plus Hugo Spritz row 398 (#15), Shehan 0 from 16 (#2),
 never-started users (#1), leaked connection string + Neon password (#17).
 
-### 2026-11-15 (sixth session) — Japanese watercolor auth redesign (Antigravity)
+### 2026-11-15 (sixth session) — Auth redesign: Isometric Sri Lankan beach bar diorama (Antigravity)
 
-Aaron asked to redesign the login and signup pages inspired by his "Timelines" login screen: an aesthetic Japanese watercolor bar backdrop, sepia with warmth and color, editorial note ("Bar Note"), and card overlap.
+Aaron asked to redesign the login and signup pages inspired by his "Timelines" login screen (miniature diorama, editorial note, card bridge). Initially explored a Japanese watercolor bar, then pivoted to an open-air coastal beach bar diorama set in Unawatuna / Tangalle, Sri Lanka, with a hanging wooden "BOMU" sign.
 
 **Changes:**
-- *Artwork:* Generated `static/bar-watercolor.webp` (`1264x848`), a Shin-hanga nocturne woodblock/watercolor illustration showing a warm Ginza-style counter in 3/4 view: bartender stirring a Yarai mixing glass, coupe with lemon twist, glowing backbar bottles, hanging lantern, and a rainy window with bokeh lights. Full-bleed landscape card (`border-radius: 18px`, subtle highlight border) replaces the initial circular pinhole attempt.
-- *Editorial copy:* Added `Cormorant Garamond` serif heading and 1-sentence italic narrative under fine hairline rules:
-  - Login: "Bar Note No. 09 · The Hinoki Counter" / *"A good home bar gathers one bottle at a time."*
+- *Artwork:* Generated `static/beach-bar-diorama.webp` (`783x922` transparent WebP). An isometric 3D miniature cutaway diorama of an open-air teak and cadjan-thatch beach bar on golden sand, coastal rocks, and translucent turquoise ocean surf, featuring a rustic hand-painted "BOMU" hanging signboard, warm string lights, king coconuts (*thambili*), limes, three woven barstools, bottles on backbar shelves, leaning coconut palm, striped surfboard, frangipani blossoms, and a sleeping ginger cat beside a brass lantern. Rendered with transparent background and soft drop shadow, floating directly over `#110d0a`.
+- *Editorial copy:* Added `Cormorant Garamond` serif headings and clean 1-sentence italic narratives:
+  - Login: "Bar Note No. 09 · Unawatuna Shore" / *"A good home bar gathers one bottle at a time."*
   - Signup: "Bar Note No. 01 · Starting the Shelf" / *"Every shelf starts with one bottle."*
-- *Layout:* Desktop split view with `.auth-form-card` overlapping the right counter portion of the illustration (44px bridge). Mobile stacks vertically and fits above the fold without scrolling.
-- *Cache & Service Worker:* Bumped `CACHE_VERSION` to `bomu-v6` in `static/sw.js` so browsers fetch the new asset.
+- *Dynamic time kicker:* Created `templates/components/bar_clock.html`, displaying the visitor's local 12-hour time and mood tag (e.g. `7:54 PM · EVENING POUR`, shifting across Nightcap, Quiet Counter, Daylight Pour, Golden Hour, Aperitivo, Evening Pour, After Hours) in place of static coordinates.
+- *Layout:* Desktop split view with `.auth-form-card` overlapping the lower-right sand edge of the diorama (34px bridge). Mobile stacks cleanly with the entire layout fitting above the fold (`771px` height) with zero horizontal overflow.
+- *Cache & Service Worker:* Bumped `CACHE_VERSION` to `bomu-v6` in `static/sw.js`.
 
 **Verified:**
 - `verify_routes.py` passes (171 ok, 0 failed; `GET /login` and `GET /signup` HTTP 200).
-- Visual inspection via browser subagent and user preview on desktop (1280x800) and mobile (375x812).
+- Visual inspection on desktop (1280x800) and mobile (375x812) via browser subagent and user live preview.
 
 **Open:** #19 below, plus Hugo Spritz row 398 (#15), Shehan 0 from 16 (#2),
 never-started users (#1), leaked connection string + Neon password (#17).
