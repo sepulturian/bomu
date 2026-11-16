@@ -264,30 +264,31 @@
         margin-bottom: 0.9rem;
     }
 
+    /* Scan shortcuts: same tile language as the type picker and buttons
+       (flat face, cream hairline, 10px corners, Barlow in sentence case). */
     .scan-card {
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 0.35rem;
+        gap: 0.4rem;
         min-height: 78px;
         padding: 0.65rem;
-        border-radius: var(--radius-control);
-        background: linear-gradient(180deg, #2f2319 0%, #211811 100%);
-        border: 1px solid var(--zest-border);
-        box-shadow: inset 0 1px 0 rgba(255, 236, 214, 0.12), 0 4px 12px rgba(0, 0, 0, 0.45);
+        border-radius: 10px;
+        background: #1c1611;
+        border: 1px solid rgba(240, 228, 205, 0.18);
         text-align: center;
         font-family: var(--font-display);
-        font-weight: 700;
-        font-size: 0.96rem;
-        letter-spacing: 0.03em;
-        text-transform: uppercase;
-        color: var(--ink);
-        transition: transform var(--dur-snap) var(--ease-snap), filter var(--dur-snap) var(--ease-snap);
+        font-weight: 600;
+        font-size: 1.06rem;
+        letter-spacing: 0.02em;
+        color: #f0e4cd;
+        -webkit-tap-highlight-color: transparent;
+        transition: border-color 200ms var(--ease-snap), background-color 200ms var(--ease-snap);
     }
 
-    .scan-card:hover { filter: brightness(1.06); }
-    .scan-card:active { transform: translateY(1px) scale(0.98); }
+    .scan-card:hover { border-color: rgba(244, 196, 48, 0.55); }
+    .scan-card:active { background: #241c15; }
 
     .scan-card svg {
         width: 22px;
@@ -642,11 +643,11 @@
         <div class="scan-grid">
             <a href="/scan" class="scan-card">
                 {{ ui_icon("camera") }}
-                <span>Scan 1 Bottle</span>
+                <span>Scan a bottle</span>
             </a>
             <a href="/scan-bulk" class="scan-card">
                 {{ ui_icon("shelf") }}
-                <span>Scan Shelf</span>
+                <span>Scan a shelf</span>
             </a>
         </div>
 

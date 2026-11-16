@@ -1269,5 +1269,6 @@ tiles in Barlow Condensed: Gin, Vodka, Rum, Tequila / Bourbon, Rye, **Scotch**
 full of zest. "Other type…" became a quiet "More types ▾" text link that opens
 the full dropdown. Class names and ids unchanged, so the JS wiring is
 untouched. `verify_routes.py` passes; checked at 375px with `?type=rye`
-prefilled. Not changed: the sheet's "SCAN 1 BOTTLE / SCAN SHELF" cards still use
-all-caps condensed text.
+prefilled. The sheet's scan cards followed in the same session: flat tiles,
+cream hairline, Barlow in sentence case ("Scan a bottle" / "Scan a shelf"),
+with no gradient or shadow.
