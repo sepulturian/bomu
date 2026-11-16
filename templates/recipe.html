@@ -527,16 +527,14 @@
                 {% if e.note %}
                     <p style="font-size: 0.84rem; color: var(--ink-dim); margin-top: 0.2rem;">{{ e.note }}</p>
                 {% endif %}
-                {% if e.id in enhancement_have %}
-                    <div style="font-size: 0.78rem; color: var(--sage); margin-top: 0.25rem;">In your bar</div>
-                {% elif e.ingredient_name %}
-                    <div style="font-size: 0.78rem; color: var(--ink-faint); margin-top: 0.25rem;">Needs: {{ e.ingredient_name }}</div>
-                {% endif %}
-                {% if e.source %}
-                    <div style="font-size: 0.74rem; color: var(--ink-faint); margin-top: 0.22rem;">
-                        {% if 'Common bar practice' in e.source %}{{ e.source }}{% else %}Source: {{ e.source }}{% endif %}
-                    </div>
-                {% endif %}
+                {# The full source stays in the database and in enhance_text.py;
+                   the page only says which kind of claim this is. #}
+                <div style="font-size: 0.76rem; color: var(--ink-faint); margin-top: 0.25rem;"
+                     {% if e.source %}title="{{ e.source }}"{% endif %}>
+                    {%- if e.source and 'Common bar practice' in e.source %}Bartender's habit{% else %}By the book{% endif -%}
+                    {%- if e.id in enhancement_have %} &middot; <span style="color: var(--sage);">In your bar</span>
+                    {%- elif e.ingredient_name %} &middot; Needs {{ e.ingredient_name }}{% endif -%}
+                </div>
             </div>
         {% endfor %}
     </div>

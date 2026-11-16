@@ -33,6 +33,17 @@ WHAT IT REFUSES TO DO
 
 Re-running is a no-op: rows are keyed on (recipe_id, name) and existing rows
 are updated in place rather than duplicated.
+
+enhance_text.py is the source of truth. A row in the table whose
+(recipe_id, name) is no longer planned -- an entry renamed or removed in
+enhance_text.py -- is deleted, and listed in the plan first. Without this a
+rename leaves the old row behind and the page shows both.
+
+    python3 migrate_enhancements.py --postgres            # dry run on Neon
+    python3 migrate_enhancements.py --postgres --commit   # write to Neon
+
+--postgres writes through database.get_db() to DATABASE_URL (read from the
+.env next to this script) and refuses to run if that resolves to SQLite.
 """
 
 import argparse
@@ -86,11 +97,11 @@ def build_plan(conn, allow_missing_recipes=False):
     Returns (rows, problems, warnings)."""
     recipe_ids = {
         r["name"]: r["id"]
-        for r in conn.execute("SELECT id, name FROM recipes")
+        for r in conn.execute("SELECT id, name FROM recipes").fetchall()
     }
     known_ingredients = {
         r["name"].lower(): r["name"]
-        for r in conn.execute("SELECT name FROM ingredients")
+        for r in conn.execute("SELECT name FROM ingredients").fetchall()
     }
 
     rows, problems, warnings = [], [], []
@@ -120,7 +131,7 @@ def build_plan(conn, allow_missing_recipes=False):
             "SELECT raw_name, ingredient_name FROM recipe_ingredients "
             "WHERE recipe_id = ?",
             (rid,),
-        ):
+        ).fetchall():
             for v in (r["raw_name"], r["ingredient_name"]):
                 if v:
                     already_shown.add(v.strip().lower())
@@ -196,19 +207,35 @@ def main():
              "the live database: there, a name that does not match is a typo, "
              "and a typo that fails silently is copy nobody ever sees.",
     )
+    ap.add_argument(
+        "--postgres", action="store_true",
+        help="Write to DATABASE_URL (Neon) instead of --db. The table must "
+             "already exist there (database.init_db creates it).",
+    )
     args = ap.parse_args()
 
-    guard_side_files(args.db)
+    if args.postgres:
+        from dotenv import load_dotenv
+        load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
+        import database
+        if not database._is_postgres():
+            print("REFUSING TO RUN. --postgres given but DATABASE_URL does not "
+                  "resolve to Postgres (unset, or FORCE_SQLITE is on).")
+            sys.exit(1)
+        conn = database.get_db()
+        args.db = "Postgres (DATABASE_URL)"
+    else:
+        guard_side_files(args.db)
 
-    conn = sqlite3.connect(args.db)
-    conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA foreign_keys = ON")
+        conn = sqlite3.connect(args.db)
+        conn.row_factory = sqlite3.Row
+        conn.execute("PRAGMA foreign_keys = ON")
 
-    # The table has to exist before build_plan can be verified against it, but
-    # CREATE TABLE IF NOT EXISTS inside the same transaction is safe to roll
-    # back, so this stays honest on a dry run.
-    conn.execute(SCHEMA)
-    conn.execute(INDEX)
+        # The table has to exist before build_plan can be verified against it,
+        # but CREATE TABLE IF NOT EXISTS inside the same transaction is safe to
+        # roll back, so this stays honest on a dry run.
+        conn.execute(SCHEMA)
+        conn.execute(INDEX)
 
     rows, problems, warnings = build_plan(conn, args.allow_missing_recipes)
 
@@ -239,10 +266,12 @@ def main():
 
     existing = {
         (r["recipe_id"], r["name"])
-        for r in conn.execute("SELECT recipe_id, name FROM recipe_enhancements")
+        for r in conn.execute("SELECT recipe_id, name FROM recipe_enhancements").fetchall()
     }
+    planned = {(r["recipe_id"], r["name"]) for r in rows}
     inserts = [r for r in rows if (r["recipe_id"], r["name"]) not in existing]
     updates = [r for r in rows if (r["recipe_id"], r["name"]) in existing]
+    stale = sorted(existing - planned)
 
     recipes_touched = len({r["recipe_name"] for r in rows})
     total_recipes = conn.execute("SELECT COUNT(*) FROM recipes").fetchone()[0]
@@ -252,7 +281,13 @@ def main():
     print(f"Planned:   {len(rows)} enhancement rows across {recipes_touched} "
           f"recipes ({total_recipes - recipes_touched} get nothing)")
     print(f"           {len(inserts)} new, {len(updates)} already present "
-          f"(will be updated in place)\n")
+          f"(will be updated in place)")
+    print(f"           {len(stale)} stale row(s) no longer in enhance_text.py "
+          f"(will be deleted)\n")
+    for rid, name in stale:
+        print(f"      x recipe {rid}: {name}")
+    if stale:
+        print()
 
     current = None
     for r in rows:
@@ -269,21 +304,31 @@ def main():
         return
 
     try:
+        # Update-then-insert rather than ON CONFLICT: the Neon copy of this
+        # table was created without the UNIQUE (recipe_id, name) constraint,
+        # so ON CONFLICT has nothing to match there. `existing` already says
+        # which rows are present, and this runs in one transaction.
         for r in rows:
+            if (r["recipe_id"], r["name"]) in existing:
+                conn.execute(
+                    "UPDATE recipe_enhancements SET ingredient_name = ?, "
+                    "measure = ?, note = ?, source = ?, sort_order = ? "
+                    "WHERE recipe_id = ? AND name = ?",
+                    (r["ingredient_name"], r["measure"], r["note"], r["source"],
+                     r["sort_order"], r["recipe_id"], r["name"]),
+                )
+            else:
+                conn.execute(
+                    "INSERT INTO recipe_enhancements "
+                    "(recipe_id, name, ingredient_name, measure, note, source, sort_order) "
+                    "VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    (r["recipe_id"], r["name"], r["ingredient_name"], r["measure"],
+                     r["note"], r["source"], r["sort_order"]),
+                )
+        for rid, name in stale:
             conn.execute(
-                """
-                INSERT INTO recipe_enhancements
-                    (recipe_id, name, ingredient_name, measure, note, source, sort_order)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-                ON CONFLICT (recipe_id, name) DO UPDATE SET
-                    ingredient_name = excluded.ingredient_name,
-                    measure         = excluded.measure,
-                    note            = excluded.note,
-                    source          = excluded.source,
-                    sort_order      = excluded.sort_order
-                """,
-                (r["recipe_id"], r["name"], r["ingredient_name"], r["measure"],
-                 r["note"], r["source"], r["sort_order"]),
+                "DELETE FROM recipe_enhancements WHERE recipe_id = ? AND name = ?",
+                (rid, name),
             )
         conn.commit()
     except Exception as exc:

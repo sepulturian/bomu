@@ -224,7 +224,12 @@ own" suggestions shown on the recipe page. Columns `recipe_id`, `name`,
 `sort_order`. Copy lives in `enhance_text.py`. **The matcher never reads it**, so
 it cannot change makeability. `migrate_enhancements.py` refuses rows with no
 source, rows naming a nonexistent checklist ingredient, and rows duplicating
-something the recipe already requires.
+something the recipe already requires. It deletes rows whose name is no longer
+in `enhance_text.py` (renames), and `--postgres` writes to Neon. On Neon the
+table has **no UNIQUE (recipe_id, name)** constraint, so `ON CONFLICT` fails
+there; the script uses update-then-insert. The page shows `source` only as a
+tag, "By the book" or "Bartender's habit"; the copy rules are rule 5 in
+`enhance_text.py`.
 
 Users as of 2026-07-24: 1 aaron, 2 Avishka, 3 Rajapaksha, 4 lenasheh (Shehan,
 Aaron's brother), 5 Maho.
@@ -1144,3 +1149,46 @@ Aaron asked to redesign the login and signup pages inspired by his "Timelines" l
 
 **Open:** #19 below, plus Hugo Spritz row 398 (#15), Shehan 0 from 16 (#2),
 never-started users (#1), leaked connection string + Neon password (#17).
+
+### 2026-11-15 (seventh session) — "Make it your own" copy rewrite (Claude Code)
+
+Aaron flagged the Negroni's "Make it your own" card as too long and
+unreadable: "Not in the Difford's or IBA build...", "how is anyone reading
+supposed to know that?" The copy had been written to make the
+"nothing invented" rule auditable, so every note cited its source and
+the page printed it. Correct for a reviewer, footnotes for a drinker.
+
+**Decided with Aaron:** two plain sentences per note (what to do, then
+why); the source line becomes a tag, "By the book" (named source) or
+"Bartender's habit" (PRACTICE), sharing a line with "In your bar" / "Needs X";
+rewrite all 166; one review pass by a Fable 5.2 critic subagent, then act on it.
+
+**Changed:** `enhance_text.py` (all 166 notes, 11 names de-jargoned, e.g.
+"Slapped mint bouquet" → "Big mint sprig", "Muddle skin-side down" → "Press
+the lime gently"; new rule 5 on plain English), `templates/recipe.html` (tag;
+full source kept as a hover `title`), `migrate_enhancements.py` (prunes rows
+renamed out of `enhance_text.py`, `--postgres` mode, update-then-insert).
+Median note 148 → 116 chars. `source` values unchanged.
+
+**The critic earned its keep.** 26 flags, about 34 edits. Worst: simplifying
+"Trader Vic's own garnish" into "Trader Vic, who created the drink" invented a
+claim that `about_text.py` says is contested; "sold ready-mixed" had drifted to
+"sold in cans". Same lesson as before in a new place: a rewrite for clarity can
+add facts, so diff meaning against the old copy, not just length. It also found
+the Caipirinha's old name ("skin-side down") contradicting its own note; the
+new wording takes no side.
+
+**Gotcha:** the first Neon commit failed (and rolled back) because the Neon
+table lacks the UNIQUE (recipe_id, name) constraint the SQLite schema has, so
+`ON CONFLICT` had nothing to match. `migrate_to_postgres.py` may have dropped
+other constraints the same way; not audited.
+
+**Verified:** scratch copy of `bomu.db` migrated twice (second run no-op),
+`verify_routes.py --db` all routes render, Negroni and Mojito checked in the
+browser. On Neon: 106 rows, 9 renamed in / 9 stale deleted, re-run no-op, all
+5 users' makeable / one-away unchanged (34/70, 0/0, 0/0, 0/14, 1/13).
+`check_specs.py` reports 3 flagged recipes on `bomu.db` (e.g. Caesar lime-juice
+measure), unrelated to this change and not investigated.
+
+**Open:** audit Neon for other constraints lost in the Postgres migration;
+the 3 `check_specs.py` flags; plus #19, #15, #2, #1, #17.

@@ -51,6 +51,14 @@ RULES THIS FILE FOLLOWS
    suggestion that says nothing is worse than no suggestion. Same precedent as
    the 46 recipes with no tip.
 
+5. Written for someone at home, not behind a bar (rewritten 2026-11-15). Two
+   plain sentences: what to do, then why. No source names in the note (no
+   "Difford's", "IBA", "the build"), no unexplained bar words ("express",
+   "pith", "muddle", "slap", "float" as a noun, "serve" as a noun), no
+   bartender names a reader can't place. The page shows the source only as a
+   tag: "By the book" for a named source, "Bartender's habit" for PRACTICE.
+   Simplifying must not add a claim the source didn't make.
+
 ON THE NEGRONI
 --------------
 It gets orange bitters, marked PRACTICE. Difford's Negroni is three ingredients
@@ -84,11 +92,9 @@ ENHANCEMENTS = {
         "name": "Orange bitters",
         "ingredient": "Orange bitters",
         "measure": "1 dash",
-        "note": "Swap one of the Angostura dashes for orange bitters, or add it "
-                "alongside. Most pre-Prohibition Manhattan recipes called for orange "
-                "bitters and the modern craft-bar house build usually splits the two. "
-                "It lifts the vermouth and makes the drink read brighter without "
-                "making it sweeter.",
+        "note": "Use it in place of one Angostura dash, or alongside it. "
+                "It brightens the vermouth without making the drink any "
+                "sweeter.",
         "source": "Difford's Guide; The PDT Cocktail Book",
     },
     {
@@ -98,9 +104,9 @@ ENHANCEMENTS = {
         # would show twice on one page under two headings.
         "ingredient": None,
         "measure": None,
-        "note": "The cherry is the traditional garnish and it is not just decoration: "
-                "the syrup that comes off it changes the last mouthful. A neon "
-                "cocktail cherry will do this job badly.",
+        "note": "The traditional garnish, and the syrup it gives off "
+                "changes the last sip. A dark brandied cherry does this "
+                "far better than a neon red one.",
         "source": "IBA official specification",
     },
 ],
@@ -110,20 +116,18 @@ ENHANCEMENTS = {
         "name": "Orange bitters",
         "ingredient": "Orange bitters",
         "measure": "1 dash",
-        "note": "Added alongside the Angostura, not instead of it. The orange bitters "
-                "pick up the oil from the peel and the two together make the citrus "
-                "read as part of the drink rather than as decoration.",
+        "note": "Add it alongside the Angostura, not instead of it. It "
+                "picks up the orange peel so the citrus tastes like part "
+                "of the drink.",
         "source": "Difford's Guide",
     },
     {
-        "name": "Expressed orange peel",
+        "name": "Orange peel, squeezed over",
         "ingredient": "Oranges",
         "measure": "1 wide strip",
-        "note": "Squeeze a wide strip of peel skin-side down over the surface so the "
-                "oil sprays across the top, then drop it in. This is the classic "
-                "build. Muddling orange and cherry into the glass is a post-"
-                "Prohibition American addition that most historians treat as a "
-                "corruption; the pith adds bitterness and the pulp clouds it.",
+        "note": "Squeeze a wide strip of peel over the drink so the oil "
+                "sprays the top, then drop it in. Don't mash orange into "
+                "the glass, which turns it bitter and cloudy.",
         "source": "IBA official specification; Difford's Guide",
     },
 ],
@@ -133,9 +137,9 @@ ENHANCEMENTS = {
         "name": "Orange bitters",
         "ingredient": "Orange bitters",
         "measure": "1 dash",
-        "note": "The original calls for Boker's bitters, which vanished for most of "
-                "the twentieth century. Orange bitters is the standard substitution "
-                "and is what most published modern versions use.",
+        "note": "The original used a brand of bitters that disappeared "
+                "for most of the 1900s. Orange bitters is the usual "
+                "stand-in today.",
         "source": "Difford's Guide",
     },
 ],
@@ -145,10 +149,9 @@ ENHANCEMENTS = {
         "name": "Orange bitters",
         "ingredient": "Orange bitters",
         "measure": "2 dashes",
-        "note": "Difford's builds the Adonis with orange bitters as standard. With no "
-                "spirit in the glass there is very little holding the sherry and "
-                "vermouth apart, and the bitters give the drink an edge it otherwise "
-                "lacks.",
+        "note": "With no spirit in it, the sherry and vermouth can blur "
+                "together. The bitters give the drink the edge it "
+                "otherwise lacks.",
         "source": "Difford's Guide",
     },
 ],
@@ -158,9 +161,8 @@ ENHANCEMENTS = {
         "name": "Lemon twist",
         "ingredient": "Lemons",
         "measure": "1 strip",
-        "note": "Expressed over the top and dropped in. The sugar cube and bitters "
-                "are already doing the work; the lemon oil is what stops it reading "
-                "as sweet.",
+        "note": "Squeeze it over the top and drop it in. The lemon oil "
+                "stops the sugar cube from making the drink taste sweet.",
         "source": "IBA official specification",
     },
 ],
@@ -172,36 +174,31 @@ ENHANCEMENTS = {
         "name": "Orange bitters",
         "ingredient": "Orange bitters",
         "measure": "1 dash",
-        "note": "Not in the Difford's or IBA build, and the named orange-bitters "
-                "Negronis (Kingston, Sweet Orange) are separate drinks. It is still "
-                "what a lot of bartenders do: one dash lands on the same note as the "
-                "orange peel and takes a little of the hard edge off the Campari "
-                "without making the drink sweeter. Start with one dash, not two.",
+        "note": "Not part of the classic recipe, but plenty of bartenders"
+                " add it. It picks up the orange peel and softens the "
+                "Campari without making it sweeter.",
         "source": PRACTICE,
     },
     {
         "name": "Orange twist or slice",
         "ingredient": "Oranges",
         "measure": None,
-        "note": "Not lemon. Difford's puts it plainly: \"Always garnish a Negroni "
-                "with an orange twist or slice, the use of a lemon is a heinous "
-                "crime.\" The orange oil is what softens the Campari on the nose "
-                "before you taste it.",
+        "note": "Use orange, not lemon. Its oils soften the Campari "
+                "before you even take a sip.",
         "source": "Difford's Guide",
     },
 ],
 
 "Mezcal Negroni": [
     {
-        "name": "Expressed orange peel",
+        "name": "Orange peel, squeezed over",
         # Already an optional row in the ingredient list. This entry
         # survives as a TECHNIQUE note only -- no checklist link, or it
         # would show twice on one page under two headings.
         "ingredient": None,
         "measure": "1 strip",
-        "note": "Same orange rule as the gin original. Express it over the surface "
-                "rather than dropping it in dry; the smoke off the mezcal needs "
-                "something to meet it on the nose.",
+        "note": "Orange, same as the gin Negroni. Squeeze the peel over "
+                "the drink so its oil meets the mezcal's smoke.",
         "source": "Difford's Guide",
     },
 ],
@@ -211,9 +208,9 @@ ENHANCEMENTS = {
         "name": "Orange twist",
         "ingredient": "Oranges",
         "measure": "1 strip",
-        "note": "Orange for the Boulevardier, lemon for the Old Pal. The two drinks "
-                "are close cousins and the garnish is part of how bartenders tell "
-                "them apart on the pass.",
+        "note": "Orange here, lemon for its close cousin the Old Pal. The"
+                " garnish is how bartenders tell the two apart at a "
+                "glance.",
         "source": "Difford's Guide",
     },
 ],
@@ -223,63 +220,61 @@ ENHANCEMENTS = {
         "name": "Lemon twist",
         "ingredient": "Lemons",
         "measure": "1 strip",
-        "note": "Lemon, not orange. The Old Pal is drier than the Boulevardier, rye "
-                "and dry vermouth rather than bourbon and sweet, and lemon oil keeps "
-                "it pointed that way.",
+        "note": "Lemon, not orange. This is the drier cousin of the "
+                "Boulevardier, and lemon keeps it that way.",
         "source": "Difford's Guide",
     },
 ],
 
 "Sazerac": [
     {
-        "name": "Expressed lemon peel, discarded",
+        "name": "Lemon peel, squeezed and tossed",
         "ingredient": "Lemons",
         "measure": "1 strip",
-        "note": "Squeeze the peel over the glass, wipe the rim, then throw it away "
-                "rather than dropping it in. Leaving it in the glass keeps releasing "
-                "oil and by the third sip the drink tastes of lemon instead of rye.",
+        "note": "Squeeze the peel over the glass, wipe it round the rim, "
+                "then throw it away. Left in, it keeps giving off oil "
+                "until you taste lemon instead of rye.",
         "source": "Difford's Guide; Sazerac House",
     },
 ],
 
 "Mint Julep": [
     {
-        "name": "Slapped mint bouquet",
+        "name": "Big mint sprig",
         # No checklist link: the recipe already requires mint, so this is a
         # technique note, not a prompt to go and buy something. The migration
         # blocks any enhancement whose ingredient duplicates the spec, and it
         # was right to.
         "ingredient": None,
         "measure": "1 generous sprig",
-        "note": "Clap the sprig once between your palms to wake the oil, then plant it "
-                "in the ice right next to the straw. You smell the mint on every sip; "
-                "muddling it into the drink instead just makes it taste green and "
-                "bitter.",
+        "note": "Clap the sprig between your palms, then stand it in the "
+                "ice next to the straw. You smell mint on every sip, "
+                "without the bitterness of crushing it into the drink.",
         "source": "Difford's Guide",
     },
 ],
 
 "Mojito": [
     {
-        "name": "Slapped mint sprig",
+        "name": "Fresh mint sprig on top",
         # Recipe already requires mint -- technique note, not a shopping prompt.
         "ingredient": None,
         "measure": "1 sprig",
-        "note": "The mint already in the drink has given up most of its aroma. A fresh "
-                "slapped sprig sitting at the top of the glass is what you actually "
-                "smell, and it is why a bar Mojito reads more minty than a home one.",
+        "note": "Clap a fresh sprig between your palms and stand it on "
+                "top. The mint in the drink has lost most of its smell, "
+                "so this sprig is what you actually smell.",
         "source": "IBA official specification",
     },
 ],
 
 "Mai Tai": [
     {
-        "name": "Spent lime shell and mint",
+        "name": "Squeezed lime shell and mint",
         "ingredient": "Fresh mint",
         "measure": None,
-        "note": "Float the squeezed lime half shell-up like an island and tuck the mint "
-                "sprig against it. Trader Vic's own garnish, and the mint has to touch "
-                "the shell so the lime oil comes through with it.",
+        "note": "Float the squeezed lime half dome-up and tuck the mint "
+                "right against it. Touching the shell, the mint picks up "
+                "the lime oil, and this is the drink's classic garnish.",
         "source": "Trader Vic's original specification; IBA",
     },
 ],
@@ -289,8 +284,8 @@ ENHANCEMENTS = {
         "name": "Mint sprig",
         "ingredient": "Fresh mint",
         "measure": "1 sprig",
-        "note": "Sitting on the crushed ice, not in the drink. Four rums deep, the mint "
-                "is the only thing giving your nose somewhere to go.",
+        "note": "Rest it on the ice, not in the drink. With four rums in "
+                "the glass, the mint gives your nose something fresh.",
         "source": "Difford's Guide",
     },
 ],
@@ -300,9 +295,9 @@ ENHANCEMENTS = {
         "name": "Three coffee beans",
         "ingredient": "Coffee",
         "measure": "3 beans",
-        "note": "Floated on the crema in a line. Bradsell's own garnish, and the "
-                "traditional reading is health, wealth and happiness; the same "
-                "three-bean superstition as sambuca con la mosca.",
+        "note": "Float them in a line on the foam, as the drink's creator"
+                " did. Tradition says they stand for health, wealth and "
+                "happiness.",
         "source": "Difford's Guide; Dick Bradsell's original",
     },
 ],
@@ -315,10 +310,9 @@ ENHANCEMENTS = {
         # would show twice on one page under two headings.
         "ingredient": None,
         "measure": None,
-        "note": "Salt only half the rim and leave the other half bare, so you choose "
-                "with every sip instead of committing to salt on all of them. Rub the "
-                "lime on the outside of the glass only; salt that falls inside "
-                "dissolves and makes the whole drink salty.",
+        "note": "Salt only half the rim so you can choose with every sip."
+                " Rub lime on the outside of the glass only, or salt "
+                "falls in and the drink turns salty.",
         "source": "Difford's Guide",
     },
 ],
@@ -328,9 +322,8 @@ ENHANCEMENTS = {
         "name": "Leave the rim bare",
         "ingredient": None,
         "measure": None,
-        "note": "Julio Bermejo's version is served unsalted. The agave syrup is already "
-                "carrying the drink and salt flattens it. If you want salt, salt half "
-                "the rim.",
+        "note": "The original is served with no salt, which would flatten"
+                " the agave syrup. If you want some, salt half the rim.",
         "source": "Difford's Guide",
     },
 ],
@@ -340,9 +333,8 @@ ENHANCEMENTS = {
         "name": "Half sugar rim",
         "ingredient": "Sugar (white)",
         "measure": None,
-        "note": "Optional even in the classic sources, and worth doing on half the rim "
-                "only. A full sugar rim tips an already citrus-forward drink into "
-                "dessert.",
+        "note": "Optional even in the old recipes, and best on half the "
+                "rim. A full sugar rim pushes this drink into dessert.",
         "source": "Difford's Guide; IBA (garnish listed as optional)",
     },
 ],
@@ -352,10 +344,9 @@ ENHANCEMENTS = {
         "name": "Flamed orange twist",
         "ingredient": "Oranges",
         "measure": "1 strip",
-        "note": "Hold a wide strip skin-side down a few inches over the surface and "
-                "squeeze it through a lit match. The oil ignites and lands caramelised "
-                "on top. Purely aromatic, and the whole reason the drink smells like "
-                "anything other than cranberry.",
+        "note": "Squeeze a wide strip of peel through a lit match over "
+                "the drink, so the oil flares and lands toasted on top. "
+                "Without it, all you smell is cranberry.",
         "source": "Difford's Guide",
     },
 ],
@@ -365,17 +356,17 @@ ENHANCEMENTS = {
         "name": "Celery salt rim",
         "ingredient": "Salt",
         "measure": None,
-        "note": "Salt the rim before you build. It seasons every sip from the outside "
-                "instead of you chasing the seasoning with more Tabasco once it is "
-                "already mixed.",
+        "note": "Rim the glass before you pour. It seasons every sip, so "
+                "you are not chasing the flavour with extra Tabasco "
+                "later.",
         "source": "IBA official specification",
     },
     {
         "name": "Black pepper on top",
         "ingredient": "Pepper",
         "measure": "a good grind",
-        "note": "Ground over the surface at the end, not stirred in. The aroma sits "
-                "right under your nose and it is most of what makes the drink read as "
+        "note": "Grind it over the top at the end instead of stirring it "
+                "in. The smell is most of what makes the drink taste "
                 "savoury.",
         "source": "IBA official specification",
     },
@@ -386,8 +377,8 @@ ENHANCEMENTS = {
         "name": "Celery salt rim",
         "ingredient": "Salt",
         "measure": None,
-        "note": "Same as the vodka original. The tequila gives you more to work with "
-                "than vodka does, and the salted rim is what ties it to the agave.",
+        "note": "Same as the vodka version. The salt is what ties the "
+                "drink back to the tequila.",
         "source": "IBA official specification (Bloody Mary family)",
     },
 ],
@@ -397,9 +388,9 @@ ENHANCEMENTS = {
         "name": "Celery salt rim",
         "ingredient": "Salt",
         "measure": None,
-        "note": "Non-negotiable in Canada and the thing that most separates a Caesar "
-                "from a Bloody Mary made with Clamato. Walter Chell rimmed the glass "
-                "from the start in Calgary in 1969.",
+        "note": "In Canada this isn't optional, and it's what sets a "
+                "Caesar apart from a Bloody Mary. The glass has been "
+                "rimmed since the drink was invented in Calgary in 1969.",
         "source": "Mott's Clamato / Walter Chell original",
     },
 ],
@@ -409,8 +400,8 @@ ENHANCEMENTS = {
         "name": "Mint sprig and lime wedge",
         "ingredient": "Fresh mint",
         "measure": None,
-        "note": "Both, not one. The copper mug hides the drink completely, so the "
-                "garnish is doing all of the aromatic work before the first sip.",
+        "note": "Use both. The copper mug hides the drink, so the garnish"
+                " is all you smell before the first sip.",
         "source": "IBA official specification",
     },
 ],
@@ -420,9 +411,8 @@ ENHANCEMENTS = {
         "name": "Orange slice",
         "ingredient": "Oranges",
         "measure": "1 slice",
-        "note": "A slice dropped in, not a twist. It is the IBA garnish and the extra "
-                "surface area keeps giving the drink orange as the ice melts, which "
-                "matters in something this long.",
+        "note": "Drop in a slice, not a twist. In a tall drink like this,"
+                " it keeps adding orange as the ice melts.",
         "source": "IBA official specification",
     },
 ],
@@ -432,9 +422,8 @@ ENHANCEMENTS = {
         "name": "Orange slice",
         "ingredient": "Oranges",
         "measure": "1 slice",
-        "note": "Orange for the Americano, the same as its stronger sibling the "
-                "Negroni. Some bars add a lemon twist as well; the orange is the one "
-                "the IBA specifies.",
+        "note": "Orange, same as its stronger sibling the Negroni. Some "
+                "bars add a lemon twist too, but orange is the standard.",
         "source": "IBA official specification",
     },
 ],
@@ -446,9 +435,9 @@ ENHANCEMENTS = {
         "name": "Pineapple wedge and cherry",
         "ingredient": "Maraschino cherries",
         "measure": None,
-        "note": "The IBA garnish. Cut a notch in the pineapple wedge so it sits on the "
-                "rim without sliding, and put the cherry behind it rather than "
-                "spearing them together.",
+        "note": "Cut a notch in the pineapple wedge so it sits on the rim"
+                " without sliding. Put the cherry behind it rather than "
+                "on the same cocktail stick.",
         "source": "IBA official specification",
     },
 ],
@@ -458,9 +447,9 @@ ENHANCEMENTS = {
         "name": "Candied ginger",
         "ingredient": None,
         "measure": "1 piece",
-        "note": "Sam Ross's own garnish, speared and laid across the rim. It tells you "
-                "what the drink is before you taste it, and chewing it after the last "
-                "sip is part of the point.",
+        "note": "The creator's own garnish, laid across the rim on a "
+                "cocktail stick. It tells you what's coming, and you eat "
+                "it after the last sip.",
         "source": "Sam Ross, Milk & Honey; Difford's Guide",
     },
 ],
@@ -470,8 +459,8 @@ ENHANCEMENTS = {
         "name": "Pineapple wedge",
         "ingredient": None,
         "measure": "1 wedge",
-        "note": "Fresh pineapple, not tinned. The drink is already carrying pineapple "
-                "juice and Campari; the fresh wedge is the only sweet thing on the nose.",
+        "note": "Use fresh pineapple, not tinned. It's the only sweet "
+                "smell sitting over the juice and Campari.",
         "source": "Difford's Guide",
     },
 ],
@@ -481,9 +470,9 @@ ENHANCEMENTS = {
         "name": "Brandied cherry",
         "ingredient": "Maraschino cherries",
         "measure": "1",
-        "note": "Dropped in, and it echoes the maraschino already in the glass. A "
-                "luxardo-style cherry works with the drink; a bright red cocktail "
-                "cherry fights it.",
+        "note": "A dark brandied cherry matches the cherry liqueur "
+                "already in the glass. A bright red cocktail cherry "
+                "clashes with it.",
         "source": "Difford's Guide",
     },
 ],
@@ -493,9 +482,9 @@ ENHANCEMENTS = {
         "name": "Clove-studded lemon",
         "ingredient": "Lemons",
         "measure": "1 slice",
-        "note": "Push four or five cloves through a lemon slice and drop it in. The "
-                "heat pulls the clove oil out slowly, so the drink changes over the "
-                "ten minutes you take to drink it.",
+        "note": "Push four or five cloves into a lemon slice and drop it "
+                "in. The heat draws the clove out slowly, so the drink "
+                "changes as you sip.",
         "source": "Difford's Guide",
     },
 ],
@@ -505,9 +494,9 @@ ENHANCEMENTS = {
         "name": "Cocktail onions",
         "ingredient": "Cocktail onions",
         "measure": "1 to 3",
-        "note": "The onion is the entire difference between a Gibson and a Dry Martini, "
-                "so it is not really optional; but the count is yours. Odd numbers "
-                "are the bar convention.",
+        "note": "The onion is what makes it a Gibson rather than a "
+                "Martini, so it's hardly optional. How many is up to you,"
+                " but bartenders stick to odd numbers.",
         "source": "Difford's Guide",
     },
 ],
@@ -517,9 +506,8 @@ ENHANCEMENTS = {
         "name": "Brandied or maraschino cherry",
         "ingredient": "Maraschino cherries",
         "measure": "1",
-        "note": "A Manhattan garnish on a Manhattan-shaped drink. Some bars use a lemon "
-                "twist instead when the Scotch is peaty, on the grounds that a cherry "
-                "and smoke do not meet in the middle.",
+        "note": "The same garnish as a Manhattan. With a smoky Scotch, "
+                "some bars use a lemon twist instead.",
         "source": "IBA official specification",
     },
 ],
@@ -529,9 +517,8 @@ ENHANCEMENTS = {
         "name": "Brandied cherry",
         "ingredient": "Maraschino cherries",
         "measure": "1",
-        "note": "Todd Smith's original is garnished with a cherry, same as the Manhattan "
-                "it is built from. The amaro is already bitter and dark, so the cherry "
-                "syrup on the last sip earns its place more here than in the original.",
+        "note": "A cherry, same as the Manhattan it comes from. The sweet"
+                " syrup on the last sip balances the dark, bitter amaro.",
         "source": "Difford's Guide",
     },
 ],
@@ -541,9 +528,9 @@ ENHANCEMENTS = {
         "name": "Lime wedge",
         "ingredient": "Limes",
         "measure": "1 wedge",
-        "note": "Squeezed in rather than perched on the rim. The ginger beer is sweet "
-                "and the dark rum is sweeter, and without the lime there is nothing "
-                "holding the two apart.",
+        "note": "Squeeze it in rather than leaving it on the rim. Ginger "
+                "beer and dark rum are both sweet, and the lime keeps "
+                "them in check.",
         "source": "IBA official specification",
     },
 ],
@@ -556,10 +543,9 @@ ENHANCEMENTS = {
         # would show twice on one page under two headings.
         "ingredient": None,
         "measure": "3 drops",
-        "note": "Only works if you have used egg white, since the drops need a surface "
-                "to sit on. Dot them on the foam and draw a cocktail stick through; "
-                "it is aromatic, not decorative, and you get the bitters on the nose "
-                "before the sour hits.",
+        "note": "Only if you used egg white, since the drops need foam to"
+                " sit on. Dot them on and drag a cocktail stick through, "
+                "so you smell the bitters first.",
         "source": "IBA official specification (Boston Sour variation)",
     },
 ],
@@ -569,9 +555,8 @@ ENHANCEMENTS = {
         "name": "Pineapple chunk",
         "ingredient": None,
         "measure": "1",
-        "note": "Preferably one of the pineapple pieces that steeped in the syrup. The "
-                "gum syrup carries the pineapple through the drink and eating the chunk "
-                "at the end closes the loop.",
+        "note": "Ideally a piece that soaked in the pineapple syrup. Eat "
+                "it when you finish the drink.",
         "source": "Difford's Guide",
     },
 ],
@@ -584,9 +569,9 @@ ENHANCEMENTS = {
         # would show twice on one page under two headings.
         "ingredient": None,
         "measure": "1 strip",
-        "note": "Expressed and dropped in. There are already two bitters, rye, cognac, "
-                "vermouth and Benedictine in the glass; the lemon oil is the only thing "
-                "in the drink that is bright.",
+        "note": "Squeeze it over the top and drop it in. Everything else "
+                "in this drink is dark and rich, and the lemon is the "
+                "only bright note.",
         "source": "Difford's Guide",
     },
 ],
@@ -596,9 +581,9 @@ ENHANCEMENTS = {
         "name": "Half salt rim",
         "ingredient": "Salt",
         "measure": None,
-        "note": "Salt on half the rim, lime wedge on the other side. It works the same "
-                "way as on a Margarita: grapefruit and salt sharpen each other, and "
-                "leaving half bare lets you decide sip by sip.",
+        "note": "Salt half the rim and put a lime wedge on the other "
+                "side. Grapefruit and salt sharpen each other, and the "
+                "bare half lets you choose.",
         "source": "Difford's Guide",
     },
 ],
@@ -608,9 +593,9 @@ ENHANCEMENTS = {
         "name": "Grated nutmeg",
         "ingredient": None,
         "measure": "a light grating",
-        "note": "Over the cream, never stirred in. Contested: the Buena Vista in San "
-                "Francisco, which made the drink famous in the States, serves it bare. "
-                "Try it both ways before deciding.",
+        "note": "Grate it over the cream, never stir it in. The San "
+                "Francisco bar that made the drink famous in America "
+                "serves it without, so try it both ways.",
         "source": "Difford's Guide (listed as an optional garnish)",
     },
 ],
@@ -620,9 +605,9 @@ ENHANCEMENTS = {
         "name": "Grated nutmeg",
         "ingredient": None,
         "measure": "a light grating",
-        "note": "Grated over the top at the last second. Pre-ground nutmeg has lost "
-                "almost everything; a whole nutmeg and a fine grater is the difference "
-                "between an aroma and a dusting.",
+        "note": "Grate it over the top just before serving. Pre-ground "
+                "nutmeg has lost almost all its smell, so use a whole "
+                "one.",
         "source": "IBA official specification",
     },
 ],
@@ -632,21 +617,21 @@ ENHANCEMENTS = {
         "name": "Olives",
         "ingredient": "Olives",
         "measure": "1 or 3",
-        "note": "Odd numbers, and use the same brine you poured into the drink. A "
-                "high-quality olive in cheap brine is a waste; the brine is an "
-                "ingredient here, not packaging.",
+        "note": "Use one or three, and the same brine that went into the "
+                "drink. The brine is an ingredient here, so a good olive "
+                "in cheap brine is wasted.",
         "source": "Difford's Guide",
     },
 ],
 
 "Gimlet": [
     {
-        "name": "Lime wedge or wheel",
+        "name": "Lime wheel",
         "ingredient": "Limes",
         "measure": None,
-        "note": "A wheel on the rim reads better than a wedge dropped in, because the "
-                "drink is already at its intended sweetness and squeezing more lime in "
-                "moves it off balance.",
+        "note": "Perch a wheel on the rim rather than squeezing a wedge "
+                "in. The drink is already balanced, and extra lime throws"
+                " it off.",
         "source": "IBA official specification",
     },
 ],
@@ -656,8 +641,8 @@ ENHANCEMENTS = {
         "name": "Lemon twist",
         "ingredient": "Lemons",
         "measure": "1 long strip",
-        "note": "A long spiral in the flute. The champagne is throwing aroma up out of "
-                "the glass constantly and the lemon oil rides along with it.",
+        "note": "Drop a long spiral of peel into the flute. The bubbles "
+                "carry the lemon oil up to your nose.",
         "source": "IBA official specification",
     },
 ],
@@ -667,10 +652,9 @@ ENHANCEMENTS = {
         "name": "Orange twist",
         "ingredient": "Oranges",
         "measure": "1 strip",
-        "note": "Expressed over the top. Harry Craddock's warning that four in swift "
-                "succession will unrevive the corpse is still the best thing written "
-                "about this drink, and the orange oil is what makes the first one "
-                "dangerously easy.",
+        "note": "Squeeze it over the top. The old warning is that four in"
+                " a row will un-revive the corpse, and the orange oil "
+                "makes the first one go down dangerously easily.",
         "source": "Difford's Guide; The Savoy Cocktail Book",
     },
 ],
@@ -680,9 +664,9 @@ ENHANCEMENTS = {
         "name": "Lime wheel",
         "ingredient": "Limes",
         "measure": "1 wheel",
-        "note": "There is no sugar in this drink beyond the maraschino, so it lands "
-                "sharp on purpose. The lime wheel is aromatic only; do not squeeze it "
-                "in unless you want it sharper still.",
+        "note": "This drink has almost no sugar, so it's meant to be "
+                "sharp. The wheel is just for the smell, so don't squeeze"
+                " it in unless you want it sharper.",
         "source": "Difford's Guide",
     },
 ],
@@ -692,9 +676,9 @@ ENHANCEMENTS = {
         "name": "Raspberries on a stick",
         "ingredient": None,
         "measure": "2 or 3",
-        "note": "Speared and laid across the glass. The drink gets its colour from "
-                "raspberry syrup and without the fruit on top most people read it as "
-                "grenadine, which is a different and worse drink.",
+        "note": "Lay two or three on a cocktail stick across the glass. "
+                "Without them, people mistake the raspberry colour for "
+                "grenadine.",
         "source": "Difford's Guide",
     },
 ],
@@ -707,10 +691,8 @@ ENHANCEMENTS = {
         # would show twice on one page under two headings.
         "ingredient": None,
         "measure": None,
-        "note": "All three, not one. The Pimm's Cup is closer to a fruit cup than a "
-                "cocktail and the garnish is a genuine part of the recipe rather than a "
-                "flourish; strip it back to a lemon slice and there is very little "
-                "drink left.",
+        "note": "Use all three. The fruit is part of this drink, not "
+                "decoration, and without it there's not much left.",
         "source": "IBA official specification",
     },
 ],
@@ -720,9 +702,9 @@ ENHANCEMENTS = {
         "name": "Pineapple and cherry",
         "ingredient": "Maraschino cherries",
         "measure": None,
-        "note": "The Raffles serve is a pineapple wedge with a cherry speared to it. "
-                "The drink already contains pineapple juice, so this is continuity "
-                "rather than decoration.",
+        "note": "A pineapple wedge with a cherry on the same cocktail "
+                "stick, as the Singapore hotel it comes from serves it. "
+                "There's pineapple juice in the drink, so it fits.",
         "source": "IBA official specification",
     },
 ],
@@ -732,33 +714,33 @@ ENHANCEMENTS = {
         "name": "Berries and orange",
         "ingredient": "Oranges",
         "measure": None,
-        "note": "Pile the fruit on top of the crushed ice rather than burying it. The "
-                "Cobbler was the drink that made the drinking straw popular in the "
-                "1800s precisely because of the fruit and ice mound sitting on top.",
+        "note": "Pile the fruit on top of the crushed ice, not under it. "
+                "That mound of fruit and ice is why this drink made "
+                "drinking straws popular in the 1800s.",
         "source": "Difford's Guide",
     },
 ],
 
 "Queen's Park Swizzle": [
     {
-        "name": "Angostura float",
+        "name": "Angostura on top",
         "ingredient": "Angostura bitters",
         "measure": "6 to 8 dashes",
-        "note": "Dashed across the top of the crushed ice after the swizzling, and left "
-                "to bleed down through the drink. This is the whole visual and aromatic "
-                "signature of the drink; stirring it in loses both.",
+        "note": "Dash it over the top after stirring and let it bleed "
+                "down through the ice. That red layer is the drink's "
+                "signature, so don't stir it in.",
         "source": "Difford's Guide; Trader Vic",
     },
 ],
 
 "Ramos Gin Fizz": [
     {
-        "name": "Orange flower on the head",
+        "name": "Orange flower water on the foam",
         "ingredient": None,
         "measure": "1 drop",
-        "note": "A single drop on the risen head, if you have orange flower water left "
-                "over from building it. The head is the entire point of this drink and "
-                "putting the aroma on top of it means you meet it first.",
+        "note": "One drop on the foam, if you have some left from making "
+                "the drink. The foam is the whole point here, so that's "
+                "where the smell should be.",
         "source": "Difford's Guide",
     },
 ],
@@ -771,9 +753,9 @@ ENHANCEMENTS = {
         # would show twice on one page under two headings.
         "ingredient": None,
         "measure": "1 strip",
-        "note": "Ada Coleman's original at the Savoy. The Fernet is doing something "
-                "very assertive and menthol-heavy, and orange oil is the one thing that "
-                "meets it without arguing.",
+        "note": "The original garnish from the Savoy hotel in London, "
+                "where the drink was created. Fernet is strong and minty,"
+                " and orange is the one thing that sits well with it.",
         "source": "Difford's Guide; The Savoy Cocktail Book",
     },
 ],
@@ -784,8 +766,8 @@ ENHANCEMENTS = {
         "name": "Lemon twist",
         "ingredient": "Lemons",
         "measure": "1 large strip",
-        "note": "Fleming specified it in Casino Royale, \"a large thin slice of lemon "
-                "peel\", and it is the only garnish the book names. Not an olive.",
+        "note": "James Bond orders it with a large, thin slice of lemon "
+                "peel in Casino Royale. Not an olive.",
         "source": "Ian Fleming, Casino Royale; Difford's Guide",
     },
 ],
@@ -801,9 +783,9 @@ ENHANCEMENTS = {
         "name": "Lime wheel",
         "ingredient": "Limes",
         "measure": "1 wheel",
-        "note": "On the rim, not squeezed in. A Daiquiri is three ingredients balanced "
-                "against each other and any extra lime moves it off; the wheel is there "
-                "so you get citrus on the nose while the balance stays where you put it.",
+        "note": "Perch it on the rim, don't squeeze it in. A Daiquiri is "
+                "a tight balance of three ingredients, and extra lime "
+                "tips it.",
         "source": "IBA official specification",
     },
 ],
@@ -813,10 +795,8 @@ ENHANCEMENTS = {
         "name": "Lemon twist, not a cherry",
         "ingredient": "Lemons",
         "measure": "1 strip",
-        "note": "The sweet Rob Roy takes a cherry; the dry one takes a lemon twist. "
-                "Swapping the garnish with the vermouth is how the two are told apart "
-                "on sight, and a cherry in a dry Rob Roy fights the drink rather than "
-                "finishing it.",
+        "note": "The sweet Rob Roy gets a cherry, the dry one gets lemon."
+                " A cherry would clash with the drier drink.",
         "source": "IBA official specification",
     },
 ],
@@ -826,10 +806,9 @@ ENHANCEMENTS = {
         "name": "Flamed orange peel",
         "ingredient": "Oranges",
         "measure": "1 wide strip",
-        "note": "Squeeze a wide strip through a lit match over the surface. There is "
-                "already orange juice in the drink, so this is not adding orange, it is "
-                "adding the caramelised oil, which is the one thing that meets the "
-                "Scotch on the nose.",
+        "note": "Squeeze a wide strip of peel through a lit match over "
+                "the drink. There's orange juice in it already, but the "
+                "toasted oil is what pairs with the Scotch.",
         "source": "Difford's Guide",
     },
 ],
@@ -839,8 +818,10 @@ ENHANCEMENTS = {
         "name": "Flamed orange peel",
         "ingredient": "Oranges",
         "measure": "1 wide strip",
-        "note": "Jon Santer's own garnish and effectively part of the recipe. The burnt "
-                "orange oil is what stops the coffee liqueur reading as dessert.",
+        "note": "Squeeze a wide strip of peel through a lit match over "
+                "the drink. It's the creator's own garnish, and the "
+                "toasted oil stops the coffee liqueur tasting like "
+                "dessert.",
         "source": "Jon Santer's original; Difford's Guide",
     },
 ],
@@ -850,10 +831,9 @@ ENHANCEMENTS = {
         "name": "Angostura, for a Horse's Neck with a Kick",
         "ingredient": "Angostura bitters",
         "measure": "2 dashes",
-        "note": "The bitters version has its own name, which tells you how standard it "
-                "is. Two dashes turn a fairly plain highball into something with a "
-                "spine. The long lemon spiral down the inside of the glass is the other "
-                "half of the drink and is not optional.",
+        "note": "Two dashes give a plain whiskey and ginger ale some "
+                "backbone, and this version even has its own name. The "
+                "long lemon spiral down the glass isn't optional either.",
         "source": "Difford's Guide",
     },
 ],
@@ -863,9 +843,9 @@ ENHANCEMENTS = {
         "name": "Lemon twist",
         "ingredient": "Lemons",
         "measure": "1 strip",
-        "note": "Jerry Thomas specified it in 1862 and the drink needs it. Cognac, "
-                "orgeat and bitters is a soft, almond-heavy combination with nothing "
-                "sharp in it until the lemon oil goes on top.",
+        "note": "It's in the original 1862 recipe. Cognac and almond "
+                "syrup are soft, and the lemon oil is the only sharp "
+                "thing on top.",
         "source": "Jerry Thomas, Bar-Tender's Guide 1862",
     },
 ],
@@ -875,9 +855,9 @@ ENHANCEMENTS = {
         "name": "Orange twist",
         "ingredient": "Oranges",
         "measure": "1 strip",
-        "note": "With seven dashes each of two bitters already in the glass, the orange "
-                "oil is the only bright thing on the drink. Express it over the surface "
-                "rather than dropping it in.",
+        "note": "With fourteen dashes of bitters already in, the orange "
+                "is the only bright note. Squeeze it over the top rather "
+                "than just dropping it in.",
         "source": "Difford's Guide",
     },
 ],
@@ -887,9 +867,9 @@ ENHANCEMENTS = {
         "name": "Brandied cherry",
         "ingredient": "Maraschino cherries",
         "measure": "1",
-        "note": "It echoes the maraschino already in the build the way a Manhattan's "
-                "cherry does. Use a dark brandied one; a bright red cocktail cherry "
-                "sits oddly against a drink this dry.",
+        "note": "It matches the cherry liqueur in the drink, the way a "
+                "Manhattan's cherry does. Use a dark brandied one, since "
+                "a bright red one tastes out of place.",
         "source": PRACTICE,
     },
 ],
@@ -899,9 +879,9 @@ ENHANCEMENTS = {
         "name": "Lemon twist",
         "ingredient": "Lemons",
         "measure": "1 strip",
-        "note": "Michael McIlroy's original is finished with lemon. Rye, Chartreuse and "
-                "sweet vermouth is a heavy, herbal stack and the lemon oil is what "
-                "opens it up.",
+        "note": "The original is finished with lemon. Rye, Chartreuse and"
+                " sweet vermouth are heavy and herbal, and the lemon "
+                "opens them up.",
         "source": "Difford's Guide",
     },
 ],
@@ -911,8 +891,8 @@ ENHANCEMENTS = {
         "name": "Brandied cherry",
         "ingredient": "Maraschino cherries",
         "measure": "1",
-        "note": "Charles H. Baker's drink, and it is a Manhattan underneath the cherry "
-                "brandy and absinthe, so it takes a Manhattan's garnish.",
+        "note": "Underneath the cherry brandy and absinthe, this is a "
+                "Manhattan. So it gets a Manhattan's cherry.",
         "source": "Difford's Guide",
     },
 ],
@@ -922,8 +902,8 @@ ENHANCEMENTS = {
         "name": "Lemon twist",
         "ingredient": "Lemons",
         "measure": "1 strip",
-        "note": "Equal parts rye, cognac and sweet vermouth is a lot of weight in one "
-                "glass. Expressed lemon oil is the cheapest way to give it a lift.",
+        "note": "Rye, cognac and sweet vermouth is a heavy mix. A lemon "
+                "twist is the cheapest way to lighten it.",
         "source": PRACTICE,
     },
 ],
@@ -933,8 +913,8 @@ ENHANCEMENTS = {
         "name": "Lemon twist",
         "ingredient": "Lemons",
         "measure": "1 strip",
-        "note": "Grenadine and rye can tip syrupy. The lemon oil on top is what keeps "
-                "the drink reading as a sour rather than as a sweet one.",
+        "note": "Grenadine and rye can turn syrupy. The lemon oil keeps "
+                "it tasting like a sour, not a sweet drink.",
         "source": PRACTICE,
     },
 ],
@@ -944,8 +924,8 @@ ENHANCEMENTS = {
         "name": "Lemon twist",
         "ingredient": "Lemons",
         "measure": "1 strip",
-        "note": "Expressed and dropped in. The Benedictine is doing something honeyed "
-                "and herbal, and lemon oil is what keeps that from going cloying.",
+        "note": "Squeeze it over the top and drop it in. It keeps the "
+                "honeyed, herbal Benedictine from getting cloying.",
         "source": "Difford's Guide",
     },
 ],
@@ -955,9 +935,9 @@ ENHANCEMENTS = {
         "name": "Lemon twist",
         "ingredient": "Lemons",
         "measure": "1 strip",
-        "note": "Both vermouths and Scotch make for a dense drink. A twist rather than "
-                "a cherry, because the point of a Perfect is that it is drier than the "
-                "sweet version.",
+        "note": "Scotch and two vermouths make a dense drink. Use a twist"
+                " rather than a cherry, because mixing sweet and dry "
+                "vermouth is meant to make it drier.",
         "source": PRACTICE,
     },
 ],
@@ -967,8 +947,8 @@ ENHANCEMENTS = {
         "name": "Lemon twist",
         "ingredient": "Lemons",
         "measure": "1 strip",
-        "note": "Two ingredients, both sweet-leaning, no citrus anywhere. The twist is "
-                "the only thing standing between this and a very heavy drink.",
+        "note": "Two sweet-leaning ingredients and no citrus at all. The "
+                "twist is what stops it feeling heavy.",
         "source": "IBA official specification",
     },
 ],
@@ -978,9 +958,8 @@ ENHANCEMENTS = {
         "name": "Orange twist",
         "ingredient": "Oranges",
         "measure": "1 strip",
-        "note": "Scotch and amaretto with nothing to cut them. Orange oil works better "
-                "than lemon here because it sits on the same almond-and-marzipan note "
-                "rather than arguing with it.",
+        "note": "Scotch and amaretto with nothing to cut them. Orange "
+                "suits the almond flavour better than lemon does.",
         "source": PRACTICE,
     },
 ],
@@ -990,8 +969,9 @@ ENHANCEMENTS = {
         "name": "Lemon twist",
         "ingredient": "Lemons",
         "measure": "1 long strip",
-        "note": "A long strip down the inside of the glass. Soda dilutes aroma faster "
-                "than it dilutes flavour, and the twist puts some back.",
+        "note": "Run a long strip of peel down the inside of the glass. "
+                "Soda washes out a drink's smell quickly, and the twist "
+                "puts some back.",
         "source": PRACTICE,
     },
 ],
@@ -1001,8 +981,8 @@ ENHANCEMENTS = {
         "name": "Lemon twist",
         "ingredient": "Lemons",
         "measure": "1 strip",
-        "note": "Honey rounds a drink off and can flatten it. The expressed oil gives "
-                "the first sip an edge the honey has taken away.",
+        "note": "Honey can make a drink taste flat. The lemon oil gives "
+                "the first sip back its edge.",
         "source": PRACTICE,
     },
 ],
@@ -1012,8 +992,8 @@ ENHANCEMENTS = {
         "name": "Lemon twist",
         "ingredient": "Lemons",
         "measure": "1 strip",
-        "note": "T.J. Siegal's bourbon Bee's Knees, and it takes the same finish for "
-                "the same reason: the honey syrup needs something sharp on top of it.",
+        "note": "This is basically a Bee's Knees made with bourbon. The "
+                "honey needs something sharp on top, same as there.",
         "source": PRACTICE,
     },
 ],
@@ -1023,21 +1003,21 @@ ENHANCEMENTS = {
         "name": "Mint sprig",
         "ingredient": "Fresh mint",
         "measure": "1 sprig",
-        "note": "Slap it and lay it on top. The mint that got shaken into the drink has "
-                "given up its aroma already, and this is a drink people describe as "
-                "minty entirely because of the sprig they are smelling.",
+        "note": "Clap a sprig between your palms and lay it on top. The "
+                "mint shaken into the drink has lost its smell, so this "
+                "sprig is what makes it taste minty.",
         "source": "Difford's Guide",
     },
 ],
 
 "Whiskey Smash": [
     {
-        "name": "Mint bouquet and lemon",
+        "name": "Big mint sprig and lemon",
         "ingredient": "Fresh mint",
         "measure": "1 generous sprig",
-        "note": "A Smash is a Julep with fruit in it and the garnish should be just as "
-                "generous. Put the sprig where your nose goes, not on the far side of "
-                "the glass.",
+        "note": "Be as generous with the mint as you would on a Mint "
+                "Julep. Put it where your nose goes, not on the far side "
+                "of the glass.",
         "source": "Difford's Guide",
     },
 ],
@@ -1047,9 +1027,9 @@ ENHANCEMENTS = {
         "name": "Lemon slice and a blackberry",
         "ingredient": "Lemons",
         "measure": None,
-        "note": "Bradsell's own garnish. The blackberry sits on the crushed ice where "
-                "the creme de mure has bled down through the drink, which is the whole "
-                "look of the thing.",
+        "note": "The creator's own garnish. The blackberry sits on the "
+                "ice where the blackberry liqueur bleeds down through the"
+                " drink.",
         "source": "Difford's Guide; Dick Bradsell's original",
     },
 ],
@@ -1059,8 +1039,8 @@ ENHANCEMENTS = {
         "name": "Brandied cherry",
         "ingredient": "Maraschino cherries",
         "measure": "1",
-        "note": "Dropped in. It picks up the maraschino liqueur already in the glass, "
-                "and in a drink this pale it is also the only colour.",
+        "note": "Drop it in. It matches the cherry liqueur in the drink, "
+                "and it's the only colour in such a pale glass.",
         "source": PRACTICE,
     },
 ],
@@ -1070,8 +1050,9 @@ ENHANCEMENTS = {
         "name": "Lemon twist",
         "ingredient": "Lemons",
         "measure": "1 strip",
-        "note": "Gin, Cointreau and lemon juice is a sharp, clean stack with no aroma "
-                "sitting above it. Expressed oil fixes that and costs nothing.",
+        "note": "Gin, Cointreau and lemon is sharp and clean but has very"
+                " little smell. Squeezing lemon peel over the top fixes "
+                "that for free.",
         "source": PRACTICE,
     },
 ],
@@ -1081,9 +1062,9 @@ ENHANCEMENTS = {
         "name": "Brandied cherry",
         "ingredient": "Maraschino cherries",
         "measure": "1",
-        "note": "On the foam if you have used egg white, so it sits rather than sinks. "
-                "The grenadine is already sweet, so use a dark brandied cherry rather "
-                "than a bright red one.",
+        "note": "Rest it on the foam if you used egg white, so it doesn't"
+                " sink. The grenadine is sweet enough, so pick a dark "
+                "brandied cherry over a bright red one.",
         "source": PRACTICE,
     },
 ],
@@ -1093,19 +1074,18 @@ ENHANCEMENTS = {
         "name": "Angostura, for a Pink Gin and Tonic",
         "ingredient": "Angostura bitters",
         "measure": "2 dashes",
-        "note": "Two dashes over the ice before the tonic. It turns the drink pale pink "
-                "and adds a dry, spiced note that gives a plain G and T somewhere to go. "
-                "Standard enough in the UK to be sold ready-mixed.",
+        "note": "Two dashes over the ice before the tonic turn the drink "
+                "pale pink and add a dry, spiced note. It's common enough"
+                " in the UK to be sold ready-mixed.",
         "source": PRACTICE,
     },
     {
         "name": "Match the garnish to the gin",
         "ingredient": None,
         "measure": None,
-        "note": "Lime for a juniper-forward London Dry, lemon or grapefruit for a "
-                "citrus-led gin, orange for anything with a heavy spice bill. The "
-                "garnish is a much bigger share of a G and T than of most drinks "
-                "because there is so little else in the glass.",
+        "note": "Lime for a classic piney gin, lemon or grapefruit for a "
+                "citrusy one, orange for a spicy one. There's so little "
+                "else in the glass that the garnish really matters.",
         "source": PRACTICE,
     },
 ],
@@ -1115,9 +1095,9 @@ ENHANCEMENTS = {
         "name": "Half salt rim",
         "ingredient": "Salt",
         "measure": None,
-        "note": "The salt is the entire difference between this and a Greyhound, so it "
-                "is not really optional. Half the rim still lets you compare the two "
-                "from one glass.",
+        "note": "The salt is what makes it a Salty Dog and not a "
+                "Greyhound. Salt half the rim and you can taste both from"
+                " one glass.",
         "source": "IBA official specification",
     },
 ],
@@ -1127,8 +1107,8 @@ ENHANCEMENTS = {
         "name": "Grapefruit twist",
         "ingredient": None,
         "measure": "1 strip",
-        "note": "No salt: salt it and you have made a Salty Dog. A grapefruit twist "
-                "sharpens the juice without crossing that line.",
+        "note": "No salt, or it becomes a Salty Dog. A grapefruit twist "
+                "sharpens the juice instead.",
         "source": PRACTICE,
     },
 ],
@@ -1138,8 +1118,9 @@ ENHANCEMENTS = {
         "name": "Grapefruit twist",
         "ingredient": None,
         "measure": "1 strip",
-        "note": "Katie Stipe's drink is a Hemingway Daiquiri built on tequila with "
-                "Campari in it. The grapefruit oil ties the Campari to the juice.",
+        "note": "Think of a Hemingway Daiquiri made with tequila and a "
+                "splash of Campari. The grapefruit oil ties the Campari "
+                "to the juice.",
         "source": PRACTICE,
     },
 ],
@@ -1149,9 +1130,8 @@ ENHANCEMENTS = {
         "name": "Orange twist",
         "ingredient": "Oranges",
         "measure": "1 strip",
-        "note": "It is a tequila Negroni underneath, and it takes the Negroni's orange "
-                "for the same reason: it is what softens the Campari before you taste "
-                "it.",
+        "note": "This is a tequila Negroni underneath. It takes the same "
+                "orange, which softens the Campari before you sip.",
         "source": PRACTICE,
     },
 ],
@@ -1161,8 +1141,8 @@ ENHANCEMENTS = {
         "name": "Orange twist",
         "ingredient": "Oranges",
         "measure": "1 strip",
-        "note": "A Negroni with dry vermouth instead of sweet, so it lands drier and "
-                "needs the orange oil more, not less.",
+        "note": "A Negroni with dry vermouth instead of sweet. Being "
+                "drier, it needs the orange oil even more.",
         "source": PRACTICE,
     },
 ],
@@ -1172,8 +1152,9 @@ ENHANCEMENTS = {
         "name": "Orange slice",
         "ingredient": "Oranges",
         "measure": "1 slice",
-        "note": "A slice rather than a twist. There is prosecco doing the aromatic work "
-                "already and the slice keeps giving the drink orange as it dilutes.",
+        "note": "A slice, not a twist. The prosecco already carries the "
+                "smell, and the slice keeps adding orange as the ice "
+                "melts.",
         "source": PRACTICE,
     },
 ],
@@ -1183,8 +1164,8 @@ ENHANCEMENTS = {
         "name": "Orange slice",
         "ingredient": "Oranges",
         "measure": "1 slice",
-        "note": "Campari and sweet vermouth, nothing else, so there is very little in "
-                "the glass to hide behind. The orange is a real part of the balance.",
+        "note": "Just Campari and sweet vermouth, so there's nothing to "
+                "hide behind. The orange is a real part of the balance.",
         "source": "Difford's Guide",
     },
 ],
@@ -1194,8 +1175,8 @@ ENHANCEMENTS = {
         "name": "Lemon slice",
         "ingredient": "Lemons",
         "measure": "1 slice",
-        "note": "Lemon rather than orange here, because the white wine is already "
-                "sharper than a vermouth would be and lemon runs with it.",
+        "note": "Lemon, not orange, here. White wine is already sharper "
+                "than vermouth, and lemon goes with that.",
         "source": PRACTICE,
     },
 ],
@@ -1205,8 +1186,8 @@ ENHANCEMENTS = {
         "name": "Lemon twist",
         "ingredient": "Lemons",
         "measure": "1 strip",
-        "note": "This is a drink made of almost nothing, which is the appeal, and it "
-                "means every element counts twice as much. Do not skip the twist.",
+        "note": "The drink is almost nothing, which is the appeal, so "
+                "every detail counts. Don't skip the twist.",
         "source": PRACTICE,
     },
 ],
@@ -1216,9 +1197,9 @@ ENHANCEMENTS = {
         "name": "Mint and lime",
         "ingredient": "Fresh mint",
         "measure": None,
-        "note": "Both, and the mint should be slapped first. The Hugo was invented in "
-                "South Tyrol specifically as a lighter, minty alternative to the Aperol "
-                "Spritz, so without the mint you have made something else.",
+        "note": "Use both, and clap the mint between your palms first. "
+                "The Hugo was invented as a lighter, minty alternative to"
+                " the Aperol Spritz, so the mint is the point.",
         "source": "Difford's Guide",
     },
 ],
@@ -1228,8 +1209,8 @@ ENHANCEMENTS = {
         "name": "Orange slice",
         "ingredient": "Oranges",
         "measure": "1 slice",
-        "note": "The whole trick of a Garibaldi is fluffy, aerated fresh orange juice. "
-                "A slice on top continues that; a twist does not really fit the drink.",
+        "note": "A Garibaldi is all about fluffy, frothy fresh orange "
+                "juice. A slice on top fits, but a twist doesn't really.",
         "source": PRACTICE,
     },
 ],
@@ -1239,9 +1220,9 @@ ENHANCEMENTS = {
         "name": "Lime wedge, squeezed in",
         "ingredient": "Limes",
         "measure": "1 wedge",
-        "note": "Squeezed and dropped, not perched on the rim. The lime is the entire "
-                "difference between a Cuba Libre and rum and coke, and leaving it on "
-                "the rim means you have made the second one.",
+        "note": "Squeeze it and drop it in, don't leave it on the rim. "
+                "The lime is the only difference between this and a plain"
+                " rum and coke.",
         "source": "IBA official specification",
     },
 ],
@@ -1251,10 +1232,9 @@ ENHANCEMENTS = {
         "name": "Salt rim, and stir with the knife",
         "ingredient": "Salt",
         "measure": None,
-        "note": "Don Javier Delgado Corona at La Capilla in Tequila stirs every Batanga "
-                "with the same knife he cuts the limes with. It is a real technique and "
-                "not just theatre: the knife carries lime oil and a little salt into "
-                "the drink.",
+        "note": "The Mexican bar famous for this drink stirs it with the "
+                "knife used to cut the limes. It's not just for show: the"
+                " knife carries lime oil and salt into the glass.",
         "source": "Difford's Guide",
     },
 ],
@@ -1264,9 +1244,9 @@ ENHANCEMENTS = {
         "name": "Chilli-salt rim",
         "ingredient": "Salt",
         "measure": None,
-        "note": "Traditionally served in a clay cup with a salted rim, and Tajin or any "
-                "chilli salt is the common version. Three citrus juices in one drink "
-                "need the salt to hold them together.",
+        "note": "Traditionally served in a clay cup with a salted rim, "
+                "often Tajín or another chilli salt. The salt holds the "
+                "three citrus juices together.",
         "source": PRACTICE,
     },
 ],
@@ -1276,9 +1256,8 @@ ENHANCEMENTS = {
         "name": "Chilli-salt rim",
         "ingredient": "Salt",
         "measure": None,
-        "note": "The drink is already sangrita, tequila and heat. A chilli salt rim is "
-                "how it is served in Guadalajara and it is doing seasoning work, not "
-                "decoration.",
+        "note": "This is how it's served in Guadalajara. The salt is "
+                "seasoning here, not decoration.",
         "source": PRACTICE,
     },
 ],
@@ -1288,8 +1267,8 @@ ENHANCEMENTS = {
         "name": "Lime wedge",
         "ingredient": "Limes",
         "measure": "1 wedge",
-        "note": "Three ingredients and one of them is sparkling mineral water, so there "
-                "is nothing to hide a missing lime behind. Squeeze it in.",
+        "note": "With only three ingredients, one of them fizzy water, "
+                "you can't hide a missing lime. Squeeze it in.",
         "source": PRACTICE,
     },
 ],
@@ -1299,9 +1278,9 @@ ENHANCEMENTS = {
         "name": "Orange slice and cherry",
         "ingredient": "Maraschino cherries",
         "measure": None,
-        "note": "Standard IBA garnish, and the drink is built to be looked at, so it "
-                "matters more here than in most. Do not stir after the grenadine goes "
-                "in or you lose the gradient.",
+        "note": "This drink is made to be looked at, so the garnish "
+                "matters more than usual. Don't stir after the grenadine "
+                "goes in, or you lose the sunrise.",
         "source": "IBA official specification",
     },
 ],
@@ -1311,8 +1290,8 @@ ENHANCEMENTS = {
         "name": "Mint sprig and lime",
         "ingredient": "Fresh mint",
         "measure": None,
-        "note": "Same finish as the Moscow Mule it is built from. If you are serving in "
-                "copper the garnish is doing all the aromatic work.",
+        "note": "Same garnish as the Moscow Mule. In a copper mug, it's "
+                "all you smell.",
         "source": PRACTICE,
     },
 ],
@@ -1322,8 +1301,9 @@ ENHANCEMENTS = {
         "name": "Mint sprig and lime",
         "ingredient": "Fresh mint",
         "measure": None,
-        "note": "The bourbon version sits closer to a Julep than the vodka one does, "
-                "which makes the mint less optional here than in the original.",
+        "note": "The bourbon version is closer to a Mint Julep. That "
+                "makes the mint matter more here than in the vodka "
+                "original.",
         "source": PRACTICE,
     },
 ],
@@ -1333,8 +1313,8 @@ ENHANCEMENTS = {
         "name": "Mint sprig and lime",
         "ingredient": "Fresh mint",
         "measure": None,
-        "note": "Funky Jamaican rum and ginger beer is a loud combination. The mint "
-                "gives your nose somewhere else to be.",
+        "note": "Funky Jamaican rum and ginger beer is a loud mix. The "
+                "mint gives your nose somewhere else to go.",
         "source": PRACTICE,
     },
 ],
@@ -1344,8 +1324,8 @@ ENHANCEMENTS = {
         "name": "Lemon wedge",
         "ingredient": "Lemons",
         "measure": "1 wedge",
-        "note": "Lemon, not lime; that is what separates a Mamie Taylor from the Mule "
-                "family it otherwise resembles.",
+        "note": "Lemon, not lime. That's what sets it apart from the Mule"
+                " family it otherwise looks like.",
         "source": PRACTICE,
     },
 ],
@@ -1355,9 +1335,9 @@ ENHANCEMENTS = {
         "name": "Grated nutmeg",
         "ingredient": None,
         "measure": "a generous grating",
-        "note": "Pusser's own serve and effectively part of the recipe. Grate it fresh "
-                "over the top; the aroma is the first thing you get and the drink is "
-                "noticeably flatter without it.",
+        "note": "Grate it fresh over the top, the way the rum brand tied "
+                "to this drink serves it. The drink is noticeably flatter"
+                " without it.",
         "source": "Pusser's Rum official serve",
     },
 ],
@@ -1367,8 +1347,8 @@ ENHANCEMENTS = {
         "name": "Grated nutmeg",
         "ingredient": None,
         "measure": "a light grating",
-        "note": "Nutmeg over the top is standard across the old Planter's Punch recipes "
-                "and it is what makes the drink taste older than its ingredients.",
+        "note": "Nutmeg on top is standard in the old recipes. It's what "
+                "makes the drink taste older than its ingredients.",
         "source": "Difford's Guide",
     },
 ],
@@ -1378,8 +1358,9 @@ ENHANCEMENTS = {
         "name": "Grated nutmeg",
         "ingredient": None,
         "measure": "a light grating",
-        "note": "Over the bowl, not each cup, so it perfumes the whole thing. An "
-                "eighteenth-century punch convention and it belongs on this one.",
+        "note": "Grate it over the bowl, not each cup, so it scents the "
+                "whole punch. It's an 18th-century punch habit that suits"
+                " this one.",
         "source": PRACTICE,
     },
 ],
@@ -1389,8 +1370,8 @@ ENHANCEMENTS = {
         "name": "Grated nutmeg",
         "ingredient": None,
         "measure": "a light grating",
-        "note": "Rum, honey and cream is soft all the way through with nothing to catch "
-                "on. Nutmeg is the standard fix for exactly that problem.",
+        "note": "Rum, honey and cream are soft all the way through. "
+                "Nutmeg is the usual fix for exactly that.",
         "source": PRACTICE,
     },
 ],
@@ -1400,8 +1381,9 @@ ENHANCEMENTS = {
         "name": "Orange slice and cherry",
         "ingredient": "Maraschino cherries",
         "measure": None,
-        "note": "Pat O'Brien's serve in New Orleans. It is a big sweet drink and the "
-                "orange is doing more than decorating.",
+        "note": "This is how it's served at the New Orleans bar it comes "
+                "from. It's a big sweet drink, and the orange does real "
+                "work.",
         "source": PRACTICE,
     },
 ],
@@ -1411,8 +1393,9 @@ ENHANCEMENTS = {
         "name": "Brandied cherry",
         "ingredient": "Maraschino cherries",
         "measure": "1",
-        "note": "It echoes the maraschino liqueur in the build. A good dark cherry, not "
-                "a neon one, or the drink reads as much sweeter than it is.",
+        "note": "It matches the cherry liqueur in the drink. Use a dark "
+                "cherry, not a neon one, or the drink tastes much sweeter"
+                " than it is.",
         "source": PRACTICE,
     },
 ],
@@ -1422,8 +1405,9 @@ ENHANCEMENTS = {
         "name": "Orange twist",
         "ingredient": "Oranges",
         "measure": "1 strip",
-        "note": "There is already curacao in the glass, so the twist continues a note "
-                "the drink is making rather than adding a new one.",
+        "note": "There's already orange liqueur in the glass. The twist "
+                "builds on a flavour that's there instead of adding a new"
+                " one.",
         "source": "Difford's Guide",
     },
 ],
@@ -1433,8 +1417,9 @@ ENHANCEMENTS = {
         "name": "Lime wedge",
         "ingredient": "Limes",
         "measure": "1 wedge",
-        "note": "It is a Daiquiri with grenadine, so it wants the same finish, and the "
-                "grenadine makes the citrus lift more useful here than in the original.",
+        "note": "This is a Daiquiri with grenadine, so it takes the same "
+                "lime. The grenadine makes a little extra citrus more "
+                "welcome here.",
         "source": PRACTICE,
     },
 ],
@@ -1444,9 +1429,9 @@ ENHANCEMENTS = {
         "name": "The lime disc, skin and all",
         "ingredient": "Limes",
         "measure": "1 thick disc",
-        "note": "Cut a coin of lime with the peel attached, squeeze it and drop it in "
-                "whole. The peel oil is a required part of the drink in Martinique, "
-                "which is why it is cut this way rather than as a wedge.",
+        "note": "Cut a coin of lime with the skin on, squeeze it and drop"
+                " it in whole. In Martinique, the oil from the peel is "
+                "part of the drink.",
         "source": "Difford's Guide",
     },
 ],
@@ -1456,9 +1441,9 @@ ENHANCEMENTS = {
         "name": "Mint and cucumber",
         "ingredient": "Fresh mint",
         "measure": None,
-        "note": "Joe Scialom's Cairo original is garnished with both. The cucumber is "
-                "unusual and it is the thing that keeps a gin-and-brandy-and-ginger "
-                "drink from feeling heavy.",
+        "note": "Its creator in Cairo garnished it with both. The "
+                "cucumber keeps a gin, brandy and ginger drink from "
+                "feeling heavy.",
         "source": "Difford's Guide",
     },
 ],
@@ -1468,8 +1453,8 @@ ENHANCEMENTS = {
         "name": "Mint sprig and orange",
         "ingredient": "Fresh mint",
         "measure": None,
-        "note": "Trader Vic's, and it needs a big garnish because the sherry float on "
-                "top is the first thing you taste and mint is what meets it.",
+        "note": "Go big here. The sherry floated on top is the first "
+                "thing you taste, and the mint is what meets it.",
         "source": PRACTICE,
     },
 ],
@@ -1479,8 +1464,8 @@ ENHANCEMENTS = {
         "name": "Pineapple wedge and cherry",
         "ingredient": "Maraschino cherries",
         "measure": None,
-        "note": "A Pina Colada made with vodka, so it takes the Colada's garnish. "
-                "Notch the pineapple so it sits on the rim.",
+        "note": "A Piña Colada made with vodka, so it gets the same "
+                "garnish. Notch the pineapple so it sits on the rim.",
         "source": PRACTICE,
     },
 ],
@@ -1490,8 +1475,8 @@ ENHANCEMENTS = {
         "name": "Orange slice and cherry",
         "ingredient": "Maraschino cherries",
         "measure": None,
-        "note": "The drink is bright blue and entirely about how it looks, so the "
-                "garnish is not a detail here.",
+        "note": "The drink is bright blue and all about looks. So the "
+                "garnish isn't a small detail here.",
         "source": PRACTICE,
     },
 ],
@@ -1501,8 +1486,8 @@ ENHANCEMENTS = {
         "name": "Orange slice",
         "ingredient": "Oranges",
         "measure": "1 slice",
-        "note": "IBA garnish. Peach schnapps and two juices is a soft, sweet stack and "
-                "the fresh orange on the rim is sharper than anything in the glass.",
+        "note": "The standard garnish. Fresh orange on the rim is sharper"
+                " than anything in this soft, sweet drink.",
         "source": "IBA official specification",
     },
 ],
@@ -1512,8 +1497,8 @@ ENHANCEMENTS = {
         "name": "Sugar rim and lemon twist",
         "ingredient": "Sugar (white)",
         "measure": None,
-        "note": "Rim half the glass. The whole drink is a lemon sweet in liquid form "
-                "and the sugar rim is the reference; without it the name stops making "
+        "note": "Sugar half the rim. The drink is a lemon candy in a "
+                "glass, and without the sugar the name stops making "
                 "sense.",
         "source": PRACTICE,
     },
@@ -1524,8 +1509,9 @@ ENHANCEMENTS = {
         "name": "Lemon wedge",
         "ingredient": "Lemons",
         "measure": "1 wedge",
-        "note": "Squeezed in. Five spirits and cola is a lot of sweetness, and the "
-                "lemon in the build is usually gone by the time the ice has moved.",
+        "note": "Squeeze it in. Five spirits and cola is a lot of "
+                "sweetness, and the lemon in the recipe fades once the "
+                "ice starts melting.",
         "source": "IBA official specification",
     },
 ],
@@ -1535,8 +1521,9 @@ ENHANCEMENTS = {
         "name": "Lemon wedge",
         "ingredient": "Lemons",
         "measure": "1 wedge",
-        "note": "Common in Spain and it does real work: red wine and cola is sweeter "
-                "than either on its own and the lemon is the only thing cutting it.",
+        "note": "Common in Spain, and it does real work. Red wine and "
+                "cola are sweeter together than apart, and the lemon is "
+                "the only thing cutting them.",
         "source": PRACTICE,
     },
 ],
@@ -1546,8 +1533,9 @@ ENHANCEMENTS = {
         "name": "Lemon twist",
         "ingredient": "Lemons",
         "measure": "1 strip",
-        "note": "Under the wine float, not on top of it, so you do not disturb the "
-                "layer. The float is the drink's whole visual point.",
+        "note": "Drop it in before the red wine goes on top, so you don't"
+                " break the layer. That red layer is the whole look of "
+                "the drink.",
         "source": PRACTICE,
     },
 ],
@@ -1557,8 +1545,8 @@ ENHANCEMENTS = {
         "name": "Lemon wheel",
         "ingredient": "Lemons",
         "measure": "1 wheel",
-        "note": "Jeffrey Morgenthaler's drink. Creme de cassis and bourbon both lean "
-                "sweet and dark, and the lemon keeps it a sour rather than a dessert.",
+        "note": "Blackcurrant liqueur and bourbon both lean sweet and "
+                "dark. The lemon keeps it a sour, not a dessert.",
         "source": PRACTICE,
     },
 ],
@@ -1568,8 +1556,8 @@ ENHANCEMENTS = {
         "name": "Grapefruit twist",
         "ingredient": None,
         "measure": "1 strip",
-        "note": "Grapefruit oil is much more assertive than grapefruit juice and this "
-                "drink has plenty of honey syrup to stand up to it.",
+        "note": "Grapefruit peel oil is much stronger than the juice. "
+                "There's plenty of honey in this drink to stand up to it.",
         "source": PRACTICE,
     },
 ],
@@ -1579,8 +1567,9 @@ ENHANCEMENTS = {
         "name": "Orange slice and cherry",
         "ingredient": "Maraschino cherries",
         "measure": None,
-        "note": "The traditional Boston serve. It is a Whiskey Sour with grenadine and "
-                "the fruit garnish is part of how it was always presented.",
+        "note": "This is how it has traditionally been served in Boston. "
+                "It's a Whiskey Sour with grenadine, and it has always "
+                "come with the fruit.",
         "source": PRACTICE,
     },
 ],
@@ -1590,8 +1579,9 @@ ENHANCEMENTS = {
         "name": "Lemon twist",
         "ingredient": "Lemons",
         "measure": "1 strip",
-        "note": "A Sidecar with rum added, so it takes the Sidecar's finish. Skip the "
-                "sugar rim here; there is already more going on in the glass.",
+        "note": "A Sidecar with rum added, so it gets the same garnish. "
+                "Skip the sugar rim here, as there's already plenty going"
+                " on.",
         "source": PRACTICE,
     },
 ],
@@ -1601,8 +1591,8 @@ ENHANCEMENTS = {
         "name": "Lemon twist",
         "ingredient": "Lemons",
         "measure": "1 strip",
-        "note": "A brandy Manhattan in all but name. Cognac and sweet vermouth is "
-                "rounder than rye and vermouth, so lemon rather than a cherry.",
+        "note": "A brandy Manhattan in all but name. Cognac is rounder "
+                "than rye, so lemon suits it better than a cherry.",
         "source": PRACTICE,
     },
 ],
@@ -1612,9 +1602,8 @@ ENHANCEMENTS = {
         "name": "Grated chocolate or a mint leaf",
         "ingredient": "Fresh mint",
         "measure": None,
-        "note": "Either, not both. The drink is mint and chocolate liqueur with cream "
-                "and it is completely smooth, so the garnish is the only texture and "
-                "the only aroma on it.",
+        "note": "Pick one, not both. The drink is completely smooth, so "
+                "the garnish is its only texture and its only smell.",
         "source": PRACTICE,
     },
 ],
@@ -1624,8 +1613,9 @@ ENHANCEMENTS = {
         "name": "Grated nutmeg",
         "ingredient": None,
         "measure": "a light grating",
-        "note": "Amaretto, coffee liqueur and cream with nothing sharp in it anywhere. "
-                "Nutmeg is the standard answer to a cream drink that has gone flat.",
+        "note": "Amaretto, coffee liqueur and cream, with nothing sharp "
+                "anywhere. Nutmeg is the usual fix for a creamy drink "
+                "that tastes flat.",
         "source": PRACTICE,
     },
 ],
@@ -1635,8 +1625,9 @@ ENHANCEMENTS = {
         "name": "Lemon twist",
         "ingredient": "Lemons",
         "measure": "1 strip",
-        "note": "Cassis is very sweet and champagne hides it more than it cuts it. A "
-                "twist over the top is the cheapest correction available.",
+        "note": "Blackcurrant liqueur is very sweet, and champagne hides "
+                "that more than it cuts it. A twist over the top is the "
+                "easy fix.",
         "source": PRACTICE,
     },
 ],
@@ -1646,8 +1637,8 @@ ENHANCEMENTS = {
         "name": "Orange twist",
         "ingredient": "Oranges",
         "measure": "1 strip",
-        "note": "Expressed over the flute. Orange juice loses its aroma within minutes "
-                "of being squeezed and the oil from the peel does not.",
+        "note": "Squeeze it over the glass. Orange juice loses its smell "
+                "minutes after squeezing, but the peel oil doesn't.",
         "source": PRACTICE,
     },
 ],
@@ -1657,8 +1648,8 @@ ENHANCEMENTS = {
         "name": "Orange twist",
         "ingredient": "Oranges",
         "measure": "1 strip",
-        "note": "Cognac, calvados and sweet vermouth is an apple-and-brandy stack with "
-                "no citrus in it at all. The twist is the only bright note available.",
+        "note": "Cognac, calvados and sweet vermouth have no citrus at "
+                "all. The twist is the only bright note.",
         "source": PRACTICE,
     },
 ],
@@ -1668,8 +1659,8 @@ ENHANCEMENTS = {
         "name": "Mint sprig",
         "ingredient": "Fresh mint",
         "measure": "1 sprig",
-        "note": "Tucked beside the red wine float. It is a drink built to look like a "
-                "rose and the mint reads as the leaf.",
+        "note": "Tuck it beside the red wine sitting on top. The drink is"
+                " meant to look like a rose, and the mint is the leaf.",
         "source": PRACTICE,
     },
 ],
@@ -1679,9 +1670,9 @@ ENHANCEMENTS = {
         "name": "Orange bitters",
         "ingredient": "Orange bitters",
         "measure": "1 dash",
-        "note": "The gin Martini carried orange bitters as standard until the mid "
-                "twentieth century. Vodka gives you even less to work with than gin "
-                "does, so one dash buys more here than it does in the original.",
+        "note": "Gin Martinis came with orange bitters as standard until "
+                "the mid-1900s. Vodka has even less flavour than gin, so "
+                "one dash does more here.",
         "source": PRACTICE,
     },
 ],
@@ -1691,8 +1682,8 @@ ENHANCEMENTS = {
         "name": "Lime wheel",
         "ingredient": "Limes",
         "measure": "1 wheel",
-        "note": "On the rim rather than squeezed in, same as the gin version. The drink "
-                "is already balanced and extra lime moves it.",
+        "note": "On the rim, not squeezed in, same as the gin version. "
+                "The drink is already balanced, and extra lime tips it.",
         "source": PRACTICE,
     },
 ],
@@ -1702,8 +1693,9 @@ ENHANCEMENTS = {
         "name": "Lime wheel",
         "ingredient": "Limes",
         "measure": "1 wheel",
-        "note": "Vodka, triple sec and lime in equal parts is sharper than it sounds. "
-                "The wheel is aromatic; do not squeeze it in as well.",
+        "note": "Equal parts vodka, triple sec and lime is sharper than "
+                "it sounds. The wheel is just for the smell, so don't "
+                "squeeze it in.",
         "source": PRACTICE,
     },
 ],
@@ -1713,8 +1705,8 @@ ENHANCEMENTS = {
         "name": "Lime wedge",
         "ingredient": "Limes",
         "measure": "1 wedge",
-        "note": "Squeezed in. Vodka and cranberry is two ingredients and one of them is "
-                "sweetened juice, so the lime is most of what makes it drinkable.",
+        "note": "Squeeze it in. With just vodka and sweetened cranberry, "
+                "the lime is most of what makes it drinkable.",
         "source": "IBA official specification",
     },
 ],
@@ -1724,8 +1716,8 @@ ENHANCEMENTS = {
         "name": "Lime wedge",
         "ingredient": "Limes",
         "measure": "1 wedge",
-        "note": "Grapefruit and cranberry are both already tart, but sweet-tart. The "
-                "lime is a different kind of sharp and it is what wakes the drink up.",
+        "note": "Grapefruit and cranberry are tart but also sweet. Lime "
+                "is a cleaner kind of sharp, and it wakes the drink up.",
         "source": "IBA official specification",
     },
 ],
@@ -1735,8 +1727,8 @@ ENHANCEMENTS = {
         "name": "Lime wedge",
         "ingredient": "Limes",
         "measure": "1 wedge",
-        "note": "Peach schnapps and cranberry with no citrus anywhere in the build. "
-                "Squeeze the lime in or the drink is sweet all the way down.",
+        "note": "Peach schnapps and cranberry with no citrus at all. "
+                "Squeeze the lime in, or it's sweet all the way down.",
         "source": PRACTICE,
     },
 ],
@@ -1746,21 +1738,21 @@ ENHANCEMENTS = {
         "name": "Orange slice",
         "ingredient": "Oranges",
         "measure": "1 slice",
-        "note": "Two ingredients, so there is nothing else to improve. Fresh orange on "
-                "the rim is the entire difference between this and a glass of juice "
-                "with vodka in it.",
+        "note": "With only two ingredients, there's little else to "
+                "change. Fresh orange on the rim is what stops it being "
+                "juice with vodka in it.",
         "source": "IBA official specification",
     },
 ],
 
 "Caipirinha": [
     {
-        "name": "Muddle skin-side down",
+        "name": "Press the lime gently",
         "ingredient": None,
         "measure": None,
-        "note": "Press the lime wedges with the skin facing the muddler so you are "
-                "expressing oil rather than grinding pith. Overworked pith is why a "
-                "home Caipirinha often turns bitter and a bar one does not.",
+        "note": "Press the lime just enough to get the juice and oil out,"
+                " without mashing the white part under the skin. Mashing "
+                "that is why homemade ones often taste bitter.",
         "source": PRACTICE,
     },
 ],
@@ -1770,8 +1762,8 @@ ENHANCEMENTS = {
         "name": "Lime wedge",
         "ingredient": "Limes",
         "measure": "1 wedge",
-        "note": "Honey rounds the drink off and the lime in the build gets buried in "
-                "it. A wedge on the side lets you sharpen it to taste.",
+        "note": "The honey tends to bury the lime in the recipe. A wedge "
+                "on the side lets you sharpen it to taste.",
         "source": PRACTICE,
     },
 ],
@@ -1781,8 +1773,8 @@ ENHANCEMENTS = {
         "name": "Orange twist",
         "ingredient": "Oranges",
         "measure": "1 strip",
-        "note": "Sam Ross's drink. Rum, sweet vermouth, honey and Angostura is warm all "
-                "the way through and orange oil is what gives it an edge.",
+        "note": "Rum, sweet vermouth, honey and bitters are warm all the "
+                "way through. The orange oil gives it an edge.",
         "source": PRACTICE,
     },
 ],
@@ -1792,9 +1784,9 @@ ENHANCEMENTS = {
         "name": "Flamed orange peel",
         "ingredient": "Oranges",
         "measure": "1 wide strip",
-        "note": "Phil Ward's original calls for a flamed orange twist. Burnt orange oil "
-                "and mezcal smoke are the same kind of note and they compound rather "
-                "than compete.",
+        "note": "The original calls for it: squeeze the peel through a "
+                "lit match over the drink. Toasted orange and mezcal "
+                "smoke build on each other.",
         "source": "Difford's Guide; Phil Ward's original",
     },
 ],
@@ -1804,8 +1796,8 @@ ENHANCEMENTS = {
         "name": "Orange twist",
         "ingredient": "Oranges",
         "measure": "1 wide strip",
-        "note": "Same finish as the whiskey original. Express it over the surface; "
-                "agave and orange oil sit together very comfortably.",
+        "note": "Same garnish as the whiskey original. Squeeze it over "
+                "the top, since orange and agave sit well together.",
         "source": PRACTICE,
     },
 ],
@@ -1815,8 +1807,8 @@ ENHANCEMENTS = {
         "name": "Orange twist",
         "ingredient": "Oranges",
         "measure": "1 wide strip",
-        "note": "Aged rum carries more vanilla and caramel than bourbon does, so the "
-                "orange oil has more to lift here, not less.",
+        "note": "Aged rum has more vanilla and caramel than bourbon. That"
+                " gives the orange oil more to lift, not less.",
         "source": PRACTICE,
     },
 ],
@@ -1826,8 +1818,8 @@ ENHANCEMENTS = {
         "name": "Lemon twist",
         "ingredient": "Lemons",
         "measure": "1 strip",
-        "note": "Expressed over the top. Cognac is softer than whiskey and a Brandy "
-                "Sour can read a little flat without something sharp above it.",
+        "note": "Squeeze it over the top. Cognac is softer than whiskey, "
+                "so a Brandy Sour can taste flat without something sharp.",
         "source": PRACTICE,
     },
 ],
@@ -1837,8 +1829,8 @@ ENHANCEMENTS = {
         "name": "Lime wheel",
         "ingredient": "Limes",
         "measure": "1 wheel",
-        "note": "Lime rather than lemon on the garnish, even if the build uses lemon. "
-                "It points the drink back at the agave.",
+        "note": "Lime on top, even if the drink uses lemon juice. It "
+                "points the drink back at the tequila.",
         "source": PRACTICE,
     },
 ],
@@ -1848,9 +1840,9 @@ ENHANCEMENTS = {
         "name": "Lemon twist",
         "ingredient": "Lemons",
         "measure": "1 strip",
-        "note": "Vodka contributes no aroma of its own, so a Vodka Sour is entirely "
-                "lemon and sugar. The expressed oil is the only thing that gives it a "
-                "top note.",
+        "note": "Vodka has no smell of its own, so this drink is all "
+                "lemon and sugar. The peel oil gives it something to "
+                "smell.",
         "source": PRACTICE,
     },
 ],
@@ -1860,9 +1852,9 @@ ENHANCEMENTS = {
         "name": "Bite the lemon first",
         "ingredient": None,
         "measure": None,
-        "note": "The order is the drink: fold the sugared, coffee-topped lemon slice "
-                "into your mouth, chew, then drink the brandy. Taken the other way "
-                "round it is just brandy with a garnish.",
+        "note": "Put the sugared, coffee-topped lemon slice in your "
+                "mouth, chew, then drink the brandy. The other way round,"
+                " it's just brandy with a garnish.",
         "source": "Difford's Guide",
     },
 ],
@@ -1872,8 +1864,8 @@ ENHANCEMENTS = {
         "name": "Lime twist",
         "ingredient": "Limes",
         "measure": "1 strip",
-        "note": "Honey and champagne both round a drink off. Lime oil is sharper than "
-                "the lime juice already in the build and it keeps the top end awake.",
+        "note": "Honey and champagne both soften a drink. Lime peel oil "
+                "is sharper than the juice and keeps it lively.",
         "source": PRACTICE,
     },
 ],
@@ -1883,8 +1875,8 @@ ENHANCEMENTS = {
         "name": "Lemon twist",
         "ingredient": "Lemons",
         "measure": "1 strip",
-        "note": "Sherry and dry vermouth is about 15% and very delicate. Anything "
-                "heavier than expressed lemon oil would flatten it.",
+        "note": "Sherry and dry vermouth make a light, delicate drink. "
+                "Anything heavier than a lemon twist would flatten it.",
         "source": "Difford's Guide",
     },
 ],
@@ -1894,8 +1886,8 @@ ENHANCEMENTS = {
         "name": "Lemon twist",
         "ingredient": "Lemons",
         "measure": "1 strip",
-        "note": "The pineapple juice reads dry and slightly savoury in this drink "
-                "rather than tropical, and lemon oil keeps it pointed that way.",
+        "note": "The pineapple here tastes dry and slightly savoury, not "
+                "tropical. The lemon oil keeps it that way.",
         "source": PRACTICE,
     },
 ],
@@ -1905,8 +1897,8 @@ ENHANCEMENTS = {
         "name": "Lemon twist",
         "ingredient": "Lemons",
         "measure": "1 strip",
-        "note": "Two whiskies and orgeat is a dense, nutty drink. Expressed lemon is "
-                "the lightest possible correction and the right one.",
+        "note": "Two whiskies and almond syrup make a dense, nutty drink."
+                " A lemon twist is the lightest fix, and the right one.",
         "source": PRACTICE,
     },
 ],
@@ -1916,8 +1908,9 @@ ENHANCEMENTS = {
         "name": "Lime twist",
         "ingredient": "Limes",
         "measure": "1 strip",
-        "note": "There are already two bitters and lime juice in the build. The twist "
-                "is aromatic only, so express it and drop it rather than squeezing it.",
+        "note": "There's already lime juice and two kinds of bitters in "
+                "the drink. The twist is just for the smell, so squeeze "
+                "the peel over it and drop it in.",
         "source": "Difford's Guide",
     },
 ],
@@ -1927,9 +1920,9 @@ ENHANCEMENTS = {
         "name": "Half a passion fruit",
         "ingredient": None,
         "measure": "1/2",
-        "note": "Floated cut-side up on the surface. Douglas Ankrah's serve, and the "
-                "shot of prosecco on the side is meant to be drunk alternately with the "
-                "cocktail rather than poured in.",
+        "note": "Float it cut-side up on top. The shot of prosecco on the"
+                " side is meant to be sipped in turn with the cocktail, "
+                "not poured in.",
         "source": "Difford's Guide",
     },
 ],
@@ -1939,8 +1932,8 @@ ENHANCEMENTS = {
         "name": "Lemon twist",
         "ingredient": "Lemons",
         "measure": "1 strip",
-        "note": "Scotch, absinthe and egg white with soda on top. The twist goes on the "
-                "risen head where you will actually smell it.",
+        "note": "Scotch, absinthe and egg white, topped with soda. Put "
+                "the twist on the foam, where you'll actually smell it.",
         "source": PRACTICE,
     },
 ],
@@ -1950,9 +1943,8 @@ ENHANCEMENTS = {
         "name": "Crushed Oreo rim",
         "ingredient": None,
         "measure": None,
-        "note": "Wet the rim with chocolate sauce and roll it in crushed cookie. The "
-                "drink is a milkshake and it should be dressed like one; there is no "
-                "understated version of this.",
+        "note": "Wet the rim with chocolate sauce and roll it in crushed "
+                "cookies. It's a milkshake, so dress it like one.",
         "source": PRACTICE,
     },
 ],
@@ -1962,8 +1954,9 @@ ENHANCEMENTS = {
         "name": "Lemon wheels in the bowl",
         "ingredient": "Lemons",
         "measure": None,
-        "note": "Float them on the ice block rather than putting one in each cup. A "
-                "punch is served from the bowl and the aroma should come off the bowl.",
+        "note": "Float them on the ice in the bowl, not one per cup. A "
+                "punch is served from the bowl, so the smell should come "
+                "from there.",
         "source": PRACTICE,
     },
 ],
@@ -1973,9 +1966,9 @@ ENHANCEMENTS = {
         "name": "Fruit piled on the ice",
         "ingredient": "Oranges",
         "measure": None,
-        "note": "Heap it on top of the crushed ice rather than burying it. The Cobbler "
-                "is the drink that popularised the drinking straw in the 1800s, and the "
-                "reason was the mound of fruit and ice you had to drink under.",
+        "note": "Heap it on top of the crushed ice, not under it. That "
+                "mound of fruit and ice is why the Cobbler made drinking "
+                "straws popular in the 1800s.",
         "source": "Difford's Guide",
     },
 ],
@@ -1985,8 +1978,8 @@ ENHANCEMENTS = {
         "name": "Lemon twist",
         "ingredient": "Lemons",
         "measure": "1 strip",
-        "note": "A Daisy is a sour with a liqueur sweetener, so it sits closer to sweet "
-                "than a plain sour does. Lemon oil on top is the correction.",
+        "note": "A Daisy is a sour sweetened with liqueur, so it's "
+                "sweeter than a plain sour. Lemon oil on top balances it.",
         "source": PRACTICE,
     },
 ],
@@ -1996,8 +1989,8 @@ ENHANCEMENTS = {
         "name": "Lime wedge",
         "ingredient": "Limes",
         "measure": "1 wedge",
-        "note": "Pineapple and cranberry are both sweet-tart with no real sharpness. "
-                "The lime is the only thing in reach that provides it.",
+        "note": "Pineapple and cranberry are sweet-tart with no real "
+                "bite. Squeeze the lime in to give it some.",
         "source": PRACTICE,
     },
 ],
@@ -2007,8 +2000,8 @@ ENHANCEMENTS = {
         "name": "Lime wedge",
         "ingredient": "Limes",
         "measure": "1 wedge",
-        "note": "Tinned pineapple juice is noticeably sweeter than fresh. If that is "
-                "what you are using, squeeze the lime in rather than perching it.",
+        "note": "Tinned pineapple juice is a lot sweeter than fresh. If "
+                "that's what you're using, squeeze the lime in.",
         "source": PRACTICE,
     },
 ],
@@ -2018,9 +2011,9 @@ ENHANCEMENTS = {
         "name": "Orange twist",
         "ingredient": "Oranges",
         "measure": "1 strip",
-        "note": "Vodka and coffee liqueur, and one of those contributes no aroma at "
-                "all. Orange oil sits on coffee well and gives the drink a top note it "
-                "otherwise does not have.",
+        "note": "Vodka adds no smell, so all you get is coffee liqueur. "
+                "Orange oil goes well with coffee and gives the drink "
+                "something fresh to smell.",
         "source": PRACTICE,
     },
 ],
@@ -2030,8 +2023,8 @@ ENHANCEMENTS = {
         "name": "Orange twist",
         "ingredient": "Oranges",
         "measure": "1 strip",
-        "note": "Cognac and amaretto, both sweet-leaning, nothing sharp anywhere. Same "
-                "problem and same fix as the Godfather.",
+        "note": "Cognac and amaretto, both sweet, with nothing sharp "
+                "anywhere. Same problem and same fix as the Godfather.",
         "source": PRACTICE,
     },
 ],
