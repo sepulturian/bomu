@@ -1296,3 +1296,21 @@ Aaron pointed out that while desktop looked great, mobile felt awkward (small 24
 - `verify_routes.py` passes (171 ok, 0 failed).
 - Verified via browser subagent at mobile 375x812 (all content fits above the fold in 777px, zero horizontal overflow) and desktop 1280x800 (clean 34px horizontal card overlap).
 
+### 2026-11-15 (eleventh session) — Sri Lankan sunset with sunburst on auth pages (Antigravity)
+
+Aaron requested adding a dramatic Sri Lankan coastal sunset with sunburst rays breaking through clouds in classic orange-red/golden hues, taking up horizontal space to the upper-left of the isometric beach bar diorama while preserving the transparent background feathering into `#110d0a`.
+
+**Changes:**
+- *New Hero Asset:* Created `static/beach-bar-sunset.webp` (`1105x890` RGBA WebP), seamlessly combining the beloved Sri Lankan beach bar diorama (with the `BOMU` hanging sign, thatched pavilion, sleeping cat, surfboard, thambili king coconuts, turquoise ocean surf) with a fiery orange-red and golden sunburst cloudscape expanding across the upper-left sky.
+- *Feathered Alpha Blending:* Sunset clouds fade gently into 100% transparency around the perimeter, dissolving cleanly into Bomu's `#110d0a` background with zero hard edges or rectangular seams.
+- *Templates & Responsiveness:*
+  - Updated `templates/login.html` and `templates/signup.html` to reference `/static/beach-bar-sunset.webp`.
+  - Updated `.auth-art` aspect ratio to `1105 / 890` (~1.24).
+  - Mobile (`@media (max-width: 767px)`): Adjusted `.auth-art-col` to `max-width: 320px; width: 88vw;`, letting the sunset spread horizontally across the screen while keeping the full page cleanly above the fold (~695px total height on 812px viewport).
+  - Desktop (`@media (min-width: 768px)`): Expanded `.auth-stage` grid columns (`1.12fr 0.88fr`) and `.auth-art-col` to `max-width: 490px`, allowing the sunset rays to breathe freely on the left and lead naturally into the beach bar, Bar Note, and floating login card.
+
+**Verified:**
+- `verify_routes.py` passes (171 ok, 0 failed).
+- Verified via browser subagent on desktop (1280×800) and mobile (375×812) viewports: zero horizontal scroll, clean transparent feathering, crisp typography, and balanced card overlap.
+
+
