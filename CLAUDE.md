@@ -1312,4 +1312,22 @@ Aaron requested an isometric beach bar redesign with true horizontal presence ac
 - `verify_routes.py` passes cleanly (171 ok, 0 failed).
 - Verified visually on both mobile (375x812) and desktop (1280x800) via browser subagent.
 
+### 2026-11-16 — Centered beach bar diorama with natural irregular sand spit (Antigravity)
+
+Aaron flagged that the original diorama was off-balance on mobile: the bar sat on the right edge, the left edge had an awkward sharp 90° acrylic box cutaway, and the sunset was far to the left. An initial test with an oval platform felt too artificial and circular ("the fact that it's a circle doesn't look good... could it be a bit more natural?"). Generated 3 distinct natural concepts (Natural Sand Spit, Open Beach, Rocky Cove) for review; Aaron selected **Concept 1 (Natural Irregular Sand Spit)**.
+
+**Changes:**
+- *Recomposed Artwork (`static/beach-bar-sunset-diorama.webp`, `static/beach-bar-sunset.webp`):* Generated and deployed a 16:9 widescreen 3D isometric diorama (`1376x768` RGBA WebP):
+  - **Natural Irregular Shoreline:** Flowing natural turquoise surf, seafoam, wet sand tide lines, and smooth pebbles—completely free of circular disks, cylinders, or 90° box cutaways.
+  - **Dead-Center Bar & Deck:** Centered the rustic timber thatched-roof hut ("BOMU"), 3 rattan barstools, counter (bottles, limes, shaker, king coconuts, "Arrack" sign), and front wooden deck with the sleeping golden beach dog and brass lantern directly on the horizontal centerline, aligning with the login card and submit button.
+  - **Centered Sunset Horizon:** Placed the golden setting sun directly on the horizon behind the peak of the thatched roof, radiating warm twilight color continuously across both the left and right flanks.
+  - **Balanced Flanking Scenery:** Traditional Sri Lankan outrigger canoe (*oruwa*) in turquoise water on the left; leaning coconut palm, vintage surfboard, and white frangipani blossoms on the right.
+  - **Clean Alpha Feathering:** Alpha channel feathered smoothly into `--bg-base: #110d0a` with zero hard edges or bounding box seams.
+- *Service Worker (`static/sw.js`):* Bumped `CACHE_VERSION` from `bomu-v6` to `bomu-v8` for cache busting.
+
+**Verified:**
+- `verify_routes.py` passes (171 ok, 0 failed; `GET /login` and `GET /signup` HTTP 200).
+- Live preview active on local dev server (`http://localhost:5000/login` and `http://192.168.2.12:5000/login`).
+
+
 

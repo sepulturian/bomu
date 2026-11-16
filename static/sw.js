@@ -6,7 +6,7 @@
 //   - Static assets (/static/): cache-first, they rarely change.
 // Bump CACHE_VERSION whenever cached behavior needs a hard reset.
 
-const CACHE_VERSION = "bomu-v6";
+const CACHE_VERSION = "bomu-v8";
 
 const PRECACHE = [
     "/static/manifest.json",
