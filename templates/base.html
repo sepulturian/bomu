@@ -246,61 +246,110 @@
             gap: 0.2rem;
         }
 
-        /* Buttons (2026-11-15, replaced the "stamped" offset-shadow style).
-           One job each, so the main action is never in doubt:
-             .btn            solid zest. The ONE main action on a view.
-             .btn-secondary  dark face, cream hairline, cream text. Zest
-                             only on hover, so zest still means "primary".
-             .btn-ghost      plain text, no box. Back / Not now / Cancel in
-                             tight rows.
-             .btn-danger     terracotta outline, not a filled block.
-             .btn-sm         36px, for inline cards.
-           Sentence case in the body font, 10px corners to match the inputs,
-           no drop shadow. Labels are written in sentence case too. */
+        /* Buttons: "the pour" (2026-11-15). One job each:
+             .btn            solid zest, Barlow Condensed in sentence case.
+                             The ONE main action on a view. Hover raises a
+                             brighter level halfway (with a pale meniscus
+                             line); press / tap fills it.
+             .btn-glass      "empty glass": dark face, zest rim, cream text.
+                             Pressing pours it full and the label turns dark
+                             at the liquid line. Needs data-label="<label>".
+                             Used for "I have this".
+             .btn-secondary  dark face, cream hairline, body font. Zest only
+                             on hover, so zest still means "primary".
+             .btn-ghost      plain text. Back / Not now / Cancel.
+             .btn-danger     red underlined text link, 44px tap height.
+             .btn-sm         smaller, for inline cards.
+           No drop shadows, no all-caps, no gradients or glows. Labels are
+           written in sentence case. Touch: base.html JS adds .is-pouring on
+           pointerdown so a tap shows the fill (phones have no hover). */
         .btn {
+            --pour: cubic-bezier(0.3, 0.7, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            isolation: isolate;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 0.4rem;
-            min-height: 46px;
-            padding: 0.55rem 1.25rem;
+            min-height: 48px;
+            padding: 0.5rem 1.4rem;
             border-radius: 10px;
             border: 1px solid transparent;
-            background: var(--zest);
-            color: var(--ink-on-zest);
-            font-family: var(--font-body);
-            font-weight: 700;
-            font-size: 0.94rem;
-            line-height: 1.2;
-            letter-spacing: -0.01em;
+            background: #efb92b;
+            color: #1a1208;
+            font-family: var(--font-display);
+            font-weight: 600;
+            font-size: 1.06rem;
+            line-height: 1.1;
+            letter-spacing: 0.02em;
             text-align: center;
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            white-space: nowrap;
             cursor: pointer;
-            transition: background-color var(--dur-snap) var(--ease-snap), border-color var(--dur-snap) var(--ease-snap), color var(--dur-snap) var(--ease-snap);
+            -webkit-tap-highlight-color: transparent;
+            transition: color 200ms var(--pour), border-color 200ms var(--pour), background-color 200ms var(--pour);
         }
 
-        .btn:hover { background: #f7cf52; }
-        .btn:active { background: #e2b424; }
+        /* The liquid level. Sits under the label (isolation + z-index -1). */
+        .btn::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            z-index: -1;
+            background: #ffd95e;
+            border-top: 1.5px solid #fff3c2;
+            box-shadow: 0 -6px 10px -6px rgba(255, 243, 194, 0.5);
+            transform: translateY(102%);
+            transition: transform 420ms var(--pour);
+        }
+        @media (hover: hover) {
+            .btn:hover::before { transform: translateY(58%); }
+        }
+        .btn:active::before,
+        .btn.is-pouring::before { transform: translateY(0); transition-duration: 160ms; }
+
         .btn:focus-visible {
-            outline: 2px solid var(--ink);
-            outline-offset: 3px;
+            outline: 2px solid #fff3c2;
+            outline-offset: 2px;
         }
         .btn:disabled,
         .btn[aria-disabled="true"] {
             opacity: 0.55;
             cursor: default;
         }
+        .btn:disabled::before,
+        .btn[aria-disabled="true"]::before { display: none; }
+
+        .btn-sm {
+            min-height: 40px;
+            padding: 0.35rem 1rem;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        /* Quiet styles: no liquid, body font. */
+        .btn-secondary,
+        .btn-ghost,
+        .btn-danger {
+            font-family: var(--font-body);
+            letter-spacing: -0.01em;
+        }
+        .btn-secondary::before,
+        .btn-ghost::before,
+        .btn-danger::before { display: none; }
 
         .btn-secondary {
+            min-height: 46px;
             background: #1c1611;
             border-color: rgba(240, 228, 205, 0.22);
             color: #f0e4cd;
             font-weight: 600;
+            font-size: 0.92rem;
             padding-inline: 1.15rem;
-            box-shadow: none;
         }
-        .btn-secondary:hover { background: #1c1611; border-color: rgba(244, 196, 48, 0.55); }
+        .btn-secondary:hover { border-color: rgba(244, 196, 48, 0.55); }
         .btn-secondary:active { background: #241c15; }
+        .btn-secondary.btn-sm { min-height: 36px; font-size: 0.82rem; padding-inline: 0.9rem; }
 
         .btn-ghost {
             background: transparent;
@@ -308,29 +357,63 @@
             font-weight: 600;
             font-size: 0.88rem;
             padding-inline: 0.65rem;
-            box-shadow: none;
         }
         .btn-ghost:hover,
-        .btn-ghost:active { background: transparent; color: #f0e4cd; }
+        .btn-ghost:active { color: #f0e4cd; }
 
         .btn-danger {
+            min-height: 44px;
+            padding: 0;
             background: transparent;
-            border-color: rgba(226, 112, 90, 0.45);
-            color: #e2705a;
+            border: 0;
+            color: #ec7560;
             font-weight: 600;
+            font-size: 0.86rem;
+            text-decoration: underline;
+            text-decoration-color: rgba(236, 117, 96, 0.45);
+            text-underline-offset: 3px;
+        }
+        .btn-danger:hover { text-decoration-color: #ec7560; }
+
+        /* The empty glass. Base label is cream; ::after is a dark copy of the
+           label revealed from the bottom with the liquid, so the text turns
+           dark exactly at the fill line. */
+        @property --lvl { syntax: "<percentage>"; inherits: true; initial-value: 0%; }
+        .btn-glass {
+            --lvl: 0%;
+            background: #1a1410;
+            border-color: rgba(239, 185, 43, 0.6);
+            color: #f3e9d6;
+            transition: --lvl 300ms var(--pour), border-color 200ms var(--pour);
+        }
+        .btn-glass::before {
+            transform: none;
+            transition: none;
+            background: #efb92b;
+            border-top-color: #ffe08a;
             box-shadow: none;
+            clip-path: inset(calc(100% - var(--lvl)) 0 0 0);
         }
-        .btn-danger:hover { background: rgba(226, 112, 90, 0.08); border-color: #e2705a; }
-        .btn-danger:active { background: rgba(226, 112, 90, 0.14); }
+        .btn-glass::after {
+            content: attr(data-label);
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            color: #1a1208;
+            clip-path: inset(calc(100% - var(--lvl)) 0 0 0);
+        }
+        .btn-glass:hover { border-color: #efb92b; }
+        .btn-glass:hover::before { transform: none; }
+        .btn-glass:active,
+        .btn-glass.is-pouring { --lvl: 100%; }
 
-        .btn-sm {
-            min-height: 36px;
-            padding: 0.35rem 0.9rem;
-            border-radius: 8px;
-            font-size: 0.82rem;
+        @media (prefers-reduced-motion: reduce) {
+            .btn::before { transition: none; }
+            .btn-glass { transition: none; }
         }
 
-        .btn .arrow { transition: transform 180ms var(--ease-snap); }
+        .btn .arrow { transition: transform 180ms var(--pour); }
         .btn:hover .arrow { transform: translateX(2px); }
 
         .btn-icon { width: 16px; height: 16px; flex-shrink: 0; }
@@ -935,6 +1018,14 @@
                 if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) dlg.close();
             });
         })();
+        // The pour: phones have no hover, so a tap adds .is-pouring long
+        // enough for the fill to show before the page moves on.
+        document.querySelectorAll(".btn:not(.btn-secondary):not(.btn-ghost):not(.btn-danger)").forEach(function (b) {
+            b.addEventListener("pointerdown", function () {
+                b.classList.add("is-pouring");
+                setTimeout(function () { b.classList.remove("is-pouring"); }, 600);
+            });
+        });
         if ("serviceWorker" in navigator) {
             navigator.serviceWorker.register("/sw.js").catch(function () {});
         }

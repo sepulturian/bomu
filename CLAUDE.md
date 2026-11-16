@@ -503,18 +503,23 @@ yellow, sage / terracotta for status, Barlow Condensed for display, Plus Jakarta
 Sans for body. (Until 2026-11-15 this line still described the pre-redesign
 coral / Bodoni Moda / Poppins system.) Page-specific styling is inline.
 
-**Buttons: one job per style** (2026-11-15, seventh session; replaced the
-"stamped" offset-shadow buttons Aaron came to dislike). `.btn` is solid zest
-and is the ONE main action on a view; `.btn-secondary` is a dark face with a
-cream hairline (zest only on hover, so zest keeps meaning "primary");
-`.btn-ghost` is plain text for Back / Not now; `.btn-danger` is a terracotta
-outline, not a fill; `.btn-sm` is 36px for inline cards. All use Plus Jakarta
-Sans in sentence case, 10px corners (matching the inputs) and no drop shadow;
-labels are written in sentence case too. `→` only on forward primaries (Log in,
-Create account). The recipe dock mirrors this in `recipe.html`. Don't
-reintroduce offset shadows, all-caps condensed button text, serif buttons,
-gradients, glows or 999px radii on buttons: Aaron called the glossy gradient
-pill "an AI giveaway". Chips and status pills stay rounded on purpose. That's fine at
+**Buttons: "the pour"** (2026-11-15, ninth session; replaced first the
+stamped offset-shadow buttons, then a plain solid/hairline set Aaron found
+"okay, could be way better"). `.btn` is solid zest (`#efb92b`) with Barlow
+Condensed 600 in sentence case, and is the ONE main action on a view. Its
+`::before` is a liquid level with a pale meniscus line: hover raises it halfway,
+press fills it, and a `pointerdown` handler in `base.html` adds `.is-pouring`
+so a tap shows the fill on phones. `.btn-glass` is the "empty glass" (dark face,
+zest rim, cream text) that pours full on press; it needs `data-label` matching
+its text, because `::after` is a dark copy of the label revealed at the liquid
+line (uses `@property --lvl`). It's used for the spotlight's "I have this" /
+"Add to my bar". The quiet styles use the body font: `.btn-secondary` is a dark
+hairline face (zest only on hover), `.btn-ghost` is plain text, `.btn-danger`
+is an underlined red text link. Tonight: "Mix it" is the solid button; the
+spotlight card keeps yellow to the drink name and the glass only. Don't
+reintroduce offset shadows, all-caps button text, serif buttons, gradients,
+glows or 999px radii on buttons: Aaron called the glossy gradient pill "an AI
+giveaway". Chips and status pills stay rounded on purpose. That's fine at
 this size, but anything reused across two templates belongs in `base.html` —
 the login/signup password fields carried a hardcoded copy of the shared input
 rule, complete with a stale border colour, until 2026-07-25.
@@ -1222,3 +1227,35 @@ dock, Tonight spotlight ("I have this", "Mix it"), My Bar header button,
 sign-out dialog (no wrap), edit bottle (Save / Cancel / Delete), and the login
 form (rendered from a cookie-less fetch, since `/login` redirects when logged in).
 Desktop (1280) checked on edit bottle and the recipe page.
+
+### 2026-11-15 (ninth session) — The pour: signature buttons (Claude Code)
+
+Aaron found the eighth session's buttons "okay, could be way better". The
+diagnosis: competent but generic, with yellow on nearly every screen and
+nothing that said Bomu. Three variants were mocked on real screens (V1 the pour in
+the body font, V2 the pour in Barlow Condensed, V3 an empty glass), all sharing a
+restraint pass. A Fable critic reviewed screenshots only and picked V2. It
+flagged that the pour was invisible in V1/V2 (yellow on yellow is about 1.1:1)
+and that V3's mid-pour label was illegible, and it suggested reusing V3's glass
+for "I have this" only. A refined mock followed; Aaron chose the brand-type
+version.
+
+**Changed:** `base.html` (button block rewritten, see Templates; tap JS),
+`tonight.html` ("I have this" / "Add to my bar" → `.btn-glass`, muted spotlight
+kicker, cream "More ingredients", "Mix it" pours on card hover), `edit_bottle.html`
+unchanged in markup (`.btn-danger` is now a text link).
+
+**Verified:** `verify_routes.py` passes; at 375px on the scratch copy: Tonight
+(rest, plus the glass frozen full), edit bottle. Login was not re-checked
+after rollout; it uses the same `.btn`.
+
+**Gotcha:** the glass label's dark copy only lines up if the label can't wrap,
+so `.btn` has `white-space: nowrap`. A long label in a narrow container will
+overflow rather than wrap; none do today.
+
+**Open at close:** Neon constraints possibly lost in the Postgres migration
+(found in session seven); 3 `check_specs.py` flags; #19 sign-out for
+cookies without `username`; #15 Hugo Spritz; #2 Shehan 0 from 16; #1
+never-started users; #17 leaked connection string and Neon password (Aaron's
+action). An untracked `.claude/launch.json` (local preview config pointing at a
+scratchpad runner) was deliberately left out of commits.

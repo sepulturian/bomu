@@ -144,7 +144,7 @@
         font-size: 0.72rem;
         letter-spacing: 0.08em;
         text-transform: uppercase;
-        color: var(--zest);
+        color: #a89a84;
         margin-bottom: 0.35rem;
     }
 
@@ -206,6 +206,15 @@
     .spot-actions form {
         margin: 0;
     }
+
+    /* The whole featured card is the link, so hovering it pours "Mix it". */
+    @media (hover: hover) {
+        .featured-hero:hover .btn::before { transform: translateY(58%); }
+    }
+
+    /* Only the drink name and the glass are yellow in this card. */
+    .spot-actions .section-link { color: #d9cdb8; font-weight: 600; }
+    .spot-actions .section-link:hover { color: var(--zest); }
 
     /* One-Away Horizontal Carousel */
     .hscroll-row {
@@ -525,10 +534,10 @@
                 {% if spot.kind == 'ingredient' %}
                     <form method="POST" action="/stock-add">
                         <input type="hidden" name="ingredient" value="{{ spot.ingredient_id }}">
-                        <button type="submit" class="btn btn-sm">I have this</button>
+                        <button type="submit" class="btn btn-sm btn-glass" data-label="I have this">I have this</button>
                     </form>
                 {% else %}
-                    <a href="{{ spot_view.add_url }}" class="btn btn-sm">Add to my bar</a>
+                    <a href="{{ spot_view.add_url }}" class="btn btn-sm btn-glass" data-label="Add to my bar">Add to my bar</a>
                 {% endif %}
                 {% if spot.other_groups %}
                     <a href="/one-away" class="section-link">More ingredients &rarr;</a>
