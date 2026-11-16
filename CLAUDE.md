@@ -111,7 +111,7 @@ git commit -m "..."
 git push origin main           # triggers automatic Vercel production build
 ```
 
-**Legacy host note (PythonAnywhere, retired 2026-11-15):** Before moving to Vercel + Neon, the app ran at `https://sepulturian.pythonanywhere.com` (`/home/sepulturian/bomu`) with manual `python3 backup_db.py`, `git pull`, `python3 <migration>.py --commit`, and Web tab Reload. Schema/data migrations targeting Postgres now run against `DATABASE_URL` instead (test first via `FORCE_SQLITE=1` / `verify_routes.py`).
+**Legacy host note (PythonAnywhere, retired 2026-11-15):** `sepulturian.pythonanywhere.com` now 301-redirects every path to `https://www.bomu.lol` (WSGI file replaced 2026-11-15; old one backed up at `~/wsgi_before_redirect_2026-11-15.py`, `~/bomu` and its `bomu.db` left in place). Free-tier app: click "Run until 1 month from today" on the PA Web tab monthly or the redirect goes dark. `/static/` is still served directly by PA's static mapping, so it doesn't redirect. Before moving to Vercel + Neon, the app ran at `https://sepulturian.pythonanywhere.com` (`/home/sepulturian/bomu`) with manual `python3 backup_db.py`, `git pull`, `python3 <migration>.py --commit`, and Web tab Reload. Schema/data migrations targeting Postgres now run against `DATABASE_URL` instead (test first via `FORCE_SQLITE=1` / `verify_routes.py`).
 
 ### Verification
 
