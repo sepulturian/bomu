@@ -1272,3 +1272,11 @@ untouched. `verify_routes.py` passes; checked at 375px with `?type=rye`
 prefilled. The sheet's scan cards followed in the same session: flat tiles,
 cream hairline, Barlow in sentence case ("Scan a bottle" / "Scan a shelf"),
 with no gradient or shadow.
+
+### 2026-11-15 (ninth session, addendum 2) — Two wording fixes
+
+- Tonight stat line: `34 ready · 70 one away →` → `34 ready · 70 almost
+  there →`. "70 one away" put a number next to a word-number. Aaron's call:
+  Tonight's line only. "One away" stays everywhere else (Explore chip, rows,
+  the One Away page), where it never sits right after a number.
+- Login note: "Bar Note No. 09 · Unawatuna Shore" → "· South Coast".
