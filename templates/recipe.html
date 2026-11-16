@@ -261,66 +261,55 @@
         gap: 0.5rem;
     }
 
+    /* Dock buttons follow the .btn system in base.html: Back is plain text
+       (like .btn-ghost); Like / Pass are dark hairline buttons (like
+       .btn-secondary) that turn sage / terracotta once rated. */
     .dock-back {
         display: inline-flex;
         align-items: center;
         gap: 0.3rem;
-        min-height: 44px;
-        padding: 0 0.95rem 0 0.72rem;
-        border-radius: var(--radius-btn);
-        background: var(--bg-pill);
-        border: 1.5px solid var(--border-highlight);
-        box-shadow: 3px 3px 0 rgba(255, 236, 214, 0.16);
-        color: var(--ink);
-        font-family: var(--font-display);
-        font-weight: 700;
-        font-size: 0.95rem;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-        transition: transform var(--dur-snap) var(--ease-snap), box-shadow var(--dur-snap) var(--ease-snap), background-color var(--dur-snap) var(--ease-snap);
+        min-height: 46px;
+        padding: 0 0.6rem 0 0.35rem;
+        background: transparent;
+        color: #b9ab93;
+        font-family: var(--font-body);
+        font-weight: 600;
+        font-size: 0.88rem;
+        transition: color var(--dur-snap) var(--ease-snap);
     }
 
-    .dock-back:hover { background: var(--bg-pill-hover); }
-    .dock-back:active { transform: translate(3px, 3px); box-shadow: 0 0 0 transparent; }
+    .dock-back:hover { color: #f0e4cd; }
 
     .dock-rate-group {
         display: flex;
         align-items: center;
-        gap: 0.42rem;
+        gap: 0.5rem;
     }
 
     .dock-rate-btn {
         display: inline-flex;
         align-items: center;
-        gap: 0.38rem;
-        min-height: 44px;
-        padding: 0 0.98rem;
-        --dock-shadow: rgba(255, 236, 214, 0.16);
-        border-radius: var(--radius-btn);
-        border: 1.5px solid var(--border-highlight);
-        background: var(--bg-pill);
-        color: var(--ink);
-        font-family: var(--font-display);
-        font-weight: 700;
+        gap: 0.4rem;
+        min-height: 46px;
+        padding: 0 1.05rem;
+        border-radius: 10px;
+        border: 1px solid rgba(240, 228, 205, 0.22);
+        background: #1c1611;
+        color: #f0e4cd;
+        font-family: var(--font-body);
+        font-weight: 600;
         font-size: 0.94rem;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-        box-shadow: 3px 3px 0 var(--dock-shadow);
+        letter-spacing: -0.01em;
         cursor: pointer;
-        transition: transform var(--dur-snap) var(--ease-snap), box-shadow var(--dur-snap) var(--ease-snap), background-color var(--dur-snap) var(--ease-snap);
+        transition: background-color var(--dur-snap) var(--ease-snap), border-color var(--dur-snap) var(--ease-snap), color var(--dur-snap) var(--ease-snap);
     }
 
-    .dock-rate-btn:hover { filter: brightness(1.08); }
-    .dock-rate-btn:active { transform: translate(3px, 3px); box-shadow: 0 0 0 transparent; }
+    .dock-rate-btn:hover { border-color: rgba(244, 196, 48, 0.55); }
+    .dock-rate-btn:active { background: #241c15; }
 
     .dock-rate-btn svg {
         width: 17px;
         height: 17px;
-    }
-
-    .dock-rate-btn.dock-like-idle {
-        --dock-shadow: var(--zest-border);
-        border-color: var(--zest-border);
     }
 
     .dock-rate-btn.dock-like-idle svg {
@@ -328,16 +317,14 @@
     }
 
     .dock-rate-btn.is-up {
-        --dock-shadow: var(--sage-border);
         background: var(--sage-soft);
-        border-color: var(--sage);
+        border-color: var(--sage-border);
         color: var(--sage);
     }
 
     .dock-rate-btn.is-down {
-        --dock-shadow: var(--terracotta-border);
         background: var(--terracotta-soft);
-        border-color: var(--terracotta);
+        border-color: var(--terracotta-border);
         color: var(--terracotta);
     }
 

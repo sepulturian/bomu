@@ -503,11 +503,18 @@ yellow, sage / terracotta for status, Barlow Condensed for display, Plus Jakarta
 Sans for body. (Until 2026-11-15 this line still described the pre-redesign
 coral / Bodoni Moda / Poppins system.) Page-specific styling is inline.
 
-**Buttons are "stamped", not pills** (2026-11-15): flat face, `--radius-btn`
-4px, solid offset shadow with no blur, pressing slides the face into it. Each
-variant only sets `--btn-shadow`; `.btn-sm` shrinks `--btn-offset`. Aaron
-called the glossy gradient pill "an AI giveaway" — don't reintroduce gradients,
-glows or 999px radii on buttons. Chips and status pills stay rounded on purpose. That's fine at
+**Buttons: one job per style** (2026-11-15, seventh session; replaced the
+"stamped" offset-shadow buttons Aaron came to dislike). `.btn` is solid zest
+and is the ONE main action on a view; `.btn-secondary` is a dark face with a
+cream hairline (zest only on hover, so zest keeps meaning "primary");
+`.btn-ghost` is plain text for Back / Not now; `.btn-danger` is a terracotta
+outline, not a fill; `.btn-sm` is 36px for inline cards. All use Plus Jakarta
+Sans in sentence case, 10px corners (matching the inputs) and no drop shadow;
+labels are written in sentence case too. `→` only on forward primaries (Log in,
+Create account). The recipe dock mirrors this in `recipe.html`. Don't
+reintroduce offset shadows, all-caps condensed button text, serif buttons,
+gradients, glows or 999px radii on buttons: Aaron called the glossy gradient
+pill "an AI giveaway". Chips and status pills stay rounded on purpose. That's fine at
 this size, but anything reused across two templates belongs in `base.html` —
 the login/signup password fields carried a hardcoded copy of the shared input
 rule, complete with a stale border colour, until 2026-07-25.
@@ -1192,3 +1199,26 @@ measure), unrelated to this change and not investigated.
 
 **Open:** audit Neon for other constraints lost in the Postgres migration;
 the 3 `check_specs.py` flags; plus #19, #15, #2, #1, #17.
+
+### 2026-11-15 (eighth session) — Button redesign (Claude Code)
+
+Aaron called the stamped yellow buttons "terrible": the offset shadow, the
+all-caps condensed type and the chunky proportions. Four directions were mocked
+on the real tokens (A bar-menu serif outline, B soft solid, C cream label
+with a double rule, D dark brass inlay). A Fable 5.2 critic reviewed
+screenshots only and ranked B > D > A > C: only B made the primary action
+unmistakable at 375px, D was the best quiet button, A's serif went thin at small
+sizes, and C was still shouty and wrapped on phones. It recommended a hybrid
+(B's fill for primary, D's face for secondary, text-only tertiary, outline
+danger), which Aaron approved from the mockup.
+
+**Changed:** `base.html` button block (see Templates), `--radius-btn` 4 → 10px;
+`recipe.html` dock (Back is text; Like / Pass are dark hairline buttons that keep
+their sage / terracotta rated states); sentence-case labels across 11
+templates; `→` on Log in / Create account.
+
+**Verified:** `verify_routes.py` passes; on the scratch copy at 375px: recipe
+dock, Tonight spotlight ("I have this", "Mix it"), My Bar header button,
+sign-out dialog (no wrap), edit bottle (Save / Cancel / Delete), and the login
+form (rendered from a cookie-less fetch, since `/login` redirects when logged in).
+Desktop (1280) checked on edit bottle and the recipe page.

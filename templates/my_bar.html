@@ -380,7 +380,7 @@
     <h1>Your Bar</h1>
     <button type="button" class="btn btn-sm {% if active_tab != 'bottles' %}is-hidden{% endif %}" id="open-add-sheet">
         {{ ui_icon("plus", "btn-icon") }}
-        <span>Add Bottle</span>
+        <span>Add bottle</span>
     </button>
 </div>
 
@@ -458,11 +458,11 @@
         <div class="card empty-state">
             {% if q %}
                 <p style="margin-bottom: 0.9rem;">No bottles match &ldquo;{{ q }}&rdquo;.</p>
-                <a href="/bar?tab=bottles{% if grouped %}&group=spirit{% endif %}" class="btn btn-secondary">Show All Bottles</a>
+                <a href="/bar?tab=bottles{% if grouped %}&group=spirit{% endif %}" class="btn btn-secondary">Show all bottles</a>
             {% else %}
                 <h2 style="margin-bottom: 0.35rem;">Shelf is empty</h2>
                 <p style="margin-bottom: 1rem;">Add or scan bottles to see what you can pour.</p>
-                <button type="button" class="btn" id="empty-open-add">Add Your First Bottle</button>
+                <button type="button" class="btn" id="empty-open-add">Add your first bottle</button>
             {% endif %}
         </div>
     {% endif %}
@@ -576,7 +576,7 @@
         {% endif %}
 
         <div style="margin-top: 0.9rem;">
-            <button type="submit" class="btn btn-secondary" style="width: 100%;">Save Mixers</button>
+            <button type="submit" class="btn btn-secondary" style="width: 100%;">Save mixers</button>
         </div>
     </form>
 </section>
@@ -634,7 +634,7 @@
                     </select>
                 </div>
             </div>
-            <button type="submit" class="btn" style="width: 100%; margin-top: 0.65rem;">Add to My Bar</button>
+            <button type="submit" class="btn" style="width: 100%; margin-top: 0.65rem;">Add to my bar</button>
         </form>
     </div>
 </div>
