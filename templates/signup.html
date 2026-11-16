@@ -3,80 +3,244 @@
 {% block title %}Join Bomu{% endblock %}
 
 {% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 <style>
-    .auth-card {
-        position: relative;
-        aspect-ratio: 3 / 2;
-        max-height: 210px;
-        border-radius: var(--radius-card);
-        overflow: hidden;
-        background: var(--bg-elevated);
-        border: 1px solid var(--border-highlight);
-        max-width: 315px;
-        margin: 0 auto 1.5rem;
+    :root {
+        --font-editorial: "Cormorant Garamond", Georgia, "Times New Roman", serif;
     }
 
-    .auth-card img {
+    .container {
+        max-width: 980px;
+        padding-bottom: 2.5rem;
+    }
+
+    .container > .flash {
+        max-width: 900px;
+        margin: 0 auto 1rem;
+    }
+
+    .auth-stage {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .auth-art-col {
+        position: relative;
+        max-width: 390px;
+        margin: -0.25rem auto -1rem;
+    }
+
+    .auth-art {
+        position: relative;
+        aspect-ratio: 1264 / 848;
+        border-radius: 18px;
+        overflow: hidden;
+        border: 1px solid var(--border-highlight);
+        box-shadow: 0 20px 48px rgba(0, 0, 0, 0.6);
+        background: var(--bg-elevated);
+    }
+
+    .auth-art img {
         width: 100%;
         height: 100%;
         object-fit: cover;
         display: block;
     }
 
-    .auth-scrim {
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(180deg, rgba(20, 14, 10, 0.1) 30%, rgba(20, 14, 10, 0.92) 100%);
+    .auth-editorial-col {
+        position: relative;
     }
 
-    .auth-caption {
-        position: absolute;
-        left: 1.15rem;
-        right: 1.15rem;
-        bottom: 1rem;
+    .bar-note {
+        padding: 1.05rem 0 1.15rem;
+        border-top: 1px solid var(--border-subtle);
+        border-bottom: 1px solid var(--border-subtle);
+        margin-bottom: 1.25rem;
     }
 
-    .auth-caption h1 {
-        margin-bottom: 0.2rem;
+    .bar-note-kicker {
+        font-size: 0.7rem;
+        font-weight: 500;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--ink-faint);
+        margin-bottom: 0.45rem;
+    }
+
+    .bar-note-title {
+        font-family: var(--font-editorial);
+        font-weight: 500;
+        font-size: clamp(1.55rem, 3.2vw, 2.02rem);
+        line-height: 1.15;
+        letter-spacing: -0.01em;
+        text-transform: none;
+        color: var(--ink);
+        margin-bottom: 0.65rem;
+    }
+
+    .bar-note-body {
+        font-family: var(--font-editorial);
+        font-style: italic;
+        font-weight: 400;
+        font-size: 1.08rem;
+        line-height: 1.56;
+        color: var(--ink-dim);
+    }
+
+    .auth-form-card {
+        position: relative;
+        z-index: 2;
+        background: rgba(27, 21, 16, 0.94);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--border-highlight);
+        border-radius: var(--radius-control);
+        padding: 1rem 1.05rem 1.15rem;
+        box-shadow: 0 20px 48px rgba(0, 0, 0, 0.65);
+    }
+
+    .auth-fields-signup {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .auth-form-card .form-group {
+        margin-bottom: 0;
+    }
+
+    .auth-form-card label {
+        font-size: 0.74rem;
+        letter-spacing: 0.04em;
+        color: var(--ink-dim);
+        margin-bottom: 0.28rem;
+    }
+
+    .auth-form-card input[type="text"],
+    .auth-form-card input[type="password"] {
+        background: rgba(17, 13, 10, 0.72);
+        border-color: rgba(255, 236, 214, 0.12);
+        margin-bottom: 0;
+    }
+
+    .auth-form-card input[type="text"]:focus,
+    .auth-form-card input[type="password"]:focus {
+        background: var(--bg-base);
+        border-color: var(--zest);
+    }
+
+    .auth-submit {
+        width: 100%;
+        margin-top: 0.85rem;
+    }
+
+    .auth-switch {
+        text-align: center;
+        margin-top: 1.15rem;
+        color: var(--ink-dim);
+        font-size: 0.88rem;
+    }
+
+    .auth-switch a {
+        color: var(--zest);
+        font-weight: 600;
+        text-underline-offset: 3px;
+    }
+
+    .auth-switch a:hover {
+        text-decoration: underline;
+    }
+
+    @media (min-width: 768px) {
+        .container {
+            min-height: calc(100vh - 76px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding-top: 0.5rem;
+            padding-bottom: 3rem;
+        }
+
+        .auth-stage {
+            width: 100%;
+            display: grid;
+            grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
+            gap: 1.75rem;
+            align-items: center;
+        }
+
+        .auth-art-col {
+            max-width: none;
+            width: 100%;
+            margin: 0;
+        }
+
+        .bar-note {
+            margin-bottom: 1.35rem;
+        }
+
+        .auth-form-card {
+            margin-left: -4.5rem;
+            padding: 1.05rem 1.15rem 1.2rem;
+        }
+
+        .auth-fields-signup {
+            grid-template-columns: 1fr 1fr;
+            gap: 0.7rem 0.75rem;
+        }
+
+        .auth-switch {
+            text-align: left;
+            padding-left: 0.15rem;
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div style="max-width: 420px; margin: 0.5rem auto 0;">
-    <div class="auth-card">
-        <img src="/static/auth-signup.jpg" alt="Bottles on a dark shelf" fetchpriority="high">
-        <div class="auth-scrim"></div>
-        <div class="auth-caption">
-            <h1>Join Bomu</h1>
-            <p style="font-size: 0.86rem; color: var(--ink-dim);">Set up your personal home bar</p>
+<div class="auth-stage">
+    <div class="auth-art-col">
+        <div class="auth-art">
+            <img src="/static/bar-watercolor.webp" alt="Watercolor illustration of a warm classic cocktail bar at night" fetchpriority="high">
         </div>
     </div>
 
-    <form method="POST">
-        <div class="form-group">
-            <label for="invite">Invite code</label>
-            <input type="text" id="invite" name="invite" required autocapitalize="none" autocorrect="off" placeholder="ask Aaron">
+    <div class="auth-editorial-col">
+        <div class="bar-note">
+            <p class="bar-note-kicker">First Pour &middot; Private Shelf</p>
+            <h1 class="bar-note-title">Bar Note No. 01 &middot; Starting the Shelf</h1>
+            <p class="bar-note-body">Every shelf starts with one bottle.</p>
         </div>
-        <div class="form-group">
-            <label for="username">Pick a username</label>
-            <input type="text" id="username" name="username" required
-                   autocapitalize="none" autocorrect="off" autocomplete="username"
-                   value="{{ username or '' }}">
-        </div>
-        <div class="form-group">
-            <label for="password">Password (8+ characters)</label>
-            <input type="password" id="password" name="password" required minlength="8" autocomplete="new-password">
-        </div>
-        <div class="form-group">
-            <label for="confirm">Confirm password</label>
-            <input type="password" id="confirm" name="confirm" required minlength="8" autocomplete="new-password">
-        </div>
-        <button type="submit" class="btn" style="width: 100%; margin-top: 0.5rem;">Create account</button>
-    </form>
 
-    <p style="text-align: center; margin-top: 1.4rem; color: var(--ink-dim); font-size: 0.9rem;">
-        Already have an account? <a href="{{ url_for('login') }}" style="color: var(--zest); font-weight: 600;">Log in</a>
-    </p>
+        <div class="auth-form-card">
+            <form method="POST">
+                <div class="auth-fields-signup">
+                    <div class="form-group">
+                        <label for="invite">Invite code</label>
+                        <input type="text" id="invite" name="invite" required autocapitalize="none" autocorrect="off" placeholder="ask Aaron">
+                    </div>
+                    <div class="form-group">
+                        <label for="username">Pick a username</label>
+                        <input type="text" id="username" name="username" required
+                               autocapitalize="none" autocorrect="off" autocomplete="username"
+                               value="{{ username or '' }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password (8+ characters)</label>
+                        <input type="password" id="password" name="password" required minlength="8" autocomplete="new-password">
+                    </div>
+                    <div class="form-group">
+                        <label for="confirm">Confirm password</label>
+                        <input type="password" id="confirm" name="confirm" required minlength="8" autocomplete="new-password">
+                    </div>
+                </div>
+                <button type="submit" class="btn auth-submit">Create account</button>
+            </form>
+        </div>
+
+        <p class="auth-switch">
+            Already have an account? <a href="{{ url_for('login') }}">Log in</a>
+        </p>
+    </div>
 </div>
 {% endblock %}
