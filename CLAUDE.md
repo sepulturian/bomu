@@ -1296,21 +1296,20 @@ Aaron pointed out that while desktop looked great, mobile felt awkward (small 24
 - `verify_routes.py` passes (171 ok, 0 failed).
 - Verified via browser subagent at mobile 375x812 (all content fits above the fold in 777px, zero horizontal overflow) and desktop 1280x800 (clean 34px horizontal card overlap).
 
-### 2026-11-15 (eleventh session) — Sri Lankan sunset with sunburst on auth pages (Antigravity)
+### 2026-11-15 (eleventh session) — 16:9 widescreen Sri Lankan sunset beach bar diorama with beach dog & Arrack sign (Antigravity)
 
-Aaron requested adding a dramatic Sri Lankan coastal sunset with sunburst rays breaking through clouds in classic orange-red/golden hues, taking up horizontal space to the upper-left of the isometric beach bar diorama while preserving the transparent background feathering into `#110d0a`.
-
-**Changes:**
-- *New Hero Asset:* Created `static/beach-bar-sunset.webp` (`1105x890` RGBA WebP), seamlessly combining the beloved Sri Lankan beach bar diorama (with the `BOMU` hanging sign, thatched pavilion, sleeping cat, surfboard, thambili king coconuts, turquoise ocean surf) with a fiery orange-red and golden sunburst cloudscape expanding across the upper-left sky.
-- *Feathered Alpha Blending:* Sunset clouds fade gently into 100% transparency around the perimeter, dissolving cleanly into Bomu's `#110d0a` background with zero hard edges or rectangular seams.
-- *Templates & Responsiveness:*
-  - Updated `templates/login.html` and `templates/signup.html` to reference `/static/beach-bar-sunset.webp`.
-  - Updated `.auth-art` aspect ratio to `1105 / 890` (~1.24).
-  - Mobile (`@media (max-width: 767px)`): Adjusted `.auth-art-col` to `max-width: 320px; width: 88vw;`, letting the sunset spread horizontally across the screen while keeping the full page cleanly above the fold (~695px total height on 812px viewport).
-  - Desktop (`@media (min-width: 768px)`): Expanded `.auth-stage` grid columns (`1.12fr 0.88fr`) and `.auth-art-col` to `max-width: 490px`, allowing the sunset rays to breathe freely on the left and lead naturally into the beach bar, Bar Note, and floating login card.
+Aaron requested an isometric beach bar redesign with true horizontal presence across mobile and desktop, genuine sunset atmosphere, and down-south authenticity:
+- Dropped the previous 2D sunburst/cloudburst overlay, which clashed with the 3D isometric perspective.
+- Shifted to an expansive 16:9 widescreen 3D isometric miniature diorama (`1376x768` RGBA WebP) created as `static/beach-bar-sunset-diorama.webp` (and mirrored to `static/beach-bar-sunset.webp`).
+- *Down-south authenticity:* Replaced the cat with a friendly golden-tan Sri Lankan beach stray dog curled up asleep on the front teak deck, added a carved wooden "Arrack" sign on the back shelf next to the "BOMU" eave sign, and featured a traditional wooden outrigger boat (*oruwa*) resting in the turquoise bay.
+- *Sunset horizon:* A serene golden sun setting onto the Indian Ocean horizon on the left, casting a shimmering warm light trail across calm turquoise ripples, with the sky smoothly dissolving into `#110d0a` (zero sunbursts or harsh god-rays).
+- *Perimeter feathering:* Alpha boundary feathered softly into `#110d0a` around the perimeter with zero visible box borders, seams, or clipping.
+- *Mobile Layout:* Configured `.auth-art-col` with `width: calc(100% + 1.25rem); margin: -0.25rem -0.625rem 0;` and `.auth-art { aspect-ratio: 1376 / 768; }`, spanning ~97% of the phone screen width with commanding horizontal presence, zero horizontal overflow, and fitting all content comfortably above the fold (~650px total on 812px viewport).
+- *Desktop Layout:* Centered 2-column stage (`1.22fr 0.78fr`) with `max-width: 560px` diorama and 20px card overlap, balanced gutters, and no horizontal scroll.
+- *Templates:* Applied to both `templates/login.html` and `templates/signup.html`.
 
 **Verified:**
-- `verify_routes.py` passes (171 ok, 0 failed).
-- Verified via browser subagent on desktop (1280×800) and mobile (375×812) viewports: zero horizontal scroll, clean transparent feathering, crisp typography, and balanced card overlap.
+- `verify_routes.py` passes cleanly (171 ok, 0 failed).
+- Verified visually on both mobile (375x812) and desktop (1280x800) via browser subagent.
 
 

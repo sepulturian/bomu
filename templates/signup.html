@@ -26,21 +26,21 @@
 
     .auth-art-col {
         position: relative;
-        max-width: 320px;
-        width: 88vw;
-        margin: -0.25rem auto 0;
+        width: calc(100% + 1.25rem);
+        max-width: none;
+        margin: -0.25rem -0.625rem 0;
     }
 
     .auth-art {
         position: relative;
-        aspect-ratio: 1105 / 890;
+        aspect-ratio: 1376 / 768;
     }
 
     .auth-art::before {
         content: "";
         position: absolute;
-        inset: 8% 4% 8% 4%;
-        background: radial-gradient(ellipse 75% 65% at 46% 50%, rgba(244, 196, 48, 0.16) 0%, rgba(231, 111, 81, 0.08) 50%, transparent 75%);
+        inset: 12% 8% 10% 8%;
+        background: radial-gradient(ellipse 75% 65% at 50% 50%, rgba(244, 196, 48, 0.16) 0%, rgba(231, 111, 81, 0.08) 50%, transparent 75%);
         filter: blur(32px);
         z-index: 0;
         pointer-events: none;
@@ -59,7 +59,7 @@
     .auth-editorial-col {
         position: relative;
         z-index: 2;
-        margin-top: -1.75rem;
+        margin-top: -0.5rem;
     }
 
     .bar-note {
@@ -175,19 +175,19 @@
         .auth-stage {
             width: 100%;
             display: grid;
-            grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
-            gap: 1.5rem;
+            grid-template-columns: minmax(0, 1.22fr) minmax(0, 0.78fr);
+            gap: 1.75rem;
             align-items: center;
         }
 
         .auth-art-col {
-            max-width: 490px;
+            max-width: 560px;
             width: 100%;
             margin: 0 auto;
         }
 
         .auth-art::before {
-            inset: 6% 4% 6% 4%;
+            inset: 10% 6% 10% 6%;
             filter: blur(36px);
             background: radial-gradient(ellipse 75% 65% at 48% 50%, rgba(244, 196, 48, 0.18) 0%, rgba(231, 111, 81, 0.09) 50%, transparent 75%);
         }
@@ -204,7 +204,7 @@
         }
 
         .auth-form-card {
-            margin-left: -4.25rem;
+            margin-left: -3rem;
             padding: 1.05rem 1.15rem 1.2rem;
         }
 
@@ -225,7 +225,7 @@
 <div class="auth-stage">
     <div class="auth-art-col">
         <div class="auth-art">
-            <img src="/static/beach-bar-sunset.webp" alt="Isometric miniature diorama of an open-air Sri Lankan beach bar named Bomu under a coastal sunset" fetchpriority="high">
+            <img src="/static/beach-bar-sunset-diorama.webp" alt="3D isometric miniature diorama of an open-air Southern Sri Lankan beach bar named Bomu at sunset, with a sleeping beach dog, oruwa boat, and Arrack sign" fetchpriority="high">
         </div>
     </div>
 
