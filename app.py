@@ -379,14 +379,15 @@ def recipe_slug(name):
 def recipe_image_url(recipe):
     """Prefer curated studio recipe assets in static/recipes/ when present,
     falling back to recipe.image_url, then None."""
-    name = recipe["name"] if recipe and "name" in recipe else ""
+    keys = recipe.keys() if recipe and hasattr(recipe, "keys") else ()
+    name = recipe["name"] if "name" in keys else ""
     slug = recipe_slug(name)
     recipes_dir = os.path.join(app.static_folder, "recipes")
     if slug and os.path.isdir(recipes_dir):
         for ext in (".webp", ".jpg", ".jpeg", ".png"):
             if os.path.isfile(os.path.join(recipes_dir, f"{slug}{ext}")):
                 return url_for("static", filename=f"recipes/{slug}{ext}")
-    img_url = recipe["image_url"] if recipe and "image_url" in recipe else None
+    img_url = recipe["image_url"] if "image_url" in keys else None
     return img_url or None
 
 
@@ -762,7 +763,7 @@ def home():
     if grouped:
         recs = get_recommendations_grouped(user_id, max_per_group=50)
     else:
-        recs = get_recommendations(user_id, max_makeable=60, max_one_away=12)
+        recs = get_recommendations(user_id, max_makeable=200, max_one_away=12)
     bottles = get_all_bottles(user_id)
     all_ingredients = get_all_ingredients(user_id)
     stocked_count = sum(1 for i in all_ingredients if i["in_stock"])
@@ -858,7 +859,7 @@ def add():
         brand = request.form.get("brand", "")
         add_bottle(uid(), name, bottle_type, brand)
         flash(f"Added {name} to your bar!")
-        if not any(i["in_stock"] for i in get_all_ingredients(uid())):
+        if request.form.get("from_scan") == "1" and not any(i["in_stock"] for i in get_all_ingredients(uid())):
             return redirect(url_for("home"))
         return redirect(url_for("bar"))
     return render_template("add_bottle.html")
@@ -906,7 +907,6 @@ def scan():
 
         filepath = _save_upload(photo)
         try:
-            log_scan(uid())
             result = scan_bottle_image(filepath)
         except Exception:
             # Full details go to the server log; the user gets a clean message
@@ -922,6 +922,7 @@ def scan():
             flash(result["error"])
             return redirect(url_for("scan"))
 
+        log_scan(uid())
         return render_template("confirm_bottle.html", bottle=result)
 
     return render_template("scan.html")
@@ -946,7 +947,6 @@ def scan_bulk():
 
         filepath = _save_upload(photo)
         try:
-            log_scan(uid())
             results = scan_shelf_image(filepath)
         except Exception:
             app.logger.exception("Shelf scan failed")
@@ -960,6 +960,7 @@ def scan_bulk():
             flash("Could not identify any bottles in the photo.")
             return redirect(url_for("scan_bulk"))
 
+        log_scan(uid())
         return render_template("confirm_bulk.html", bottles=results)
 
     return render_template("scan_bulk.html")
@@ -986,31 +987,14 @@ def confirm_bulk():
     return redirect(url_for("bar"))
 
 
-def ingredient_slug(name):
-    """'Angostura bitters' -> 'angostura_bitters'. Used to match photo files."""
-    return re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_")
-
-
-def get_ingredient_images():
-    """Map ingredient slug -> static URL for any photo tile that exists on
-    disk. Ingredients without a photo fall back to plain checkbox rows, so
-    photos can be added incrementally without touching code."""
-    img_dir = os.path.join(app.static_folder, "ingredients")
-    images = {}
-    if os.path.isdir(img_dir):
-        for fname in os.listdir(img_dir):
-            stem, ext = os.path.splitext(fname)
-            if ext.lower() in (".jpg", ".jpeg", ".png", ".webp"):
-                images[stem] = url_for("static", filename=f"ingredients/{fname}")
-    return images
-
-
 @app.route("/checklist", methods=["GET", "POST"])
 @login_required
 def checklist():
     if request.method == "POST":
-        checked_ids = [int(x) for x in request.form.getlist("ingredient")]
+        checked_ids = list(dict.fromkeys(int(x) for x in request.form.getlist("ingredient")))
         set_all_ingredients_stock(uid(), checked_ids)
+        if request.headers.get("X-Requested-With") == "fetch":
+            return {"ok": True, "stocked_count": len(checked_ids)}, 200
         flash("Mixers saved!")
         return redirect(url_for("bar", tab="mixers"))
     return redirect(url_for("bar", tab="mixers"))
@@ -1071,8 +1055,6 @@ def bar():
         total_ingredients=len(ingredients),
         new_ingredients=new_ingredients,
         new_ingredient_count=len(new_ingredients),
-        ingredient_images=get_ingredient_images(),
-        ingredient_slug=ingredient_slug,
     )
 
 
@@ -1261,14 +1243,6 @@ def recipe(recipe_id):
         if matches:
             bottle_hints[ing["id"]] = matches
 
-    # For ingredient-type rows (bitters, mixers, etc.), surface a "you have
-    # this in your stock" hint when the checklist item is in_stock.
-    ingredient_have = {}
-    for ing in r["ingredients"]:
-        if ing["requirement_type"] == "ingredient" and ing["ingredient_name"]:
-            if ing["ingredient_name"].lower() in stocked:
-                ingredient_have[ing["id"]] = ing["ingredient_name"]
-
     # Which ingredients can't be fulfilled by the user's current bar?
     missing_ids = missing_ingredient_ids(r, bottles, stocked)
 
@@ -1289,7 +1263,6 @@ def recipe(recipe_id):
         recipe=r["recipe"],
         ingredients=r["ingredients"],
         bottle_hints=bottle_hints,
-        ingredient_have=ingredient_have,
         missing_ids=missing_ids,
         enhancements=enhancements,
         enhancement_have=enhancement_have,

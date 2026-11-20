@@ -68,10 +68,15 @@
         <div style="padding: 0 0.7rem 0.7rem;">
             {% for d in disliked %}
                 {% set r = d.recipe %}
+                {% set img_url = r|recipe_image %}
                 <div class="drink-card" style="justify-content: space-between;">
                     <a href="/recipe/{{ r.id }}" style="display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 0;">
                         <div class="drink-thumb" style="width: 48px; height: 48px; border-radius: 12px;">
-                            <div class="drink-thumb-fallback">
+                            {% if img_url %}
+                                <img src="{{ img_url }}" alt="{{ r.name }}" loading="lazy"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            {% endif %}
+                            <div class="drink-thumb-fallback" {% if img_url %}style="display: none;"{% endif %}>
                                 {{ glass_icon(r.glass) }}
                             </div>
                         </div>

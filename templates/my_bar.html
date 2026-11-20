@@ -552,7 +552,7 @@
                                data-name="{{ item.name|lower }}" for="ess-{{ item.id }}">
                             <input type="checkbox" name="ingredient" value="{{ item.id }}" id="ess-{{ item.id }}"
                                    {% if item.in_stock %}checked{% endif %}>
-                            <span class="mixer-label">{{ item.name|title }}</span>
+                            <span class="mixer-label">{{ item.name }}</span>
                             <span class="mixer-check">{{ ui_icon("check") }}</span>
                         </label>
                     {% endfor %}
@@ -586,7 +586,7 @@
                                    data-name="{{ item.name|lower }}" for="ing-{{ item.id }}">
                                 <input type="checkbox" name="ingredient" value="{{ item.id }}" id="ing-{{ item.id }}"
                                        {% if item.in_stock %}checked{% endif %}>
-                                <span class="mixer-label">{{ item.name|title }}</span>
+                                <span class="mixer-label">{{ item.name }}</span>
                                 <span class="mixer-check">{{ ui_icon("check") }}</span>
                             </label>
                         {% endfor %}
@@ -611,7 +611,7 @@
                                    data-name="{{ item.name|lower }}" for="new-{{ item.id }}">
                                 <input type="checkbox" name="ingredient" value="{{ item.id }}" id="new-{{ item.id }}"
                                        {% if item.in_stock %}checked{% endif %}>
-                                <span class="mixer-label">{{ item.name|title }}</span>
+                                <span class="mixer-label">{{ item.name }}</span>
                                 <span class="mixer-check">{{ ui_icon("check") }}</span>
                             </label>
                         {% endfor %}
@@ -865,6 +865,32 @@
             }, 1800);
         }
 
+        var saveInFlight = false;
+        var savePending = false;
+        function flushMixers() {
+            if (!mixersForm) return;
+            if (saveInFlight) {
+                savePending = true;
+                return;
+            }
+            saveInFlight = true;
+            savePending = false;
+            fetch(mixersForm.action, {
+                method: "POST",
+                body: new FormData(mixersForm),
+                headers: { "X-Requested-With": "fetch" },
+                credentials: "same-origin"
+            }).then(function (resp) {
+                if (resp.ok) {
+                    var stockedNow = updateCounts();
+                    showToast("Saved \u00b7 " + stockedNow + " stocked");
+                }
+            }).catch(function () {}).finally(function () {
+                saveInFlight = false;
+                if (savePending) flushMixers();
+            });
+        }
+
         var boxes = document.querySelectorAll('input[name="ingredient"]');
         boxes.forEach(function (cb) {
             cb.addEventListener("change", function () {
@@ -875,18 +901,8 @@
                         if (lbl) lbl.classList.toggle("is-checked", cb.checked);
                     }
                 });
-                var stockedNow = updateCounts();
-                if (mixersForm) {
-                    fetch(mixersForm.action, {
-                        method: "POST",
-                        body: new FormData(mixersForm),
-                        credentials: "same-origin"
-                    }).then(function (resp) {
-                        if (resp.ok) {
-                            showToast("Saved \u00b7 " + stockedNow + " stocked");
-                        }
-                    }).catch(function () {});
-                }
+                updateCounts();
+                flushMixers();
             });
         });
     })();

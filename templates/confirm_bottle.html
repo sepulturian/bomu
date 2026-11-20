@@ -9,6 +9,7 @@
 </p>
 
 <form method="POST" action="/add">
+    <input type="hidden" name="from_scan" value="1">
     <div class="form-group">
         <label for="name">Bottle Name</label>
         <input type="text" id="name" name="name" value="{{ bottle.name }}" required>

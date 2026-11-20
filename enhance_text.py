@@ -132,7 +132,7 @@ ENHANCEMENTS = {
     },
 ],
 
-"Martinez 2": [
+"Martinez": [
     {
         "name": "Orange bitters",
         "ingredient": "Orange bitters",

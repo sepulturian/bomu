@@ -544,6 +544,8 @@ def build_one_away_spotlight(one_away_entries, ingredients, ratings, min_drinks=
             else:
                 g["bottle_type"], g["name_matched"] = _bottle_requirement(entry)
             groups[key] = g
+        elif groups[key]["name"].islower() and not missing["name"].islower():
+            groups[key]["name"] = missing["name"]
         groups[key]["drinks"].append(entry["recipe"]["recipe"])
 
     # Floor BEFORE ranking. Applied after, the mixer head start let a 1-drink

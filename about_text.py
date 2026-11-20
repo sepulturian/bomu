@@ -676,7 +676,7 @@ ABOUT = {
     "tip": "Salt half the rim, not all of it. It lets you take a sip either way and most "
            "people discover they prefer one.",
 },
-"Martinez 2": {
+"Martinez": {
     "about": "Widely treated as the missing link between the Manhattan and the Martini. "
              "Old Tom gin, sweet vermouth, maraschino and orange bitters, which makes it "
              "far sweeter and rounder than a modern Martini.",

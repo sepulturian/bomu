@@ -248,6 +248,21 @@ def main():
             failures.append(("kitchen check", "missing Quick kitchen check card for 0-ready user"))
             print("  FAIL  missing Quick kitchen check card")
 
+        # Manual POST /add on 0-mixer user stays on /bar; from_scan=1 goes to /.
+        r_manual = c.post("/add", data={"name": "Manual Gin", "type": "gin"}, follow_redirects=False)
+        if not (r_manual.status_code == 302 and "/bar" in r_manual.headers.get("Location", "")):
+            failures.append(("manual add redirect", f"expected 302 -> /bar, got {r_manual.status_code} -> {r_manual.headers.get('Location')}"))
+            print("  FAIL  manual /add redirect on 0-mixer user")
+        else:
+            print("  ok    manual POST /add (0-mixer user) -> /bar")
+
+        r_scan = c.post("/add", data={"name": "Scanned Gin", "type": "gin", "from_scan": "1"}, follow_redirects=False)
+        if not (r_scan.status_code == 302 and r_scan.headers.get("Location", "").endswith("/")):
+            failures.append(("scan add redirect", f"expected 302 -> /, got {r_scan.status_code} -> {r_scan.headers.get('Location')}"))
+            print("  FAIL  from_scan=1 /add redirect on 0-mixer user")
+        else:
+            print("  ok    POST /add (from_scan=1, 0-mixer user) -> /")
+
     print("\nLogged in:")
     with app_module.app.test_client() as c:
         visit(c, "POST", "/login", label="POST /login",
@@ -271,6 +286,11 @@ def main():
         # slugs leaked and where orphaned headings showed up.
         for qs in ("?q=gin", "?q=zzzznothing", "?group=spirit", "?group=spirit&q=camp"):
             visit(c, "GET", "/bar" + qs, follow_redirects=True)
+
+        resp_mix = visit(c, "GET", "/bar?tab=mixers", label="GET /bar?tab=mixers (apostrophe casing)")
+        if resp_mix and "Peychaud'S Bitters" in resp_mix.get_data(as_text=True):
+            failures.append(("mixer casing", "found Peychaud'S Bitters in /bar?tab=mixers"))
+            print("  FAIL  found Peychaud'S Bitters in /bar?tab=mixers")
 
         print(f"\n  Rendering all {len(recipe_ids)} recipe pages:")
         bad = 0
@@ -297,6 +317,18 @@ def main():
             visit(c, "POST", f"/rate/{rid}", label=f"POST /rate/{rid} (clear)",
                   data={"thumb": "1"}, follow_redirects=True)
 
+        r_chk_fetch = c.post(
+            "/checklist",
+            data={"ingredient": []},
+            headers={"X-Requested-With": "fetch"},
+            follow_redirects=False,
+        )
+        if r_chk_fetch.status_code != 200 or not r_chk_fetch.is_json or not r_chk_fetch.get_json().get("ok"):
+            failures.append(("checklist fetch JSON", f"got status={r_chk_fetch.status_code}, json={r_chk_fetch.get_data(as_text=True)}"))
+            print("  FAIL  POST /checklist (X-Requested-With: fetch)")
+        else:
+            print("  ok    POST /checklist (X-Requested-With: fetch) HTTP 200 JSON")
+
         visit(c, "POST", "/checklist", data={"ingredient": []}, follow_redirects=True)
         visit(c, "POST", "/stock-add", data={"ingredient": []}, follow_redirects=True)
 
@@ -320,6 +352,14 @@ def main():
         print(f"\n  ok    scans_today_global() = {database.scans_today_global()}")
 
     conn = sqlite3.connect(scratch)
+    conn.row_factory = sqlite3.Row
+    raw_row = conn.execute("SELECT * FROM recipes WHERE image_url IS NOT NULL AND image_url != '' LIMIT 1").fetchone()
+    with app_module.app.test_request_context("/"):
+        if not raw_row or not app_module.recipe_image_url(raw_row):
+            failures.append(("recipe_image_url sqlite3.Row", "returned None for sqlite3.Row"))
+            print("\n  FAIL  recipe_image_url(sqlite3.Row) returned None")
+        else:
+            print("\n  ok    recipe_image_url(sqlite3.Row) works")
     junk = conn.execute(
         "SELECT type FROM bottles WHERE name = 'Verify Junk Bottle'").fetchone()
     spam = conn.execute(

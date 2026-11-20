@@ -434,12 +434,12 @@
                     {% if clean_note %}
                         <span class="pour-sub is-dim" style="display: block;">{{ clean_note }}</span>
                     {% endif %}
-                    {% if bottle_hints.get(i.id) %}
+                    {% if is_missing %}
+                        <span class="pour-sub is-missing" style="display: block;">Missing from bar</span>
+                    {% elif bottle_hints.get(i.id) %}
                         <span class="pour-sub" style="display: block;">
                             Use your: {% for b in bottle_hints[i.id] %}<strong>{{ b|short_name }}</strong>{% if not loop.last %}, {% endif %}{% endfor %}
                         </span>
-                    {% elif is_missing %}
-                        <span class="pour-sub is-missing" style="display: block;">Missing from bar</span>
                     {% endif %}
                 </span>
                 <span class="pour-measure">

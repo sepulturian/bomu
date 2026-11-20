@@ -46,7 +46,7 @@ matches the SQLite constraint/index schema.
 | 1 | aaron | 18 | 19 / 51 | 34 | 70 |
 | 2 | Avishka | 0 | 0 | 0 | 0 |
 | 3 | Rajapaksha | 0 | 0 | 0 | 0 |
-| 4 | lenasheh (Shehan) | 16 | 4 | 0 | 14 |
+| 4 | lenasheh (Shehan) | 16 | 4 | 0 | 13 |
 | 5 | Maho | 1 | 12 | 1 | 13 |
 
 Aaron went 22 → 34 between 2026-07-26 and 2026-11-15 purely by ticking 3 more
@@ -590,7 +590,12 @@ without it keep the triangle deliberately, since it's the only affordance saying
 8. **Audit the remaining checklist labels** the way `Grape Soda` was audited.
    That one was found by reading the Paloma's note, not by any systematic pass;
    there may be others that are ambiguous or plain wrong, and the nudge now
-   reads every label out loud as a shopping instruction.
+   reads every label out loud as a shopping instruction. Also from 2026-11-19
+   QA: `Maraschino cherries` has `0` required recipes (19 optional garnishes
+   only), and cream requirements are split between `Heavy cream` (`Brandy
+   Alexander`, `Ramos Gin Fizz`, `Bee's Kiss`, `White Russian`) and `Light
+   Cream` (`Pink Lady`, `Grasshopper`, `Toasted Almond`) — consider collapsing
+   or clarifying in My Bar.
 9. ~~**Recipe images.**~~ Done 2026-11-15 in `07db78f`: 98 studio WebPs cover
    every recipe without an `image_url`.
 10. **Grow the catalog** past 171. Lowest priority: 2026-07-25 proved catalog
@@ -624,6 +629,17 @@ without it keep the triangle deliberately, since it's the only affordance saying
     in `app.py` (`inject_current_user()` looks up `username` from `get_user()`
     when only `user_id` is in `session`), and `hide_account` was removed from
     empty-bar `tonight.html`.
+20. **Regenerate near-twin recipe studio WebPs (+ check 73 remote URLs).**
+    2026-11-19 QA confirmed 0 byte-identical files and 0 duplicate URLs across
+    171 recipes, but 94/98 generated `static/recipes/*.webp` files reuse ~5
+    base bar backdrops/templates (`74` share the angled dark-wood scene; `11`
+    share the brass-rail + candle scene), creating visual near-twins at card
+    size: `affinity` ↔ `greenpoint`, `adonis` / `harvard` / `bamboo` /
+    `old_pal`, `dirty_martini` ↔ `gibson`, `cardinale` ↔ `milano_torino`,
+    `bees_kiss` ↔ `mary_pickford`, `brooklyn` / `camerons_kick` / `rob_roy` /
+    `remember_the_maine`, `algonquin` ↔ `brown_derby`, and `mamie_taylor` ↔
+    `scotch_highball`. Also probe the 73 TheCocktailDB `image_url` values over
+    HTTPS to confirm none 404.
 
 ---
 
@@ -1363,6 +1379,49 @@ Started with a `/grill-me` alignment interview to prioritize what matters most a
 - Browser subagent visual verification at `375x812` and `1280x800` against scratch preview server: verified `/signup`, empty-bar 2-step onboarding + live count, `testkitchen` Quick Kitchen Check unlock flow (`0 -> 6` ready drinks), and active Tonight view with zero horizontal overflow. (Caught and fixed missing `.btn` class on Step 2's `<- Back` `.btn-ghost` button afterward.)
 - Authoritative live Neon read (`backend: postgres`, `recipes: 171`): Aaron `34/70` (spotlight `Grapefruit juice`), Avishka `0/0`, Rajapaksha `0/0`, Shehan `0/14` (`kitchen_check` 10 picks / max `21` unlockable), Maho `1/13`.
 
-**Still open:** `#17` (Aaron to delete old `step_88.json` log and rotate Neon password), `#5` (rum/gin/sherry sub-types), `#7` (ambiguous bottle prompts), `#8` (checklist label audit), `#10` (catalog growth), `#13` (Sazerac base judgement call), `#18` (optional Porkbun DNS).
+**Still open:** `#17` (Aaron to delete old `step_88.json` log and rotate Neon password), `#5`, `#7`, `#8`, `#10`, `#13`, `#18`.
+
+### 2026-11-19 (second session) — QA review, recipe spec fixes & app bug bundle (Antigravity)
+
+Followed up the login-link invite-copy fix (`0949ece`) with a comprehensive codebase, image, schema, and template QA pass, then shipped the recipe spec + app bug bundle and recorded the remaining visual/cleanup items for next session.
+
+**Recipe spec fixes (`migrate_qa_specs_2026_11.py`, `about_text.py`, `enhance_text.py`):**
+- **Americano:** Inserted required `Soda water / club soda` (`2 oz`, shifting optional twists to `sort_order` 3/4) and updated step 3 so it is no longer spec-identical to Milano-Torino.
+- **White Russian:** Promoted `Light cream` row from `optional` (`ingredient_name=NULL`) to required `ingredient` pointing at `Heavy cream` (`1 oz`) and updated step 3 so it is no longer spec-identical to Black Russian.
+- **Vodka Martini & Woo Woo:** Downgraded garnish rows (`Olive` / `Lime wedge`) from required `ingredient` to `optional`.
+- **Sazerac & Mint Julep:** Downgraded `Water` rows from required `ingredient` (`ingredient_name='Water'`) to `optional` (`ingredient_name=NULL`).
+- **Dry Rob Roy:** Promoted `Angostura bitters` from `optional` to required `ingredient` (matching `Rob Roy` and its own note).
+- **Martinez:** Renamed `'Martinez 2'` -> `'Martinez'` in DB, `about_text.py`, and `enhance_text.py`.
+
+**App & UI bug bundle:**
+- *Login copy (`0949ece`):* Removed remaining `"Sign up with an invite code"` copy in `templates/login.html` -> `"Create an account"`.
+- *Mixers autosave race & HTML overhead (`templates/my_bar.html`, `app.py`):* Serialized `POST /checklist` `fetch` calls with an `inFlight` + `pending` queue and `X-Requested-With: fetch`; `/checklist` now deduplicates ids and returns `{"ok": true, "stocked_count": N}` JSON instead of redirecting/rendering full HTML.
+- *Apostrophe casing (`templates/my_bar.html`):* Dropped `|title` on ingredient labels (`Peychaud'S Bitters` -> `Peychaud's bitters`).
+- *Split-base missing row hint (`templates/recipe.html`):* Checked `{% if is_missing %}` before `{% elif bottle_hints.get(i.id) %}` so an unfilled second whiskey slot shows `Missing from bar` rather than contradicting itself with `Use your: ...`.
+- *Manual `/add` vs scan redirect (`app.py`, `templates/confirm_bottle.html`):* Manual bottle adds on `/bar` stay on `/bar` even when `stocked_count == 0`; only `from_scan=1` (`confirm_bottle.html`) and `/confirm-bulk` redirect 0-mixer users back to `/` for Quick Kitchen Check.
+- *Tonight cap, scan credit safety, spotlight casing & `sqlite3.Row` (`app.py`, `matching.py`):* Raised `home()` `max_makeable` `60 -> 200`; moved `log_scan()` in `/scan` and `/scan-bulk` after successful API identification (`error` / empty parse no longer burns daily scan slots); upgraded lowercase `build_one_away_spotlight()` group labels to title case when seen; fixed `recipe_image_url()` to use `recipe.keys()` so raw `sqlite3.Row` works; removed dead `ingredient_slug()`, `get_ingredient_images()`, and unused `ingredient_have` in `recipe()`.
+- *Disliked thumbnails (`templates/saved.html`):* "Not for me" accordion now renders recipe photos with fallback glass SVG instead of glass SVG only.
+
+**QA image audit finding (saved as Backlog #20 for next session):**
+- **0 byte-identical files, 0 duplicate resolved URLs, 0 missing images, 0 orphan WebPs** across all 171 recipes (`98` local WebPs + `73` CocktailDB URLs) and `39/51` ingredient photos (`0` duplicate ingredient photos; `12` ingredients without photos aren't displayed since the My Bar redesign dropped ingredient tile photos).
+- **However, 94/98 local WebPs share ~5 recycled base studio backdrops** (`74` share the angled dark-wood scene; `11` share brass-rail + candle), producing visual near-twins at card size (`affinity` ↔ `greenpoint`, `adonis`/`harvard`/`bamboo`/`old_pal`, `dirty_martini` ↔ `gibson`, `cardinale` ↔ `milano_torino`, `bees_kiss` ↔ `mary_pickford`, `brooklyn`/`camerons_kick`/`rob_roy`/`remember_the_maine`, `algonquin` ↔ `brown_derby`, `mamie_taylor` ↔ `scotch_highball`).
+
+**Verified:**
+- `migrate_qa_specs_2026_11.py` ran cleanly and idempotently on both `bomu.db` and live Neon Postgres (`--postgres --commit`; 12 actions -> 0 on re-run).
+- `check_specs.py` (`FORCE_SQLITE=1`): `171 recipes checked, 0 with at least one flag`.
+- `sweep_namematch.py` (`FORCE_SQLITE=1`): `0 BROKEN, 6 REVIEW`.
+- `match_recipe()` vs `missing_ingredient_ids()` parity: `0` mismatches across all 5 users × 171 recipes.
+- Extended `verify_routes.py` (`FORCE_SQLITE=1`): all routes + `171/171` recipe pages pass (including `recipe_image_url(sqlite3.Row)`, `POST /checklist` `X-Requested-With: fetch` JSON, `Peychaud'S Bitters` absence, manual vs `from_scan=1` redirects).
+- Authoritative live Neon read (`backend: postgres`, `recipes: 171`, `Martinez` id=9):
+  - `aaron`: `34/70` (`spot=Grapefruit juice`, unchanged)
+  - `Avishka` & `Rajapaksha`: `0/0`
+  - `lenasheh` (Shehan): `0/14 -> 0/13` (`Dry Rob Roy` now honestly requires `Angostura bitters`; `kitchen_check` still 10 picks unlocking up to `21` drinks)
+  - `Maho`: `1/13` (unchanged)
+
+**Pick up next session:**
+1. **Regenerate near-twin recipe WebPs + check 73 CocktailDB URLs (`#20`).**
+2. **Security chore (`#17`):** Aaron to delete `step_88.json` log and rotate Neon password.
+3. **Remaining backlog (`#5` rum/gin/sherry sub-types, `#7` ambiguous bottle prompts, `#8` checklist label & cream/cherry cleanup, `#13` Sazerac base, `#18` optional Porkbun DNS).**
+
 
 
