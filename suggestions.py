@@ -88,6 +88,7 @@ SUGGESTIONS = {
     "pineapple juice": ["Dole", "fresh-squeezed if you can"],
     "grapefruit juice": ["fresh ruby red", "Ocean Spray"],
     "orange juice": ["fresh-squeezed", "Tropicana"],
+    "cream of coconut": ["Coco López", "Coco Real"],
     "coconut cream": ["Coco López", "Coco Real"],
 
     # --- Pantry / DIY ---

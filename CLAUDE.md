@@ -31,35 +31,37 @@ see the other's chat history, so anything not written here is lost.
 
 ## Where things stand
 
-Live and healthy. 171 recipes, 51 ingredients, 5 users, 35 bottles logged.
+Live and healthy. 171 recipes, 49 ingredients, 5 users, 35 bottles logged.
 Open signup is enabled (`INVITE_CODE` removed; guarded by an offscreen honeypot
 and a shared `SCAN_GLOBAL_DAILY_LIMIT = 60` cap alongside the `15`/user/day cap).
 Catalog & DB hygiene are clean: `check_specs.py` reports 0 flags across 171
 recipes, `sweep_namematch.py` reports 0 BROKEN rows, and Neon `recipe_enhancements`
 matches the SQLite constraint/index schema.
 
-**Counts below were read off live Neon on 2026-11-19** via
+**Counts below were read off live Neon on 2026-11-20** via
 `matching.get_recommendations()`, not simulated.
 
 | id | user | bottles | mixers ticked | makeable | one-away |
 |---|---|---|---|---|---|
-| 1 | aaron | 18 | 19 / 51 | 34 | 70 |
+| 1 | aaron | 18 | 18 / 49 | 35 | 69 |
 | 2 | Avishka | 0 | 0 | 0 | 0 |
 | 3 | Rajapaksha | 0 | 0 | 0 | 0 |
-| 4 | lenasheh (Shehan) | 16 | 4 | 0 | 13 |
+| 4 | lenasheh (Shehan) | 16 | 3 | 0 | 13 |
 | 5 | Maho | 1 | 12 | 1 | 13 |
 
-Aaron went 22 → 34 between 2026-07-26 and 2026-11-15 purely by ticking 3 more
-mixers on the live site (16 → 19); the catalog did not change. Avishka,
-Rajapaksha, and Shehan still have 0 makeable in the DB until they next open
-Tonight, where 2-step empty-bar onboarding (`POST /quick-setup`) and the
-0-ready Quick Kitchen Check card (10 kitchen picks unlocking up to 21 drinks for
-Shehan) now guide them directly to their first pour.
+Aaron went 22 → 34 between 2026-07-26 and 2026-11-15 by ticking 3 more mixers on
+the live site, then 34 → 35 on 2026-11-20 when `Moscow Mule` moved from `Ginger ale`
+to `Ginger beer` (ticked mix dropped 19 → 18 and Shehan 4 → 3 after removing
+unused `Water`). Avishka, Rajapaksha, and Shehan still have 0 makeable in the DB
+until they next open Tonight, where 2-step empty-bar onboarding (`POST /quick-setup`)
+and the 0-ready Quick Kitchen Check card now guide them directly to their first pour.
 
-**Live has diverged from the local snapshot.** `bomu_live.db` / `bomu.db` still
-hold Aaron at 16 mixers (22 / 72). Catalog tables match live exactly; per-user
-tables (`user_stock`, `bottles`, `ratings`) drift as people use the app. Read
-user counts from Neon, never from the snapshot.
+**Live has diverged from the local snapshot.** `bomu_live.db` holds the frozen
+2026-11-15 snapshot (Aaron at 16 mixers, 22 / 72; 51 ingredients); `bomu.db`
+matches live Neon's catalog tables (`171` recipes, `49` ingredients) after the
+2026-11-19 and 2026-11-20 migrations, while per-user tables (`user_stock`,
+`bottles`, `ratings`) on Neon drift as people use the app. Read user counts from
+Neon, never from the snapshot.
 
 ### 2026-07-29 commits (no session log was written at the time)
 
@@ -101,8 +103,8 @@ with `git add -A`.
 - **Database:** **Neon Postgres** project `broad-water-80207736` in production (`DATABASE_URL`), with automatic local SQLite fallback when `DATABASE_URL` is unset (or `FORCE_SQLITE=1`).
 - **Local Dev Data & Env:**
   - `.env` (gitignored) holds `DATABASE_URL`, `DATABASE_URL_UNPOOLED`, and `ANTHROPIC_API_KEY` pointing to the active Neon Postgres database (verify with `matching.get_recommendations(1)`). Unset `DATABASE_URL` (or pass `FORCE_SQLITE=1`) to run against local SQLite.
-  - `bomu_live.db` (gitignored) is the full 171-recipe multi-user SQLite snapshot downloaded from PythonAnywhere on 2026-11-15 (`venv\Scripts\python.exe verify_routes.py --db bomu_live.db`).
-  - `bomu.db` is now **byte-identical to `bomu_live.db`** (checked 2026-11-15), so the SQLite fallback is a real multi-user copy, not the old stale one. Its per-user rows are frozen at the snapshot and already behind live.
+  - `bomu_live.db` (gitignored) is the untouched 171-recipe, 51-ingredient multi-user SQLite snapshot downloaded from PythonAnywhere on 2026-11-15 (`venv\Scripts\python.exe verify_routes.py --db bomu_live.db`).
+  - `bomu.db` was seeded from `bomu_live.db` on 2026-11-15 and has since received the 2026-11-19 and 2026-11-20 catalog migrations (matching live Neon's catalog tables, behind Neon on per-user tables).
   - **`load_dotenv()` finds `.env` relative to the calling script, not the cwd.** A helper script saved outside the repo (scratchpad, `%TEMP%`) silently gets no `DATABASE_URL` and runs against SQLite while you think you're reading Neon. Print `database._is_postgres()` before trusting any "live" number.
 - **Vercel Environment Variables (names only):** `DATABASE_URL`, `ANTHROPIC_API_KEY`, `SECRET_KEY`, `SECURE_COOKIES`. Updated under Vercel -> Project Settings -> Environment Variables (requires a Redeploy to take effect).
 
@@ -232,11 +234,7 @@ own" suggestions shown on the recipe page. Columns `recipe_id`, `name`,
 it cannot change makeability. `migrate_enhancements.py` refuses rows with no
 source, rows naming a nonexistent checklist ingredient, and rows duplicating
 something the recipe already requires. It deletes rows whose name is no longer
-in `enhance_text.py` (renames), and `--postgres` writes to Neon. On Neon the
-table has **no UNIQUE (recipe_id, name)** constraint, so `ON CONFLICT` fails
-there; the script uses update-then-insert. The page shows `source` only as a
-tag, "By the book" or "Bartender's habit"; the copy rules are rule 5 in
-`enhance_text.py`.
+in `enhance_text.py` (renames), and `--postgres` writes to Neon. `migrate_hygiene_2026_11.py` restored `UNIQUE (recipe_id, name)`, `NOT NULL` defaults, and `idx_recipe_enhancements_recipe` on Neon on 2026-11-19 (matching `database.init_db()`), while still using update-then-insert for portability. The page shows `source` only as a tag, "By the book" or "Bartender's habit"; the copy rules are rule 5 in `enhance_text.py`.
 
 Users as of 2026-07-24: 1 aaron, 2 Avishka, 3 Rajapaksha, 4 lenasheh (Shehan,
 Aaron's brother), 5 Maho.
@@ -248,7 +246,7 @@ The important table. `requirement_type` is one of:
 | value | meaning |
 |---|---|
 | `bottle_type` | needs a bottle. See matching rules below. |
-| `ingredient` | matches the user's Mixers checklist by exact `ingredient_name`. Must already exist in `ingredients` (51 rows) or it can never be satisfied. |
+| `ingredient` | matches the user's Mixers checklist by exact `ingredient_name`. Must already exist in `ingredients` (49 rows) or it can never be satisfied. |
 | `optional` | garnishes, rinses, floats. Never blocks makeability. |
 
 **`raw_name` and `ingredient_name` are two different columns and confusing them
@@ -317,16 +315,17 @@ catches violations under SHAPE.
 ### ingredients
 
 Checklist rows are **user-facing shopping instructions**, not internal keys. The
-mixer-gap nudge names them out loud and tells people to go buy them, so a wrong
+nudge and spotlight read them out loud and tell people to go buy them, so a wrong
 or ambiguous label is the app confidently sending someone to the wrong shelf.
-That is why `Grape Soda` became `Grapefruit soda` on 2026-07-25.
+That is why `Grape Soda` became `Grapefruit soda` on 2026-07-25 and
+`Coconut cream` became `Cream of coconut` on 2026-11-20.
 
-A rename is four things, not one: the `ingredients` row, every
-`recipe_ingredients` row pointing at it, the `user_stock` ticks, **and the photo
-in `static/ingredients/`**. The photo is matched purely by slug
-(`ingredient_slug(name)`), so renaming the row silently repoints the tile at a
-file that doesn't exist — or worse, leaves a correct-looking tile showing the
-wrong product. `grape_soda.jpg` really was a picture of purple grape soda.
+A rename touches five places: the `ingredients` row, `recipe_ingredients` rows
+(`ingredient` and `optional`), `recipe_enhancements` rows, `user_stock` ticks
+(if merging or clearing), plus `SEED_INGREDIENTS` in `database.py` and
+`SUGGESTIONS` in `suggestions.py` where applicable. (My Bar dropped ingredient
+tile photos in the `07db78f` redesign and `ingredient_slug()` was deleted in
+`deb8d0e`, so `static/ingredients/` is no longer read by the app.)
 
 ---
 
@@ -344,18 +343,15 @@ the requirement is permanently unsatisfiable. Campari must not match Cointreau
 just because both are liqueurs.
 
 Keys come from `_liqueur_keys(raw_name, notes)`, which returns **whole strings
-only**: the folded source, plus one variant with `NOISE_WORDS` removed. It never
-splits a string into candidate sub-names. So a source that reads like a sentence
-is unsatisfiable, because no bottle is named `Elderflower Liqueur (St-Germain)`.
-This is what `sweep_namematch.py` audits. Two known sharp edges:
+only**: the folded source, plus one variant with brackets and noise words
+(`\b(?:liqueur|liquor|the)\b`) stripped on word boundaries. It never splits a
+string into candidate sub-names. So a source that reads like a sentence is
+unsatisfiable, because no bottle is named `Elderflower Liqueur (St-Germain)`.
+This is what `sweep_namematch.py` audits. One known sharp edge:
 
-- `NOISE_WORDS` is applied by plain `str.replace`, not word boundaries, so
-  `"the"` is stripped from inside words: `Green Creme de Menthe` also yields the
-  key `green creme de men`. Harmless today only because the unstripped key still
-  matches. Word-boundary replacement would fix it (backlog #16).
-- Brackets are in `NOISE_WORDS` but their *contents* are not, so
-  `Cointreau (orange liqueur)` yields `cointreau orange`, splicing two words
-  that were never adjacent. Neither key matches a bottle named `Cointreau`.
+- Brackets are stripped, not their *contents*, so `Cointreau (orange liqueur)`
+  yields `cointreau orange`, splicing two words that were never adjacent.
+  Neither key matches a bottle named `Cointreau`. Keep notes concise.
 
 Name matching is **accent-insensitive** as of 2026-07-26. `_fold()` normalises
 both sides. Before that, a row reading `Bénédictine` could never be satisfied by
@@ -560,86 +556,30 @@ without it keep the triangle deliberately, since it's the only affordance saying
 
 ## Backlog
 
-1. ~~**Never-started users.**~~ Done 2026-11-19: empty-bar Tonight (`bottle_count == 0`)
-   now renders 2-step onboarding right on `/` (`Scan a shelf` / `Scan a bottle`
-   or 12 starter spirit tiles → 12 kitchen basics with `Sugar` and `Salt`
-   pre-ticked and live `Show my N drinks →` counting via `build_onboarding_data()`
-   and `POST /quick-setup`).
-2. ~~**Empty-state onboarding, partially addressed.**~~ Done 2026-11-19: users
-   with bottles logged and 0 makeable (like Shehan) now get a personalized
-   **Quick Kitchen Check** card on Tonight (`build_kitchen_check()` greedy
-   set-cover over non-wine 1/2/3+ away kitchen blockers), surfacing 10 picks
-   (21 unlockable drinks for Shehan) with live unlock preview and additive
-   `POST /stock-add`.
-3. ~~**Tune the spotlight.**~~ Done 2026-11-19: `build_one_away_spotlight()` now
-   rotates daily by date across the top 4 eligible blockers (`day_seed`), and
-   the spotlight is suppressed when a 0-ready user is shown the Quick Kitchen
-   Check card.
-4. ~~**Fix local dev.**~~ Effectively done 2026-11-15: `bomu.db` is now the
-   multi-user snapshot and `.env` points at Neon. Remaining nicety: a way to
-   refresh the snapshot from Neon, since per-user rows already lag live.
-5. **Rum, gin and sherry sub-types.** Identical defect to the vermouth one
-   already fixed: light vs aged vs Jamaican rum are not interchangeable, and
-   sloe gin is a liqueur, not gin. `sherry` has no type at all: Adonis, Bamboo
-   and Sherry Cobbler sit on `other` and match by the word "sherry", so fino,
-   amontillado and cream sherry are interchangeable to the matcher. Adonis
-   specifically says cream sherry will ruin it. (Merged old #12 into this.)
-6. ~~**Commit a `verify_routes.py`.**~~ Done 2026-07-26. See Verification.
-7. **Ambiguous bottle prompts.** A one-tap "sweet or dry?" nudge in My Bar would
-   resolve legacy generic bottles over time.
-8. **Audit the remaining checklist labels** the way `Grape Soda` was audited.
-   That one was found by reading the Paloma's note, not by any systematic pass;
-   there may be others that are ambiguous or plain wrong, and the nudge now
-   reads every label out loud as a shopping instruction. Also from 2026-11-19
-   QA: `Maraschino cherries` has `0` required recipes (19 optional garnishes
-   only), and cream requirements are split between `Heavy cream` (`Brandy
-   Alexander`, `Ramos Gin Fizz`, `Bee's Kiss`, `White Russian`) and `Light
-   Cream` (`Pink Lady`, `Grasshopper`, `Toasted Almond`) — consider collapsing
-   or clarifying in My Bar.
-9. ~~**Recipe images.**~~ Done 2026-11-15 in `07db78f`: 98 studio WebPs cover
-   every recipe without an `image_url`.
-10. **Grow the catalog** past 171. Lowest priority: 2026-07-25 proved catalog
-    size is not what's limiting anyone.
-11. ~~**Record the real server counts.**~~ Done 2026-07-26, re-read from Neon
-    2026-11-15. Table at the top of this file.
-12. ~~**Sherry sub-type.**~~ Merged into #5.
-13. **The Sazerac base is a live judgement call.** Moved from bourbon to rye on
-    2026-07-26 for correctness, which *removes* the drink from a bourbon-only
-    shelf. `SAZERAC_BASE_TYPE` at the top of `fix_recipe_specs.py` reverts it in
-    one line. Revisit if anyone complains.
-14. ~~**Push the corrected `sweep_namematch.py`.**~~ Done in `7b6fa39`; it now
-    reads `raw_name`. (`2745190` read `ingredient_name` and reported ~35 false
-    BROKEN rows; don't run that revision.)
-15. ~~**Hugo Spritz, `recipe_ingredients` row 398.**~~ Done 2026-11-19 via
-    `migrate_hygiene_2026_11.py` on both local `bomu.db` and live Neon:
-    `raw_name = 'Elderflower Liqueur'`, `notes = 'St-Germain'`. `sweep_namematch.py`
-    now reports 0 BROKEN.
-16. ~~**Word-boundary `NOISE_WORDS` in `_liqueur_keys`.**~~ Done 2026-11-19 in
-    `matching.py` (`\b(?:liqueur|liquor|the)\b` + bracket stripping); `Green
-    Creme de Menthe` now yields only `'green creme de menthe'`.
+*(Existing IDs preserved so references in earlier session logs stay readable.)*
+
+5. **Rum and sherry sub-types.** Light vs aged vs Jamaican rum are not
+   interchangeable, and `sherry` has no type at all: Adonis, Bamboo, and Sherry
+   Cobbler sit on `other` and match by the word "sherry", so fino, amontillado,
+   and cream sherry are interchangeable to the matcher. Adonis specifically says
+   cream sherry will ruin it. *(Old `#12` merged in; "gin / sloe gin" removed
+   2026-11-20 because 0 catalog recipes use sloe/Old Tom/Plymouth/Genever and
+   scanner prompts already enforce full-strength ~30%+ ABV.)*
 17. **Delete the leaked connection string and rotate the Neon password.** The
     Antigravity log `~\.gemini\antigravity\brain\179a4452-...\browser_sandbox\outputs\step_88.json`
     still exists (checked 2026-11-15) and holds the `DATABASE_URL` extracted
     during recovery. Delete it, then reset the `neondb_owner` password in the
     Neon console and update `DATABASE_URL` in Vercel (redeploy) and in local
     `.env` (`DATABASE_URL`, `DATABASE_URL_UNPOOLED`). Aaron's action.
-18. **Optional: Porkbun DNS to per-project Vercel targets.** Current records work;
-    see the 2026-11-15 (first) log entry for the suggested values.
-19. ~~**Sign-out unreachable for cookies without `username`.**~~ Done 2026-11-19
-    in `app.py` (`inject_current_user()` looks up `username` from `get_user()`
-    when only `user_id` is in `session`), and `hide_account` was removed from
-    empty-bar `tonight.html`.
 20. **Regenerate near-twin recipe studio WebPs (+ check 73 remote URLs).**
-    2026-11-19 QA confirmed 0 byte-identical files and 0 duplicate URLs across
-    171 recipes, but 94/98 generated `static/recipes/*.webp` files reuse ~5
-    base bar backdrops/templates (`74` share the angled dark-wood scene; `11`
-    share the brass-rail + candle scene), creating visual near-twins at card
-    size: `affinity` ↔ `greenpoint`, `adonis` / `harvard` / `bamboo` /
-    `old_pal`, `dirty_martini` ↔ `gibson`, `cardinale` ↔ `milano_torino`,
-    `bees_kiss` ↔ `mary_pickford`, `brooklyn` / `camerons_kick` / `rob_roy` /
-    `remember_the_maine`, `algonquin` ↔ `brown_derby`, and `mamie_taylor` ↔
-    `scotch_highball`. Also probe the 73 TheCocktailDB `image_url` values over
-    HTTPS to confirm none 404.
+    **11/13 shipped live 2026-11-20; 2 remaining.** All `73/73` TheCocktailDB
+    `image_url` values verified HTTP 200 (`image/*`). Shipped `11/13`
+    regenerated WebPs (`old_pal`, `bamboo`, `harvard`, `vermouth_cocktail`,
+    `greenpoint`, `camerons_kick`, `rob_roy`, `gibson`, `mary_pickford`,
+    `milano_torino`, `brown_derby` at `480x480`, `sw.js` bumped to `bomu-v9`).
+    Remaining `2` (`mamie_taylor.webp` vs `scotch_highball.webp` and
+    `woo_woo.webp` vs `cape_codder.webp`) hit the image-generator 5-hour quota
+    (`429 RESOURCE_EXHAUSTED`, resets `2026-11-20T20:00:45Z`).
 
 ---
 
@@ -1422,6 +1362,39 @@ Followed up the login-link invite-copy fix (`0949ece`) with a comprehensive code
 1. **Regenerate near-twin recipe WebPs + check 73 CocktailDB URLs (`#20`).**
 2. **Security chore (`#17`):** Aaron to delete `step_88.json` log and rotate Neon password.
 3. **Remaining backlog (`#5` rum/gin/sherry sub-types, `#7` ambiguous bottle prompts, `#8` checklist label & cream/cherry cleanup, `#13` Sazerac base, `#18` optional Porkbun DNS).**
+
+### 2026-11-20 — Backlog cleanup, #8 Mixers checklist overhaul & #20 recipe photo refresh (Antigravity)
+
+Audited the 20-item backlog against the codebase and `bomu.db`, pruned completed/redundant items and stale context in `CLAUDE.md`, shipped `#8` across both local `bomu.db` and live Neon Postgres, and shipped `11/13` photo regenerations + `73/73` remote URL checks for `#20` to `origin/main` after Aaron previewed locally.
+
+**Backlog & doc cleanup (`CLAUDE.md`, `matching.py`):**
+- Pruned 12 completed/merged items (`#1`–`#4`, `#6`, `#9`, `#11`, `#12`, `#14`–`#16`, `#19`) and 4 redundant/moot items (`#7` legacy generic bottles no longer exist except Japanese blend Nikka; `#10` catalog growth already settled; `#13` Sazerac base settled; `#18` optional Porkbun DNS already working). Trimmed "gin / sloe gin" from `#5`. Left `#17` untouched.
+- Updated the 4 stale context sections (`bomu.db` vs `bomu_live.db`, Neon `recipe_enhancements` constraint parity, removal of `static/ingredients/` / `ingredient_slug()` from rename steps, word-boundary `_liqueur_keys()`), and removed dead `NOISE_WORDS` constant in `matching.py`.
+
+**`#8` Mixers checklist overhaul (`migrate_checklist_2026_11.py`, `database.py`, `suggestions.py`, `bomu.db`, Neon Postgres):**
+- Removed unused `Water` (0 required recipes; cleared 2 `user_stock` ticks); kept `Maraschino cherries` so the 8 `recipe_enhancements` tags keep working. Checklist `51 -> 49` rows on both SQLite and Neon.
+- Merged `Light Cream` -> `Heavy cream` (portable `user_stock` tick transfer + `recipe_ingredients`/`recipe_enhancements` repoint + delete).
+- Normalized 12 checklist labels (`Coconut cream` -> `Cream of coconut` plus sentence casing across Title Case items), clarified `Pina Colada`'s coconut note (`Coco López`), fixed 10 misplaced `ingredients.category` buckets, and updated `Moscow Mule` from `Ginger ale` -> `Ginger beer` (ingredient row + step 3).
+- Updated `SEED_INGREDIENTS` in `database.py` (`Cream of coconut` in `auto`, `Heavy cream` in `pantry`) and added `"cream of coconut"` in `suggestions.py`.
+- `migrate_checklist_2026_11.py --postgres --commit` executed 41 actions cleanly and re-ran idempotently (`0` planned actions).
+
+**`#20` Recipe photos (`static/recipes/*.webp`, `static/sw.js`):**
+- Probed all `73/73` TheCocktailDB `image_url` values over HTTPS (`HEAD` / `GET` fallback): **`73/73` HTTP 200 (`image/*`)**, `0` broken.
+- Regenerated and visually inspected `11/13` near-twin local WebPs (`480x480` RGB WebP): `old_pal`, `bamboo`, `harvard`, `vermouth_cocktail`, `greenpoint`, `camerons_kick`, `rob_roy`, `gibson`, `mary_pickford`, `milano_torino`, `brown_derby` (distinct glasses, surfaces, angles, and zero recycled brass-rail/candle props). Bumped `CACHE_VERSION` to `bomu-v9` in `static/sw.js`.
+- **Quota hit on final 2:** `mamie_taylor.webp` and `woo_woo.webp` failed with `429 RESOURCE_EXHAUSTED` on `gemini-3.1-flash-image` (quota resets `2026-11-20T20:00:45Z`). Pairwise RMSE check across all 98 WebPs dropped `< 18` twin pairs from 6 clusters / 14 files down to 1 (`harvard` ↔ `vermouth_cocktail` at 16.2, visually distinct cut-crystal walnut vs smooth glass on linen coaster).
+
+**Verified:**
+- Local (`FORCE_SQLITE=1`): `check_specs.py` `171` checked / `0` flags; `sweep_namematch.py` `0 BROKEN, 6 REVIEW`; `verify_routes.py` (both `bomu.db` and `--db bomu_live.db`) all routes + `171/171` recipe pages pass; `match_recipe()` vs `missing_ingredient_ids()` `0` mismatches across 5 users × 171 recipes; rendered `/bar?tab=mixers`, `Moscow Mule`, `Pina Colada`, `get_suggestions('Cream of coconut')`, and `171/171` image inventory.
+- Authoritative live Neon read (`backend: postgres`, `recipes: 171`, `ingredients: 49`, `bottles: 35`):
+  - `aaron`: `34/70 -> 35/69` (`Moscow Mule` unlocked by `Ginger beer` tick; `18/49` mixers ticked after removing `Water`; spotlight `vermouth_dry`, 6 drinks)
+  - `Avishka` & `Rajapaksha`: `0/0`
+  - `lenasheh` (Shehan): `0/13` (`3/49` mixers ticked after removing `Water`; spotlight `Amaretto`, 2 drinks)
+  - `Maho`: `1/13` (`12/49` mixers ticked; spotlight `Lemon juice (fresh)`, 2 drinks)
+
+**Open / next:**
+1. Optionally regenerate `mamie_taylor.webp` & `woo_woo.webp` (`#20`) after `2026-11-20T20:00:45Z`.
+2. Security chore (`#17`): Aaron to delete `step_88.json` log and rotate Neon password.
+3. Remaining backlog (`#5` rum and sherry sub-types).
 
 
 

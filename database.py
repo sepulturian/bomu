@@ -352,8 +352,8 @@ SEED_INGREDIENTS = [
     ("Pineapple juice", "mixer"),
     ("Grapefruit juice", "mixer"),
     ("Tomato juice", "mixer"),
-    ("Coconut cream", "mixer"),
-    ("Heavy cream", "mixer"),
+    ("Cream of coconut", "auto"),
+    ("Heavy cream", "pantry"),
     ("Simple syrup", "mixer"),
     ("Grenadine", "mixer"),
 

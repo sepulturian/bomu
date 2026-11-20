@@ -94,9 +94,6 @@ SPECIALTY_KEYWORDS = (
     "absinthe",
 )
 
-# Words to strip when comparing requirement names against bottle names.
-NOISE_WORDS = {"liqueur", "liquor", "(", ")", "the"}
-
 
 def _is_specialty(raw_name):
     if not raw_name:
