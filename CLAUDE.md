@@ -580,6 +580,16 @@ without it keep the triangle deliberately, since it's the only affordance saying
     Remaining `2` (`mamie_taylor.webp` vs `scotch_highball.webp` and
     `woo_woo.webp` vs `cape_codder.webp`) hit the image-generator 5-hour quota
     (`429 RESOURCE_EXHAUSTED`, resets `2026-11-20T20:00:45Z`).
+21. **Personality & bartender-voice pass on recipe copy (`about_text.py`, `enhance_text.py`).**
+    The 2026-11-20 de-AI pass removed all 142 em-dashes, menu-fluff adjectives,
+    and dangling participle openings, but overcorrected into dry "cocktail
+    encyclopedia" prose in three spots: (a) 21 `about` entries read like a
+    bibliography citing 1862/1887/1930 bar guides and publication years where
+    the book itself isn't the story; (b) 13+ variant drinks lean on the same
+    mechanical `"X is simply a Y made with Z instead of W"` definition without
+    saying why or when you'd actually want one; and (c) several simple/no-history
+    drinks and `enhance_text.py` notes sound flat/instructional rather than like
+    a bartender talking to a friend (keep zero em-dashes and zero AI menu fluff).
 
 ---
 
@@ -1408,9 +1418,10 @@ Audited the 20-item backlog against the codebase and `bomu.db`, pruned completed
 - Authoritative live Neon (`--postgres`): `migrate_copy_2026_11.py --postgres --commit` (`171` updates) and `migrate_enhancements.py --postgres --commit` (`57` rows across `55` recipes). Live Neon read confirmed `about=171/171`, `tip=125`, `recipe_enhancements=57` across `55` recipes, `0` em/en-dashes in `recipes` or `recipe_enhancements`, and unchanged matcher counts (`aaron 35/69`, `Avishka 0/0`, `Rajapaksha 0/0`, `lenasheh 0/13`, `Maho 1/13`).
 
 **Open / next:**
-1. Optionally regenerate `mamie_taylor.webp` & `woo_woo.webp` (`#20`) after `2026-11-20T20:00:45Z`.
-2. Security chore (`#17`): Aaron to delete `step_88.json` log and rotate Neon password.
-3. Remaining backlog (`#5` rum and sherry sub-types).
+1. **Start next session with self-critique + alignment questions on `#21` (personality pass on `about_text.py` & `enhance_text.py`):** review where the de-AI pass overcorrected into dry textbook/bibliography or `"X is simply a Y made with Z"` copy, ask Aaron alignment questions on voice/wit, and rewrite while keeping `0` em-dashes and `0` AI menu fluff.
+2. Regenerate the final 2 `#20` WebPs (`mamie_taylor.webp` & `woo_woo.webp`, quota resets `2026-11-20T20:00:45Z`).
+3. Security chore (`#17`): Aaron to delete `step_88.json` log and rotate Neon password.
+4. Remaining backlog (`#5` rum and sherry sub-types).
 
 
 
