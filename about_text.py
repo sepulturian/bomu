@@ -13,6 +13,8 @@ RULES THIS FILE FOLLOWS
    nothing is worse than no tip.
 3. Tips are written as instructions, not trivia. They earn their place by
    changing what you do.
+4. Plain, conversational human prose: zero em-dashes, zero menu-copy fluff,
+   and varied sentence structures.
 
 Keys are recipe names exactly as they appear in the `recipes` table.
 """
@@ -22,1211 +24,1381 @@ ABOUT = {
 # ============================ A ============================================
 
 "Adonis": {
-    "about": "Named for an 1884 Broadway musical that somehow ran an unheard-of 500-plus "
-             "performances, this is pure pre-dinner elegance. Built from sherry and sweet "
-             "vermouth with no base spirit at all, it lands softly around 15% ABV and opens "
-             "your appetite without stealing the evening.",
-    "tip": "Reach for fino or amontillado. Cream sherry turns this syrupy fast, and there "
-           "is no liquor here to cut back through it.",
+    "about": "An 1884 Broadway musical of the same name ran for more than 500 performances "
+             "and gave its name to this low-proof aperitif. Because it uses sherry and sweet "
+             "vermouth with no hard liquor at all, it sits around 15% ABV and makes an easy "
+             "opener before dinner.",
+    "tip": "Use a dry sherry like fino or amontillado. Cream sherry makes the drink heavy "
+           "and overly sweet, and there is no spirit here to cut through it.",
 },
 "Affinity": {
     "about": "Bartenders call a Manhattan split evenly between sweet and dry vermouth a "
-             "'Perfect,' and the Affinity is Scotch wearing that exact tailoring. The dry "
-             "vermouth reins the sweet one in so the Scotch keeps its crisp, smoky voice "
-             "instead of drowning in sugar.",
-    "tip": "Equal parts of both vermouths is the whole idea. If you only have sweet vermouth "
-           "on hand, pour a Rob Roy instead—another great drink, just a different mood.",
+             "'Perfect,' and the Affinity applies that exact idea to Scotch. The dry vermouth "
+             "keeps the sweet vermouth in check so the whisky stays smoky and dry instead of "
+             "tasting candied.",
+    "tip": "Using equal parts of both vermouths is the whole point. If you only have sweet "
+           "vermouth open, make a Rob Roy instead.",
 },
 "Airmail": {
-    "about": "First printed in Esquire's 1949 Handbook for Hosts, this sparkling rum, honey, "
-             "and lime cooler takes its name from the airmail postage stamp—sometimes even "
-             "clipped right onto the rim. Think of it as a classic Daiquiri that got bumped "
-             "up to first class with a pour of Champagne.",
-    "tip": "Honey straight from the jar seizes up in a cold shaker. Stir it with a splash "
-           "of warm water first so it pours freely and blends cleanly.",
+    "about": "Esquire printed this sparkling rum, honey, and lime drink in its 1949 Handbook "
+             "for Hosts, naming it after the airmail postage stamp. At heart it is a honeyed "
+             "Daiquiri lengthened with Champagne.",
+    "tip": "Honey straight from the jar stiffens up in a cold shaker. Stir it with a little "
+           "warm water first so it mixes into the rum and lime cleanly.",
 },
 "Algonquin": {
-    "about": "Named after the Manhattan hotel that hosted the legendary Algonquin Round "
-             "Table, this pairs rye whiskey and dry vermouth with pineapple juice. On paper "
-             "it reads like a dare; in the glass the pineapple turns surprisingly dry, crisp, "
-             "and lightly savoury.",
-    "tip": "Canned pineapple juice genuinely outperforms fresh here. Fresh juice tastes "
-           "sharper and never whips up that signature silky foam.",
+    "about": "New York's Algonquin Hotel hosted the famous Round Table of writers and critics "
+             "in the 1920s and lent its name to this unusual three-ingredient cocktail. Rye "
+             "whiskey, dry vermouth, and pineapple juice sound strange together on paper, "
+             "but in the glass the pineapple drinks dry and slightly tart.",
+    "tip": "Canned pineapple juice actually works better than fresh here. Fresh juice can "
+           "taste sharp and won't froth up the same way when shaken.",
 },
 "American Beauty": {
-    "about": "Named after the deep-crimson rose and built to look like one, this combines "
-             "brandy, dry vermouth, orange juice, and grenadine under a moody collar of red "
-             "wine. It looks theatrical and drinks far smoother than that lineup sounds.",
-    "tip": "Pour the red wine slowly over the back of a spoon so it floats on top. Dumping "
-           "it straight in turns the whole glass murky and loses the layered effect.",
+    "about": "This drink takes its name and deep red top from the American Beauty rose. "
+             "Underneath the float of port or dry red wine sits a surprisingly smooth mix "
+             "of brandy, dry vermouth, orange juice, and grenadine with a hint of mint.",
+    "tip": "Pour the red wine slowly over the back of a spoon at the very end so it stays "
+           "on top as a separate layer instead of muddying the whole glass.",
 },
 "Americano": {
-    "about": "Back in 1860s Milan this started out as the Milano-Torino, until American "
-             "visitors took a shine to lightening it with soda and gave it a new name. "
-             "Bright, bitter, and easygoing, it is also the very first drink James Bond ever "
-             "orders in print in Casino Royale.",
-    "tip": "Swap the soda for gin and you've got a Negroni; skip the soda altogether and "
-           "you're back to a Milano-Torino. Same two bottles, three distinct moods.",
+    "about": "In 1860s Milan this started out as the Milano-Torino, just Campari and sweet "
+             "vermouth, until American tourists began asking for theirs topped up with soda "
+             "water. It is bitter, fizzy, low in alcohol, and happens to be the first drink "
+             "James Bond ever orders in the novels.",
+    "tip": "Replace the soda water with gin and you have a Negroni. Leave the soda out "
+           "entirely and you are back to a Milano-Torino.",
 },
 "Aperol Spritz": {
-    "about": "The spritz habit goes back to Austrian soldiers in the 1800s Veneto stretching "
-             "rich local wine with a splash of water, and when Aperol arrived in Padua in "
-             "1919 the two were practically destined to meet. Clocking in around 8% ABV, it "
-             "is bittersweet sunshine that belongs at four in the afternoon.",
-    "tip": "Stick to 3 parts prosecco, 2 parts Aperol, and 1 part soda—and pour the "
-           "prosecco first. Pouring bubbles last onto Aperol knocks the fizz out on impact.",
+    "about": "The spritz habit started in the 1800s when Austrian soldiers in northern Italy "
+             "watered down strong local wines, and once the Barbieri brothers launched Aperol "
+             "in Padua in 1919 the modern recipe fell into place. At roughly 8% ABV, it is "
+             "built for late afternoon in the sun.",
+    "tip": "Stick to 3 parts prosecco, 2 parts Aperol, and 1 part soda, and pour the "
+           "prosecco into the glass first. Pouring wine last onto the Aperol knocks out "
+           "too much carbonation.",
 },
 "Autumn Garibaldi": {
-    "about": "The classic Garibaldi unites northern Italian Campari with sunny Sicilian orange "
-             "juice, named for the hero who united Italy itself. This cooler-weather spin "
-             "keeps the bright citrus heart and deepens it into something cosier for dusk.",
-    "tip": "The real Garibaldi secret is aeration: whip or shake the orange juice hard "
-           "before pouring so it turns airy, frothy, and velvety.",
+    "about": "A classic Garibaldi pairs northern Italian Campari with southern Italian "
+             "orange juice, a nod to Giuseppe Garibaldi uniting the country. This cooler-weather "
+             "variation keeps the bitter orange core and adds a warmer, rounder finish.",
+    "tip": "A proper Garibaldi depends on frothing the orange juice. Shake or whip the "
+           "juice hard before pouring so it lands foamy on top of the Campari.",
 },
 "Aviation": {
-    "about": "Hugo Ensslin introduced this at New York's Hotel Wallick in 1916 with crème de "
-             "violette giving it a pale sky-blue tint worthy of its name. The 1930 Savoy "
-             "Cocktail Book quietly left the violette out, leaving us the crisp, floral "
-             "trio of gin, lemon, and maraschino most bars pour today.",
-    "tip": "Maraschino is not the red syrup from a cherry jar—it's a dry, nutty cherry-pit "
-           "liqueur. Half an ounce will bully the whole drink, so measure lightly.",
+    "about": "Hugo Ensslin published the Aviation in New York in 1916 with a touch of "
+             "crème de violette, which gave the drink a pale sky-blue tint. When Harry "
+             "Craddock left the violette out of the 1930 Savoy Cocktail Book, most bars "
+             "followed suit and poured the three-ingredient gin, lemon, and maraschino "
+             "version we have here.",
+    "tip": "Maraschino liqueur is nothing like the red syrup in a cherry jar. It is dry, "
+           "funky, and distilled from sour cherries and their pits, so measure it carefully.",
 },
 
 # ============================ B ============================================
 
 "B-52": {
-    "about": "Three liqueurs stacked in neat, striped bands like a miniature magic trick in "
-             "a glass. Most accounts credit Peter Fich at Alberta's Banff Springs Hotel in "
-             "the late 1970s, though whether the name salutes the bomber or the band depends "
-             "on who's pouring.",
-    "tip": "Layering only works from heaviest to lightest: pour slowly over the back of a "
-           "spoon touching the glass wall, always in order—Kahlúa, then Baileys, then Grand "
-           "Marnier.",
+    "about": "Three liqueurs sit in distinct bands inside a small glass: coffee on the "
+             "bottom, Irish cream in the middle, and orange liqueur on top. Most accounts "
+             "credit Peter Fich at Alberta's Banff Springs Hotel in the late 1970s, naming "
+             "it after either the B-52s band or the bomber.",
+    "tip": "Layering only works if you pour from heaviest to lightest (Kahlúa, then Baileys, "
+           "then Grand Marnier) slowly over the back of a spoon held against the inside "
+           "of the glass.",
 },
 "Bacardi Cocktail": {
-    "about": "Rum, fresh lime, and grenadine in its cleanest possible form—and the rare drink "
-             "with its own courtroom victory. In 1936 a New York Supreme Court judge actually "
-             "ruled that bars ordering a Bacardi Cocktail had to pour real Bacardi rum.",
-    "tip": "Real pomegranate grenadine makes or breaks this. With just three ingredients, "
-           "neon-red corn syrup has nowhere to hide.",
+    "about": "A Daiquiri sweetened with real pomegranate grenadine instead of plain sugar "
+             "became so famous before Prohibition that it ended up in court. In 1936, a "
+             "New York Supreme Court judge ruled that a bar serving a 'Bacardi Cocktail' "
+             "legally had to make it with Bacardi rum.",
+    "tip": "Use real pomegranate-based grenadine if you can. With only three ingredients "
+           "in the shaker, artificial red corn-syrup mixers take over the whole drink.",
 },
 "Bamboo": {
-    "about": "Crafted by bartender Louis Eppinger at the Grand Hotel in Yokohama in the "
-             "1890s, the Bamboo swaps out high-proof spirits for dry sherry and dry vermouth "
-             "kissed with bitters. It drinks like a crisp, savoury Martini that lets you "
-             "glide smoothly into dinner.",
-    "tip": "Both sherry and vermouth are fortified wines that fade once opened. Keep them in "
-           "the fridge—if either has sat warm on a shelf for weeks, no stirring trick will "
-           "wake it back up.",
+    "about": "Louis Eppinger came up with the Bamboo in the 1890s while running the bar at "
+             "the Grand Hotel in Yokohama, Japan. By combining dry sherry, dry vermouth, "
+             "and two kinds of bitters with no base spirit, he made a dry, low-proof "
+             "alternative to a Martini.",
+    "tip": "Sherry and vermouth are both wines that spoil once opened. Keep both bottles "
+           "in the fridge, because a warm, months-old bottle will make this taste flat.",
 },
 "Batanga": {
-    "about": "Born at La Capilla in Tequila, Mexico, where Don Javier Delgado Corona poured "
-             "them for decades and famously stirred each glass with the same knife he used "
-             "to slice the limes. On paper it's tequila, lime, and cola, until a salted rim "
-             "locks all three together.",
-    "tip": "Don't treat the salt rim as optional flair—it's what keeps the cola sharp and "
-           "keeps the agave from tasting flat.",
+    "about": "Don Javier Delgado Corona created the Batanga in 1961 at La Capilla in "
+             "Tequila, Mexico, stirring every glass with the same long knife he used to "
+             "chop limes and avocados. It is just blanco tequila, fresh lime juice, and "
+             "Mexican Coke in a salted glass, and that salt rim makes the whole thing work.",
+    "tip": "Do not skip the coarse salt on the rim. The salt cuts the sweetness of the "
+           "cola and brings out the peppery note in the tequila.",
 },
 "Bay Breeze": {
-    "about": "A breezy 1980s highball built for sunny afternoons rather than history books: "
-             "vodka, tart cranberry, and sweet pineapple poured tall over ice. It asks almost "
-             "nothing of you and delivers a vacation in a glass.",
+    "about": "Like its late-1970s and 1980s siblings the Sea Breeze and Cape Codder, the "
+             "Bay Breeze comes from the era when vodka and fruit-juice highballs ruled "
+             "American neighbourhood bars. Pineapple juice softens the tart cranberry and "
+             "makes this the easiest-drinking of the three.",
 },
 "Bee's Kiss": {
-    "about": "Rum, golden honey, and cream shaken cold into something closer to liquid "
-             "dessert than an aperitif. Nobody wrote down who first poured it, which feels "
-             "fitting—it's simple, comforting, and speaks for itself.",
-    "tip": "Loosen the honey with a splash of warm water first. Cold cream plus cold honey "
-           "means the honey refuses to melt and winds up in sticky ribbons.",
+    "about": "White rum, honey, and cream shake up into a short, sweet after-dinner drink "
+             "from the early twentieth century. Nobody knows for sure who first printed "
+             "it, though it showed up regularly in European and Cuban bar books by the 1930s.",
+    "tip": "Thin the honey with a splash of warm water before putting it in the shaker. "
+           "Cold cream and cold ice will turn raw honey into a stiff lump at the bottom.",
 },
 "Bee's Knees": {
-    "about": "A Prohibition-era classic proving that gin, bright lemon, and honey are more "
-             "than enough to dress up bathtub spirits. Both Ritz Paris bartender Frank Meier "
-             "and socialite Margaret Brown have fans claiming the invention, and the name "
-             "is pure 1920s slang for 'the absolute best.'",
-    "tip": "Stir two parts honey with one part warm water first to make honey syrup. Drop "
-           "raw honey into cold citrus and it seizes right to the bottom of your shaker.",
+    "about": "During Prohibition, honey and lemon juice did a lot of work covering up the "
+             "rough edges of home-made bathtub gin. Both Frank Meier at the Paris Ritz and "
+             "unsinkable Titanic survivor Margaret Brown are often linked to it, and the "
+             "name was 1920s slang for something first-rate.",
+    "tip": "Mix two parts honey with one part warm water before shaking. Raw honey refuses "
+           "to dissolve once it hits cold lemon juice and ice.",
 },
 "Bellini": {
-    "about": "Giuseppe Cipriani dreamed this up at Harry's Bar in Venice in the 1930s or "
-             "1940s, naming it after the warm blush pink he loved in Giovanni Bellini's "
-             "paintings. No shaking, no ice—just ripe peach and crisp bubbles in quiet harmony.",
-    "tip": "Hunt down white peach puree rather than yellow peach or sugary juice. Yellow "
-           "peaches tip too sweet and miss the delicate tang that makes a Bellini sing.",
+    "about": "Giuseppe Cipriani started pouring white peach puree and sparkling prosecco "
+             "at Harry's Bar in Venice in the 1940s. He named it after the fifteenth-century "
+             "Venetian painter Giovanni Bellini because the pale pink colour reminded him "
+             "of a saint's toga in one of Bellini's paintings.",
+    "tip": "White peach puree is the traditional base. Yellow peaches are sweeter and "
+           "lack the floral tartness that balances the prosecco.",
 },
 "Between the Sheets": {
-    "about": "A Prohibition-era Sidecar that invited white rum into the mix, traditionally "
-             "credited to Harry MacElhone in Paris even if the paper trail is hazy. Despite "
-             "its cheeky name, it hits brisk, tart, and surprisingly dry.",
+    "about": "Harry MacElhone is usually credited with pouring this at Harry's New York "
+             "Bar in Paris in the 1920s. It takes the cognac, triple sec, and lemon of a "
+             "Sidecar and splits the base with white rum, making a strong, dry, tart drink.",
 },
 "Bicicletta": {
-    "about": "Northern Italy's playful ode to the slightly wobbly bicycle ride home after an "
-             "aperitivo. Campari, crisp white wine, and soda land gently around 8% ABV, "
-             "meaning you can linger over two in the sun and still keep your evening intact.",
-    "tip": "Pick an unoaked, crisp dry white like pinot grigio. Anything buttery or "
-           "oak-heavy clashes straight into the Campari.",
+    "about": "In northern Italian cafés, this easy mix of Campari, dry white wine, and "
+             "soda was supposedly named for the wobbly bicycle ride home after a few rounds "
+             "at aperitivo hour. It is drier and less sweet than an Aperol Spritz.",
+    "tip": "Use a dry, unoaked white wine like pinot grigio or sauvignon blanc. Buttery, "
+           "oaky chardonnay clashes badly with Campari.",
 },
 "Black Manhattan": {
-    "about": "Created by Todd Smith at San Francisco's Bourbon & Branch in the mid-2000s, "
-             "this swaps sweet vermouth for bittersweet Italian amaro. You keep the lush "
-             "Manhattan body while trading cherry sweetness for dark herbs and spice.",
-    "tip": "Averna is the classic, velvety choice. A drier amaro like Ramazzotti works too, "
-           "though a touch extra rye keeps the bitter notes balanced.",
+    "about": "Bartender Todd Smith came up with this at San Francisco's Bourbon & Branch "
+             "in 2005 through the simplest possible swap: trading sweet vermouth for "
+             "Italian amaro. It keeps the weight of a Manhattan while adding bitter herbs, "
+             "cola, and dark spice.",
+    "tip": "Averna is the standard amaro for this recipe. If you substitute a drier or "
+           "more bitter bottle like Cynar or Ramazzotti, add an extra splash of whiskey.",
 },
 "Black Russian": {
-    "about": "First poured in 1949 by Gustave Tops at Brussels' Hotel Metropole for the "
-             "American ambassador to Luxembourg, it couldn't be simpler: cold vodka and rich "
-             "coffee liqueur, nothing else. Float cream on top and you've just walked into a "
-             "White Russian.",
+    "about": "Gustave Tops mixed the first Black Russian in 1949 at the Hotel Metropole in "
+             "Brussels for Perle Mesta, then the U.S. ambassador to Luxembourg. It is just "
+             "vodka and coffee liqueur over ice, and adding cream turns it into a White Russian.",
 },
 "Blood and Sand": {
-    "about": "Named for Rudolph Valentino's 1922 bullfighting film and immortalised in the "
-             "1930 Savoy Cocktail Book, this mixes equal parts Scotch, cherry liqueur, sweet "
-             "vermouth, and orange juice. Every instinct says it shouldn't work—and yet it "
-             "comes together like dark marmalade and smoke.",
-    "tip": "If equal parts tastes a bit fruit-forward, nudge the Scotch slightly higher so "
-           "it stays squarely in cocktail territory.",
+    "about": "When Rudolph Valentino's bullfighting movie Blood and Sand came out in 1922, "
+             "this four-equal-parts Scotch drink followed close behind and landed in the "
+             "1930 Savoy Cocktail Book. Scotch, sweet vermouth, cherry liqueur, and orange "
+             "juice sound like a disaster on paper, yet somehow taste great together.",
+    "tip": "If the equal-parts build tastes a little sweet to you, bump the Scotch up to "
+           "a full ounce while keeping the other three at three-quarters of an ounce.",
 },
 "Bloody Maria": {
-    "about": "Think of a Bloody Mary that traded neutral vodka for earthy, peppery tequila. "
-             "That one swap changes everything: instead of disappearing under tomato and "
-             "spice, the agave steps up and dances right alongside them.",
+    "about": "Swapping the vodka in a Bloody Mary for blanco tequila changes the whole "
+             "drink. Where vodka disappears behind the tomato juice, horseradish, and hot "
+             "sauce, tequila adds an earthy, peppery taste that stands right up to the spice.",
 },
 "Bloody Mary": {
-    "about": "Fernand Petiot gets the nod for shaping it in 1920s Paris at Harry's New York "
-             "Bar before taking it to New York's St. Regis—where polite management briefly "
-             "insisted on calling it a 'Red Snapper' because 'Bloody Mary' sounded far too "
-             "scandalous.",
-    "tip": "Never shake a Bloody Mary violently—roll it gently between two glasses or stir. "
-           "Hard shaking whips air into the tomato juice and leaves it watery and foamy.",
+    "about": "Fernand Petiot helped shape the modern spiced tomato-and-vodka recipe in "
+             "1920s Paris before bringing it to the King Cole Bar at New York's St. Regis "
+             "Hotel in 1934. Hotel management thought 'Bloody Mary' sounded too vulgar "
+             "for their guests and tried renaming it the Red Snapper.",
+    "tip": "Roll the drink gently back and forth between two tins or stir it with ice "
+           "instead of shaking hard. Vigorous shaking makes tomato juice foamy and thin.",
 },
 "Blue Hurricane": {
-    "about": "Take a storm-sized New Orleans Hurricane and tint it bright electric blue with "
-             "curaçao, turning passion fruit and citrus into pure poolside theatre. It makes "
-             "no apologies for being loud, tropical, and impossible to miss.",
+    "about": "A tropical vacation riff on the classic New Orleans Hurricane that swaps in "
+             "blue curaçao for an electric-turquoise look. Rum, pineapple, citrus, and "
+             "sweet orange liqueur make it a big, fruity summer pour.",
 },
 "Bobby Burns Cocktail": {
-    "about": "A tribute to Scotland's national poet, Robert Burns, famously printed in the "
-             "Savoy Cocktail Book. It marries Scotch and sweet vermouth with a quiet spoonful "
-             "of Bénédictine, layering warm honey and alpine herbs onto a classic stir.",
+    "about": "Scotland's national poet Robert Burns gets his own Scotch Manhattan variation "
+             "in the 1930 Savoy Cocktail Book. A small measure of Bénédictine brings honey "
+             "and herbs to the Scotch and sweet vermouth, making it richer than a standard "
+             "Rob Roy.",
 },
 "Boulevardier": {
-    "about": "Born in 1920s Paris for American writer and magazine publisher Erskine Gwynne "
-             "and recorded in Harry MacElhone's 1927 Barflies and Cocktails. Swapping "
-             "bourbon into a Negroni mellows Campari's sharpest bite into something warm, "
-             "caramelised, and fireside-ready.",
-    "tip": "Try bumping the whiskey up to 1 1/2 oz against 1 oz each of Campari and sweet "
-           "vermouth so the bourbon doesn't get elbowed aside.",
+    "about": "Erskine Gwynne, an American writer who ran a Paris literary magazine called "
+             "The Boulevardier in the 1920s, ordered this regularly at Harry's New York Bar. "
+             "It is a Negroni made with bourbon instead of gin, which trades the sharp "
+             "botanical snap for oak and vanilla.",
+    "tip": "Many bartenders prefer 1 1/2 oz of bourbon to 1 oz each of Campari and sweet "
+           "vermouth so the whiskey doesn't get buried under the other two bottles.",
 },
 "Bourbon Renewal": {
-    "about": "Crafted by bartender Jeffrey Morgenthaler, this modern favourite slips blackcurrant "
-             "crème de cassis into a bourbon sour. You get lush dark-berry depth and rich "
-             "ruby colour while keeping the finish crisp and tart.",
+    "about": "Portland bartender Jeffrey Morgenthaler created the Bourbon Renewal in the "
+             "early 2000s while looking for a whiskey drink that worked year-round. Splitting "
+             "the sweetener in a Whiskey Sour with blackcurrant crème de cassis gives it "
+             "a tart dark-berry finish.",
 },
 "Bramble": {
-    "about": "Dick Bradsell invented the Bramble at London's Fred's Club in the mid-1980s, "
-             "chasing a drink that tasted unmistakably British. A bright gin sour over "
-             "crushed ice gets crowned with crème de mûre that trickles slowly downward like "
-             "wild blackberries in hedgerows.",
-    "tip": "Always drizzle the blackberry liqueur last and resist stirring—that sinking "
-           "burgundy ripple is half the joy of the glass.",
+    "about": "Dick Bradsell created the Bramble at Fred's Club in Soho, London in 1984, "
+             "inspired by picking wild blackberries as a kid on the Isle of Wight. You "
+             "build a short gin sour over crushed ice and pour blackberry liqueur over the "
+             "top so it bleeds down through the glass.",
+    "tip": "Pour the blackberry liqueur over the crushed ice at the very end and leave "
+           "the spoon alone. The dark purple streaks through the ice are half the point.",
 },
 "Brandy Alexander": {
-    "about": "The original Alexander started with gin, until rich brandy ran away with the "
-             "crown and never looked back. Velvety cream, chocolatey crème de cacao, and "
-             "warm brandy under freshly grated nutmeg—it's unabashedly dessert in a coupe.",
-    "tip": "Grate whole nutmeg straight onto the foam. Pre-ground nutmeg from a dusty jar "
-           "loses all its spice in a drink this gentle.",
+    "about": "The earlier Alexander cocktail was actually made with gin, cream, and crème "
+             "de cacao, before brandy took over in the 1920s and became the version everyone "
+             "remembers. With brandy, chocolate liqueur, cream, and nutmeg on top, it is "
+             "essentially liquid dessert.",
+    "tip": "Grate a whole nutmeg directly over the drink if you have one. Pre-ground "
+           "nutmeg loses most of its smell once it sits in a spice jar.",
 },
 "Brandy Cobbler": {
-    "about": "Documented by Jerry Thomas way back in 1862, the Cobbler is the grand "
-             "nineteenth-century classic that made shaved ice and drinking straws famous. "
-             "Brandy, sugar, and fresh fruit buried under a sparkling snowbank of ice—slow, "
-             "cooling, and surprisingly restorative.",
-    "tip": "Crushed ice is non-negotiable here. A Cobbler is designed to slowly melt as you "
-           "sip; big cubes leave you with a boozy start and a flat finish.",
+    "about": "In mid-1800s America, the Cobbler was a massive hit that helped popularise "
+             "both ice-making and drinking straws. Jerry Thomas included it in his 1862 "
+             "bar guide: brandy, sugar, and fresh fruit packed in a tall glass of crushed "
+             "ice for hot weather.",
+    "tip": "Use crushed or cracked ice rather than large cubes. The drink is meant to "
+           "chill quickly and frost the outside of the glass as you sip through a straw.",
 },
 "Brandy Daisy": {
-    "about": "From a beloved nineteenth-century family built around spirit, citrus, "
-             "sweetener, and a bubbly splash of soda over crushed ice. Even if you've never "
-             "ordered one, you know its Spanish-speaking descendant: 'margarita' literally "
-             "means daisy.",
+    "about": "Daisies were a nineteenth-century family of sours sweetened with cordial or "
+             "grenadine and lengthened with a splash of soda. If the pattern looks familiar, "
+             "that is because the Margarita evolved out of the tequila version ('margarita' "
+             "is Spanish for daisy).",
 },
 "Brandy Sour": {
-    "about": "Pouring the timeless sour formula—spirit, fresh citrus, and sugar—over warm, "
-             "fruity brandy proves why the structure has lasted centuries. Smooth where "
-             "whiskey bites and rounder than gin, it lets great balance do all the talking.",
-    "tip": "If you include the optional egg white, always dry-shake without ice first, then "
-           "shake again with ice to lock in a cloud-thick foam.",
+    "about": "Putting brandy into the classic sour ratio of spirit, lemon, and sugar gives "
+             "you a softer, fruitier drink than a Whiskey Sour. A couple of dashes of "
+             "bitters and optional egg white round off the sharp lemon edge.",
+    "tip": "If you use egg white, shake the ingredients without ice first for ten seconds, "
+           "then add ice and shake hard again to build a stable foam.",
 },
 "Brooklyn": {
-    "about": "Overshadowed by its flashier Manhattan neighbour, the Brooklyn first saw print "
-             "in Jacques Straub's 1914 Drinks. Rye and dry vermouth team up with nutty "
-             "maraschino and bittersweet Amer Picon—the elusive French bitter that kept this "
-             "gem a bartender's secret.",
-    "tip": "Authentic Amer Picon is tricky to track down outside France; Amaro CioCiaro "
-           "steps in naturally, and Ramazzotti works nicely in a pinch.",
+    "about": "Of the five cocktail recipes named after New York boroughs, the Brooklyn was "
+             "the first to follow the Manhattan into print, showing up in Jacques Straub's "
+             "1914 book Drinks. It switches to dry vermouth and adds maraschino liqueur and "
+             "bitter French Amer Picon.",
+    "tip": "Original Amer Picon is hard to find outside Europe. Amaro CioCiaro or "
+           "Ramazzotti makes a solid stand-in for that bitter orange-and-herb note.",
 },
 "Brown Derby": {
-    "about": "Named after Los Angeles's famous hat-shaped Brown Derby diner—though lore "
-             "says bartenders at the nearby Vendome Club actually whipped it up in the "
-             "1930s. Bourbon, pink grapefruit, and golden honey turn out punchier and crisper "
-             "than you'd ever guess.",
-    "tip": "Always turn your honey into syrup first (roughly three parts honey to one part "
-           "warm water) so it blends smoothly instead of clumping on the ice.",
+    "about": "In 1930s Hollywood, the Vendome Club poured this three-ingredient mix of "
+             "bourbon, grapefruit juice, and honey syrup and named it after the famous "
+             "hat-shaped Brown Derby restaurant down the street. In Britain, the exact "
+             "same drink appeared independently as the De Rigueur.",
+    "tip": "Stir your honey with warm water (about three parts honey to one part water) "
+           "before shaking so it doesn't stick to the inside of the tin.",
 },
 
 # ============================ C ============================================
 
 "Caesar": {
-    "about": "Born in Calgary in 1969 when bartender Walter Chell blended tomato juice with "
-             "clam broth, Canada now downs roughly 400 million Caesars a year. Clamato "
-             "sounds strange right up until your first savoury, briny, spice-rimmed sip.",
-    "tip": "Rim the glass with celery salt rather than plain table salt, wetting the rim "
-           "with lime first. Plain salt makes it taste like dinner broth instead of a cocktail.",
+    "about": "Walter Chell invented the Caesar in 1969 to celebrate the opening of an "
+             "Italian restaurant at the Calgary Inn, taking inspiration from spaghetti "
+             "alle vongole (clams and tomato sauce). Today Canadians drink millions of "
+             "them every year while the rest of the world mostly sticks to Bloody Marys.",
+    "tip": "Wet the rim with lime and dip it in celery salt rather than plain table salt. "
+           "Table salt makes the Clamato taste flat and overly briny.",
 },
 "Caipirinha": {
-    "about": "Brazil's proud national cocktail and the reason the wider world fell for "
-             "cachaça. Popular lore traces it to a 1918 São Paulo Spanish-flu tonic of lime, "
-             "honey, and garlic—fortunately the garlic clocked out early and left a classic.",
-    "tip": "Press the lime wedges straight into the sugar before adding ice or cachaça. The "
-           "coarse crystals pull fragrant oil right out of the peel, where half the magic lives.",
+    "about": "Brazil's national drink showcases cachaça, which is distilled from fresh "
+             "sugarcane juice rather than molasses. One popular story traces it to 1918 "
+             "São Paulo as a folk remedy made with lime, garlic, and honey, before someone "
+             "wisely dropped the garlic and honey in favour of sugar and ice.",
+    "tip": "Muddle the cut lime wedges directly in the sugar before adding the cachaça. "
+           "The gritty sugar scrapes the oil out of the lime skin, which gives the drink "
+           "most of its flavour.",
 },
 "Cameron's Kick": {
-    "about": "First printed in Harry MacElhone's 1922 ABC of Mixing Cocktails, this oddball "
-             "delight brings smoky Scotch and mellow Irish whiskey into the exact same glass "
-             "with lemon and almond orgeat. Two contrasting whiskies are its signature—don't "
-             "try to fake it with one.",
-    "tip": "Reach for genuine almond orgeat syrup, never almond baking extract. Its creamy "
-           "sweetness is the diplomat keeping both whiskies on speaking terms.",
+    "about": "Harry MacElhone included this in his 1922 book ABC of Mixing Cocktails. It "
+             "splits the base evenly between blended Scotch and Irish whiskey, then shakes "
+             "them with lemon juice and almond orgeat syrup, a combination that works far "
+             "better than you might expect.",
+    "tip": "Make sure you use proper almond orgeat syrup rather than almond baking extract. "
+           "Orgeat adds the body and sweetness that tie the two whiskies together.",
 },
 "Canchanchara": {
-    "about": "Hailing from Trinidad, Cuba, and tied in tradition to nineteenth-century "
-             "independence fighters, this rustic mix of sugarcane spirit, wild honey, and "
-             "lime was poured into little clay cups long before anyone ever heard of a Daiquiri.",
-    "tip": "Stir the honey with a splash of warm water before it meets cold lime juice, "
-           "otherwise it settles to the bottom in one stubborn lump.",
+    "about": "During Cuba's nineteenth-century wars of independence against Spain, fighters "
+             "in the eastern hills around Trinidad drank warm sugarcane spirit mixed with "
+             "local honey and lime out of small gourds. Served cold over ice today, it is "
+             "the oldest known ancestor of the Daiquiri.",
+    "tip": "Loosen the honey with a little warm water and rum in the bottom of the glass "
+           "before adding ice, or the honey will sit untouched at the bottom.",
 },
 "Cantarito": {
-    "about": "Named after the little unglazed clay pitcher it's served in across Jalisco, "
-             "this packs blanco tequila, three fresh citrus juices, and a generous pinch of "
-             "salt beneath fizzy grapefruit soda. The clay cup isn't just cute—it genuinely "
-             "keeps the drink chilled and adds a subtle earthy kiss.",
+    "about": "Along the roadside stands of Jalisco, Mexico, bartenders build the Cantarito "
+             "inside a small unglazed clay cup (a jarrito) with tequila, fresh orange, "
+             "grapefruit, and lime juices, a pinch of salt, and grapefruit soda. Even in a "
+             "regular highball glass at home, all that fresh citrus makes it a great warm-weather "
+             "tequila drink.",
 },
 "Cape Codder": {
-    "about": "Vodka and cranberry owes its place behind every bar to Ocean Spray's mid-century "
-             "campaign convincing drinkers that tart red juice belonged outside Thanksgiving. "
-             "Three pieces including the lime, crisp as an ocean breeze.",
-    "tip": "Look for unsweetened or 100% cranberry juice rather than 'cranberry cocktail' "
-           "blends, which are padded with apple or grape juice and turn overly sweet.",
+    "about": "In 1945 the Ocean Spray cranberry cooperative started promoting vodka and "
+             "cranberry juice as the 'Red Devil,' before renaming it after Massachusetts's "
+             "cranberry-growing Cape Cod peninsula in the 1960s. With a squeeze of fresh "
+             "lime, it became one of the default bar calls of the twentieth century.",
+    "tip": "Check the label on your cranberry bottle. Standard 'cranberry juice cocktail' "
+           "is already sweetened, while 100% pure cranberry juice is lip-puckeringly tart "
+           "and needs a splash of simple syrup.",
 },
 "Cardinale": {
-    "about": "Think of a Negroni that traded its plush sweet vermouth jacket for crisp, dry "
-             "vermouth instead. With the same gin and Campari underneath, it strips back the "
-             "sugar and lets every dry, bitter, botanical edge step forward.",
+    "about": "Rome's Hotel Excelsior came up with the Cardinale in the 1950s for a German "
+             "cardinal who liked dry French wines. Replacing the sweet vermouth in a Negroni "
+             "with dry vermouth takes away the heavy caramel sweetness and leaves a leaner, "
+             "sharper aperitif.",
 },
 "Champagne Cocktail": {
-    "about": "Already a classic when Jerry Thomas wrote it down in 1862, this is sheer theatre "
-             "in three moves: drop a bitters-soaked sugar cube into a chilled flute and watch "
-             "streamers of bubbles rise as the cube slowly dissolves sip by sip.",
-    "tip": "Leave the spoon in the drawer. The sugar cube is meant to sit at the bottom "
-           "tickling bubbles upward and gently sweetening the final third.",
+    "about": "Jerry Thomas wrote down this recipe in 1862, and it hasn't needed any updates "
+             "since. You soak a sugar cube in Angostura bitters at the bottom of a flute "
+             "and pour cold Champagne over it, creating a steady stream of bubbles from "
+             "the sugar crystals.",
+    "tip": "Do not stir the sugar cube in. Let it dissolve on its own at the bottom of "
+           "the glass so the last few sips taste slightly richer than the first.",
 },
 "Chatham Artillery Punch": {
-    "about": "Mixed in buckets by Savannah's local militia in the early 1800s—supposedly to "
-             "charm, and flatten, visiting dignitaries—this throws rum, cognac, and whiskey "
-             "into the same bowl topped with Champagne. It's the rare historic recipe that "
-             "rewards having a crowded bar cart.",
-    "tip": "This version is scaled neatly for one glass. Scaling up for a party? Build it "
-           "over one giant block of ice so it chills slowly instead of watering down.",
+    "about": "Savannah's Chatham Artillery militia first mixed this legendary punch in "
+             "horse buckets in the late 1700s and early 1800s, famously leaving visiting "
+             "officials and rival regiments worse for wear. Blending rum, cognac, and "
+             "bourbon with lemon, sugar, and Champagne hides a lot of alcohol behind a "
+             "pleasant fizzy punch.",
+    "tip": "Our recipe is scaled down to a single glass. If you batch it in a bowl for "
+           "company, use one large block of ice rather than small cubes so it doesn't "
+           "water down.",
 },
 "Chet Baker": {
-    "about": "Named after the velvet-toned jazz trumpeter, this modern sipper dresses aged "
-             "rum in Old Fashioned tailoring alongside sweet vermouth, honey, and bitters. "
-             "Short, stirred, and quietly moody—worlds away from beach-umbrella rum drinks.",
-    "tip": "Use thinned honey syrup rather than raw honey, and give it a proper 30-second "
-           "stir over ice—it wants silky dilution to round out the rum.",
+    "about": "Sam Ross created this stirred rum drink at New York's Milk & Honey and "
+             "named it after the jazz trumpeter and singer. Aged rum gets stirred with "
+             "sweet vermouth, honey syrup, and Angostura bitters, making it drink much "
+             "more like a Manhattan than a beach cocktail.",
+    "tip": "Thin your honey into a syrup with warm water first, and give the glass a "
+           "full 30-second stir over ice so the honey and vermouth open up.",
 },
 "Chi-Chi": {
-    "about": "A tropical Piña Colada that quietly swapped out rum for crisp vodka. Because "
-             "vodka steps out of the spotlight, creamy coconut and tangy pineapple get the "
-             "entire stage to themselves.",
-    "tip": "No blender handy? Shake everything vigorously with ice and strain over fresh "
-           "crushed ice—you won't get a frozen slush, but the flavour hits every note.",
+    "about": "Take a Piña Colada and swap the rum for vodka and you have a Chi-Chi, a "
+             "staple of mid-century tiki lounges and hotel pool bars. Because the vodka "
+             "adds almost no flavour of its own, you taste purely pineapple and sweet "
+             "coconut.",
+    "tip": "If you don't want to drag out the blender, shake everything hard with ice "
+           "and strain it over fresh crushed ice.",
 },
 "Clover Club": {
-    "about": "Born for a pre-Prohibition gentlemen's club at Philadelphia's Bellevue-Stratford "
-             "Hotel, this rosy stunner blends gin, lemon, raspberry sweetness, and airy egg "
-             "white. After decades dismissed as 'too pretty,' bartenders rightly brought it "
-             "roaring back.",
-    "tip": "Always dry-shake without ice first, then shake again with ice. Reverse the "
-           "order and that velvety cloud of foam refuses to build.",
+    "about": "Before Prohibition, a group of Philadelphia journalists, lawyers, and bankers "
+             "called the Clover Club met regularly at the Bellevue-Stratford Hotel and "
+             "drank this frothy pink mix of gin, lemon, raspberry syrup, and egg white. "
+             "Despite the pink colour, it drinks tart and dry.",
+    "tip": "Shake all the ingredients without ice first, then add ice and shake again. "
+           "Doing the dry shake first builds a thick, stable head of foam.",
 },
 "Corpse Reviver #2": {
-    "about": "Published in the 1930 Savoy Cocktail Book under a chapter of morning-after "
-             "rescuers, it carries Harry Craddock's famous warning: four in quick succession "
-             "will 'unrevive the corpse.' Bright, zippy, and dangerously easy to finish.",
-    "tip": "Stick to equal parts gin, Cointreau, Lillet, and lemon, and only rinse the "
-           "glass with absinthe. Pouring a full measure drowns everything else in anise.",
+    "about": "Harry Craddock included this in his 1930 Savoy Cocktail Book as a late-morning "
+             "pick-me-up, adding a famous footnote: 'Four of these taken in swift succession "
+             "will unrevive the corpse again.' Equal parts gin, Cointreau, Lillet Blanc, "
+             "and lemon juice over an absinthe rinse makes one of the best gin sours ever written.",
+    "tip": "Keep the four main ingredients strictly equal, and only coat the inside of "
+           "the glass with absinthe before dumping the excess. Too much absinthe covers "
+           "up everything else.",
 },
 "Corpse Reviver No. 1": {
-    "about": "The quieter, moodier older sibling to the citrusy No. 2. Mixing cognac, apple "
-             "brandy, and sweet vermouth with zero lemon juice, this one is stirred velvety "
-             "smooth and built for slow evening sipping.",
+    "about": "Even though the citrusy No. 2 gets almost all the orders today, the No. 1 "
+             "came right before it in the 1930 Savoy Cocktail Book. Made with cognac, "
+             "apple brandy (or Calvados), and sweet vermouth, it is a rich, stirred "
+             "brandy drink with no citrus at all.",
 },
 "Cosmopolitan": {
-    "about": "Both Toby Cecchini in late-1980s New York and earlier South Florida bartenders "
-             "claim credit for perfecting it, before television made it a 1990s obsession "
-             "and then an unfair punchline. Strip the hype away and you've got a crisp, "
-             "citrusy vodka sour with real poise.",
-    "tip": "Treat cranberry juice as colour and tart seasoning, not the base. Too heavy a "
-             "pour swallows the lime and orange liqueur completely.",
+    "about": "Bartenders in Provincetown, Miami, and San Francisco were pouring cousins of "
+             "this drink by the mid-1980s before Toby Cecchini nailed down the modern "
+             "Cointreau, fresh lime, and cranberry spec at Manhattan's Odeon in 1988. A "
+             "decade later, Sex and the City put one in every bar in the world.",
+    "tip": "Go easy on the cranberry juice. It is there to turn the drink pale pink and "
+           "add a dry tartness, not to drown out the lime and orange liqueur.",
 },
 "Cuba Libre": {
-    "about": "Rum and cola given purpose by fresh lime and a rallying cry. Dated to Americans "
-             "toasting Cuban independence in Havana around 1900 right after Coca-Cola arrived "
-             "on the island, it remains proof that small details make the drink.",
-    "tip": "Squeeze half a lime straight into the glass and drop the spent shell right in "
-           "with it—those bright peel oils are what elevate it past plain rum and Coke.",
+    "about": "Shortly after the Spanish-American War ended around 1900, Coca-Cola began "
+             "exporting to Cuba, where off-duty U.S. Signal Corps soldiers mixed it with "
+             "local rum and lime and toasted 'Por Cuba libre!' ('To a free Cuba!'). The "
+             "fresh lime is what separates it from a plain rum and Coke.",
+    "tip": "Squeeze half a lime into the glass and drop the juiced shell in with the ice "
+           "so you get the bitter oil from the skin as well as the juice.",
 },
 
 # ============================ D ============================================
 
 "Daiquiri": {
-    "about": "Named after a beach and an iron mine near Santiago de Cuba, where American "
-             "mining engineer Jennings Cox mixed it up around 1898. Rum, fresh lime, and "
-             "sugar look simple on paper, which is precisely why bartenders still order one "
-             "to size up a new bar.",
-    "tip": "Three ingredients leave nowhere to hide—bottled lime juice ruins a Daiquiri "
-           "faster than almost any drink you can make.",
+    "about": "In 1898, an American mining engineer named Jennings Cox was working near "
+             "the iron mines of Daiquirí on Cuba's southeastern coast and mixed local rum, "
+             "limes, sugar, and ice for his guests. Bartenders still treat a simple shaken "
+             "Daiquiri as one of the clearest tests of someone's technique.",
+    "tip": "Squeeze real limes right before you make it. With only three ingredients in "
+           "the glass, bottled lime juice will ruin a Daiquiri immediately.",
 },
 "Dark and Stormy": {
-    "about": "Bermuda's unofficial national drink and one of the few cocktails protected by "
-             "a US trademark—Gosling's insists it belongs exclusively to their Black Seal "
-             "rum. Pouring dark rum over ginger beer makes ominous amber clouds roll "
-             "downward, giving the drink its name.",
-    "tip": "Ginger beer goes in first, dark rum floats slowly on top. Pour them the other "
-           "way round and the storm clouds vanish immediately.",
+    "about": "After World War I, sailors in Bermuda started combining ginger beer from a "
+             "Royal Navy factory with local Gosling's Black Seal dark rum. Gosling's later "
+             "trademarked the name in the United States, making it one of the only classic "
+             "cocktails legally tied to a specific brand of spirit.",
+    "tip": "Pour the ginger beer over the ice first and float the dark rum on top at the "
+           "end. That dark rum layer drifting down through the ginger beer is where the "
+           "name comes from.",
 },
 "Death in the Afternoon": {
-    "about": "Ernest Hemingway's own recipe, sent into a 1935 celebrity cocktail book and "
-             "named for his book on bullfighting. Just absinthe and chilled Champagne, plus "
-             "his breezy suggestion to 'drink three to five slowly'—best read as a fair "
-             "warning.",
-    "tip": "Pour the Champagne slowly into the absinthe and watch it turn opalescent milky "
-           "white—that transformation is half the charm.",
+    "about": "Ernest Hemingway contributed this recipe to a 1935 celebrity cocktail book "
+             "called So Red the Nose, naming it after his 1932 book on Spanish bullfighting. "
+             "His original instructions read: pour one jigger of absinthe into a Champagne "
+             "glass, add iced Champagne until it turns milky, and drink three to five of "
+             "them slowly.",
+    "tip": "Pour the chilled Champagne slowly onto the absinthe so it doesn't foam over "
+           "the top of the flute as the absinthe clouds up.",
 },
 "Dirty Martini": {
-    "about": "A classic Martini loosened up with a splash of olive brine. The salty, "
-             "savoury tang softens gin's sharper edges into something silky and snack-like, "
-             "and no amount of purist lecturing has ever slowed it down.",
-    "tip": "Taste your olive brine before measuring—some jars pack enough salt to turn the "
-           "glass into sea water at a quarter ounce.",
+    "about": "New York bartender John O'Connor was pouring olive brine into Martinis at "
+             "the Waldorf Astoria as early as 1901, originally mashing an olive in the "
+             "glass before straining. That splash of salty brine cuts the alcohol bite "
+             "and makes a dry Martini savoury.",
+    "tip": "Taste your olive jar's brine before pouring a full measure. Some brands are "
+           "twice as salty as others and can overpower the gin at half an ounce.",
 },
 "Dry Rob Roy": {
-    "about": "Trade the sweet vermouth in a Rob Roy for crisp dry vermouth and the curtain "
-             "pulls all the way back on the Scotch. Lean, aromatic, and unapologetically "
-             "brisk, it is built for drinkers who love smoky whisky unadorned.",
+    "about": "A standard Rob Roy is a Manhattan made with Scotch and sweet vermouth; the "
+             "Dry Rob Roy swaps in dry French vermouth instead. Without the dark sugar of "
+             "sweet vermouth, the malt and smoke of the Scotch sit right up front.",
 },
 
 # ============================ E - F ========================================
 
 "El Diablo": {
-    "about": "A little-sung 1940s gem from Trader Vic that pairs blanco tequila with "
-             "blackcurrant crème de cassis, lime, and ginger. On paper it sounds like an "
-             "odd match, yet berry and ginger snap right into tune over the agave.",
+    "about": "Trader Vic included the El Diablo in his 1946 Book of Food and Drink under "
+             "his Mexican recipes. Combining blanco tequila with blackcurrant crème de "
+             "cassis, fresh lime, and spicy ginger beer sounds unusual, but blackcurrant "
+             "and ginger pair naturally with tequila.",
 },
 "El Presidente": {
-    "about": "Born in 1920s Havana when Americans flocked south to outrun Prohibition, this "
-             "was named for Cuba's president and dressed up like a jazz-age dandy. Stirring "
-             "rum with dry vermouth, curaçao, and a whisper of grenadine gives you a sleek "
-             "rum Martini rather than a beach punch.",
-    "tip": "Think of grenadine here as tint and poise rather than sweetener—a quarter ounce "
-           "is plenty before the drink turns sugary.",
+    "about": "During the 1910s and 1920s, when Havana was the cocktail capital for "
+             "Americans dodging Prohibition, bartenders like Eddie Woelke and Constantino "
+             "Ribalaigua poured the El Presidente for Cuba's upper crust. Stirred cold "
+             "with rum, dry or blanc vermouth, orange curaçao, and a barspoon of grenadine, "
+             "it drinks like a rum Manhattan.",
+    "tip": "Use only a small splash of grenadine. It is meant to give the drink a pale "
+           "salmon tint and a hint of pomegranate, not make it syrupy.",
 },
 "Espresso Martini": {
-    "about": "Dick Bradsell whipped this up in late-1980s London after a customer famously "
-             "asked for a drink to 'wake me up, then mess me up.' It has zero vermouth and "
-             "barely resembles a Martini, yet nothing stops a crowded room faster.",
-    "tip": "That glossy barista crema only shows up if you shake fresh, hot espresso hard "
-           "over ice. Cold brew tastes fine, just without the signature crown.",
+    "about": "Dick Bradsell mixed the first one at the Soho Brasserie in London in the "
+             "late 1980s (originally calling it the Vodka Espresso) after a model walked "
+             "up to the bar and asked for something that would 'wake me up, and then "
+             "fuck me up.' Thirty years later, it is still one of the most ordered drinks "
+             "on earth.",
+    "tip": "To get the thick tan foam on top, brew a fresh shot of espresso and shake it "
+           "hard with plenty of ice while it still has its crema.",
 },
 "Fish House Punch": {
-    "about": "Brewed since the 1730s at Philadelphia's State in Schuylkill fishing club, "
-             "making this plausibly the oldest American punch still ladled today. Bright "
-             "citrus masks a formidable blend of rum, cognac, and peach—and by all "
-             "accounts, knocking guests sideways was always part of the joke.",
-    "tip": "This single-glass build scales effortlessly for a party—just park a big block "
-           "of ice in the punch bowl and give it an hour to mingle.",
+    "about": "Philadelphia's Schuylkill Fishing Company (founded in 1732 and still around "
+             "today) has been serving this punch for centuries. Lemon juice, sugar, and "
+             "water hide a heavy combination of rum, cognac, and peach brandy that sneaks "
+             "up on anyone treating it like lemonade.",
+    "tip": "If you batch this in a punch bowl for a crowd, rest it over one big block of "
+           "ice for half an hour before serving so the spirits and lemon settle down.",
 },
 "Fog Cutter": {
-    "about": "One of Trader Vic's mightier inventions, packing rum, brandy, and gin into the "
-             "same tiki glass alongside almond orgeat, citrus, and a sherry float. Vic "
-             "himself joked that after two of these, you wouldn't taste the third.",
-    "tip": "Measure the three spirits cleanly and float the sherry right on top of the "
-           "crushed ice at the end so its nutty aroma greets you before the first sip.",
+    "about": "Trader Vic created the Fog Cutter in the 1940s and wrote in his bar guide: "
+             "'Fog Cutter, hell. After two of these you won't even see the stuff.' Combining "
+             "rum, brandy, and gin with lemon, orange juice, almond orgeat, and a sherry "
+             "float makes it both strong and surprisingly tart.",
+    "tip": "Measure the three spirits carefully and float the sherry over the crushed "
+           "ice at the very end so you taste the dry, nutty wine on your first sip.",
 },
 "French 75": {
-    "about": "Named after the fast-firing French 75mm field gun of World War I because of "
-             "how effortlessly it lands a punch. Linked to Paris's Harry's New York Bar and "
-             "printed in the 1930 Savoy Cocktail Book, it turns a gin sour into celebration.",
-    "tip": "Shake the gin, lemon, and sugar first, strain, and top with Champagne last. "
-           "Shaking sparkling wine is a kitchen ceiling mistake you only make once.",
+    "about": "During World War I, Paris bartenders named this combination of gin, lemon, "
+             "sugar, and Champagne after the French 75-millimetre field gun, famous for "
+             "its speed and kick. Harry MacElhone and Harry Craddock both helped cement "
+             "the recipe in the 1920s.",
+    "tip": "Shake only the gin, lemon juice, and syrup with ice, strain into your glass, "
+           "and top with Champagne afterwards. Never put sparkling wine in a closed shaker.",
 },
 "French Connection": {
-    "about": "Two bottles, equal parts, zero fuss: rich French cognac meets sweet Italian "
-             "amaretto, named after the 1971 thriller. No shaker or citrus required—just "
-             "a quiet, nutty nightcap for when the dishes can wait until tomorrow.",
+    "about": "This 1970s lounge drink took its name from the 1971 Gene Hackman crime movie "
+             "and couldn't be simpler: equal parts French cognac and Italian amaretto "
+             "poured over ice. It takes thirty seconds to build and works well after dinner.",
 },
 
 # ============================ G - H ========================================
 
 "Gibson": {
-    "about": "Essentially a crisp Gin Martini that swapped its olive or lemon twist for a "
-             "pearly pickled cocktail onion. Plenty of colourful origin stories compete for "
-             "the name without settling it, yet that savoury little onion earns its seat.",
-    "tip": "Keep the jar brine out of the mixing glass. A Gibson wants to stay bone-dry "
-           "and crystal-clear, with the onion providing subtle aroma on top.",
+    "about": "A Gibson is a dry Gin Martini garnished with a pickled cocktail onion instead "
+             "of an olive or a lemon twist. Illustrator Charles Dana Gibson and San Francisco "
+             "businessman Walter D. K. Gibson both get credited in old bar stories, and "
+             "the onion adds a subtle savoury note without making the drink briny.",
+    "tip": "Do not pour the pickling liquid from the onion jar into the drink. Unlike a "
+           "Dirty Martini, a Gibson stays clean and dry, with just the onion on a pick.",
 },
 "Gimlet": {
-    "about": "Traditionally poured with gin and Rose's lime cordial, which gives it a "
-             "velvety, old-world charm distinct from fresh-juice sours. Everyone repeats the "
-             "tale about a Royal Navy surgeon preventing scurvy, though proof remains elusive.",
-    "tip": "Fresh lime and simple syrup makes a zesty modern sip; bottled cordial pours "
-           "the moody historical version. Both shine—they're just different drinks.",
+    "about": "For most of the twentieth century, a Gimlet meant gin stirred or shaken with "
+             "Rose's sweetened lime cordial rather than fresh lime juice. People often "
+             "link it to nineteenth-century Royal Navy Surgeon-General Sir Thomas Gimlette "
+             "giving sailors lime juice to prevent scurvy.",
+    "tip": "Fresh lime juice and simple syrup makes a sharp modern gin sour, while Rose's "
+           "lime cordial gives you the softer, old-school pub version. Both are good.",
 },
 "Gin And Tonic": {
-    "about": "British officers in colonial India took bitter quinine against malaria, found "
-             "it awful on its own, and rescued it with gin, sugar, and lime. Happily the "
-             "prescription is optional now, leaving us one of summer's finest two-step habits.",
-    "tip": "Pack the glass to the brim with ice. Ironically, half a glass melts much faster "
-           "and waters the tonic down before you're halfway through.",
+    "about": "In nineteenth-century colonial India, British officials took daily doses of "
+             "bitter quinine powder to ward off malaria and began mixing it with soda "
+             "water, sugar, lime, and gin to make the medicine go down. Modern tonic water "
+             "has much less quinine, but the pairing with London Dry gin never went away.",
+    "tip": "Fill the glass all the way to the top with ice cubes before pouring. More ice "
+           "keeps the drink colder, melts slower, and holds onto the carbonation longer.",
 },
 "Godfather": {
-    "about": "Named for the film and just as direct: Scotch and sweet amaretto poured gently "
-             "over big ice. The toasted almond warmth softens smoky edges without burying "
-             "the whisky underneath.",
+    "about": "Appearing in the 1970s right around the release of Francis Ford Coppola's "
+             "film, the Godfather pairs Scotch whisky with sweet almond amaretto over ice. "
+             "The amaretto rounds off the sharper, smokier notes of the Scotch without "
+             "hiding them.",
 },
 "Gold Rush": {
-    "about": "Created by T.J. Siegal at New York's Milk & Honey around 2000, this simply "
-             "replaces white sugar in a Whiskey Sour with golden honey syrup. One tiny swap "
-             "turns a sharp classic into something richer and sunnier.",
-    "tip": "Turn honey into a 3:1 syrup with warm water beforehand—raw honey locks up solid "
-           "the instant it meets chilled lemon juice.",
+    "about": "T.J. Siegal came up with the Gold Rush around 2000 at Sasha Petraske's New "
+             "York bar Milk & Honey. It is simply a bourbon Whiskey Sour made with honey "
+             "syrup instead of sugar syrup and served over a big cube of ice.",
+    "tip": "Stir three parts honey with one part warm water before you start. Straight "
+           "honey turns stiff as soon as it touches cold lemon juice and ice.",
 },
 "Grasshopper": {
-    "about": "Dreamed up at Tujague's in New Orleans around 1918, combining green crème de "
-             "menthe, white crème de cacao, and cream in equal measure. Yes, it tastes like "
-             "melted mint-chocolate-chip ice cream—and it wears that crown proudly.",
+    "about": "Philibert Guichet invented the Grasshopper at Tujague's in New Orleans's "
+             "French Quarter around 1918 and won second prize with it at a New York "
+             "cocktail competition. Equal parts green crème de menthe, white crème de "
+             "cacao, and cream taste exactly like liquid mint-chocolate-chip ice cream.",
 },
 "Greenpoint": {
-    "about": "Born at Milk & Honey courtesy of Michael McIlroy during New York's wave of "
-             "borough-named Manhattans. Rye whiskey gets cosy with sweet vermouth and herbal "
-             "Yellow Chartreuse, landing in a lush, honeyed spice pocket.",
+    "about": "Michael McIlroy created the Greenpoint around 2006 at Milk & Honey in New "
+             "York, continuing the bar's habit of naming Manhattan variations after "
+             "Brooklyn neighbourhoods. Yellow Chartreuse steps in alongside rye whiskey, "
+             "sweet vermouth, and two bitters for an herbal, honeyed twist.",
 },
 "Greyhound": {
-    "about": "Gin or vodka swirled into fresh grapefruit juice—clean, brisk, and effortless. "
-             "Dust half the rim with salt and it instantly transforms into a Salty Dog, "
-             "proving how much one little detail can wake up a glass.",
+    "about": "The Greyhound first showed up in Harry Craddock's 1930 Savoy Cocktail Book "
+             "as gin, grapefruit juice, and ice, before Greyhound bus terminals began "
+             "serving a vodka version in their station restaurants after World War II. "
+             "Put salt on the rim and the exact same drink is called a Salty Dog.",
 },
 "Hanky Panky": {
-    "about": "Ada Coleman invented this while running London's Savoy American Bar back when "
-             "women rarely held head-bartender posts. Actor Charles Hawtrey supposedly took "
-             "one sip and sighed, 'By Jove, that is the real hanky-panky!'—and history agreed.",
-    "tip": "Measure those two dashes of Fernet-Branca carefully. It's the loudest bottle on "
-           "most shelves, and a splash too much turns elegance into cough syrup.",
+    "about": "Ada 'Coley' Coleman, the famous head bartender at London's Savoy Hotel in "
+             "the early 1900s, mixed this for comic actor Sir Charles Hawtrey when he "
+             "asked for something with a bit of punch. When he tasted the mix of gin, "
+             "sweet vermouth, and two dashes of bitter Fernet-Branca, he shouted, 'By "
+             "Jove! That is the real hanky-panky!'",
+    "tip": "Measure the Fernet-Branca carefully. Just two dashes add a cool menthol-and-herb "
+           "finish to a Sweet Martini, while a heavy pour takes over the whole glass.",
 },
 "Harvard": {
-    "about": "Dating from the late 1800s fashion for naming cocktails after Ivy League schools "
-             "and social clubs, the Harvard is essentially a Manhattan cut from smooth "
-             "brandy instead of rye. Softer, fruitier, and quietly distinguished.",
+    "about": "George Kappeler included the Harvard in his 1895 book Modern American Drinks "
+             "during a late-nineteenth-century craze for naming cocktails after Ivy League "
+             "colleges. It is simply a Manhattan made with cognac instead of rye whiskey, "
+             "which makes it rounder and slightly fruitier.",
 },
 "Hemingway Daiquiri": {
-    "about": "Mixed for Ernest Hemingway at Havana's El Floridita by Constantino Ribalaigua "
-             "with double rum and zero sugar, earning the nickname 'Papa Doble.' Fresh "
-             "grapefruit and cherry-pit maraschino step in to balance the bright lime.",
-    "tip": "The historic no-sugar build pulls no punches—adding a shy quarter ounce of "
-           "simple syrup rounds the sharp corners if you prefer a gentler sip.",
+    "about": "When Ernest Hemingway walked into El Floridita in Havana in the 1930s, he "
+             "tasted their frozen Daiquiri and asked head bartender Constantino Ribalaigua "
+             "for one with no sugar and double the rum. Later on, Ribalaigua added grapefruit "
+             "juice and maraschino liqueur to soften the sharp lime.",
+    "tip": "Without simple syrup, this is a very tart, bone-dry drink. If it hits a little "
+           "too sharp for your taste, add a quarter ounce of simple syrup.",
 },
 "Horse's Neck": {
-    "about": "Started life in the 1890s as an innocent ginger ale cooler crowned with a "
-             "dramatic spiral of lemon peel hanging off the rim like a horse's bridle. "
-             "Before long, somebody poured whiskey in and gave it a second life.",
-    "tip": "Peel one continuous ribbon of lemon and hook it inside the glass before packing "
-           "in the ice—trying to thread it in afterwards is a losing battle.",
+    "about": "In the 1890s, a Horse's Neck was actually a non-alcoholic drink of ginger "
+             "ale, ice, and a long spiral of lemon peel draped over the edge of the glass. "
+             "Within a decade or two, bartenders started adding a stiff measure of brandy "
+             "or American whiskey and a dash of bitters, which is how it stayed.",
+    "tip": "Cut a single long ribbon of peel around a whole lemon and drape it inside "
+           "the glass before you add the ice, otherwise it won't stay put.",
 },
 "Hot Toddy": {
-    "about": "Whiskey, honey, lemon, and steaming water—old enough that both Scotland and "
-             "colonial India argue over who named it first. Whether or not it actually cures "
-             "a winter sniffle, nothing else warms cold fingers faster.",
-    "tip": "Preheat the mug with hot tap water and tip it out before building. Pouring into "
-           "a chilly mug drops the drink straight to lukewarm.",
+    "about": "People have been mixing whiskey, hot water, sweetener, and lemon against winter "
+             "colds since at least the 1700s, with the name likely borrowed from either "
+             "India's fermented palm sap ('tari') or Edinburgh's Tod's Well water supply. "
+             "It is still the best thing to hold when you come in out of the cold.",
+    "tip": "Fill your mug with hot tap water for a minute and dump it out before building "
+           "the drink. A cold ceramic mug pulls the heat right out of a Hot Toddy.",
 },
 "Hugo Spritz": {
-    "about": "Bartender Roland Gruber created this refreshing mountain spritz in South Tyrol "
-             "in 2005, originally using lemon-balm syrup before floral elderflower took the "
-             "lead. Breezier, softer, and far less bitter than an Aperol Spritz.",
+    "about": "Bartender Roland Gruber came up with the Hugo in 2005 in the Alpine region "
+             "of South Tyrol, northern Italy, as a gentler alternative to the Aperol "
+             "Spritz. Elderflower cordial, prosecco, soda water, and fresh mint leaves "
+             "make it floral, light, and not bitter at all.",
 },
 "Hurricane": {
-    "about": "Born in 1940s New Orleans at Pat O'Brien's, back when wartime whiskey shortages "
-             "forced bars to buy crates of unwanted rum just to get a bottle of bourbon. "
-             "The curvy hurricane-lamp glass turned excess inventory into a French Quarter icon.",
-    "tip": "Using a mix of light and dark rum adds real depth. Every bar prints different "
-           "ratios for this one, so adjust the sweet-to-tart balance to your taste.",
+    "about": "During World War II, whiskey was scarce in the United States, so liquor "
+             "distributors forced bar owners to buy cases of Caribbean rum if they wanted "
+             "an allocation of Scotch or bourbon. Pat O'Brien's in New Orleans unloaded "
+             "all that rum by mixing it with passion fruit and lemon in a tall glass "
+             "shaped like a hurricane lamp.",
+    "tip": "Using half white rum and half dark rum gives you a fuller flavour than using "
+           "one bottle alone.",
 },
 
 # ============================ I - L ========================================
 
 "Irish Coffee": {
-    "about": "Chef Joe Sheridan first brewed this at Ireland's Foynes airbase in the "
-             "1940s to warm chilled transatlantic flyers, before travel writer Stanton "
-             "Delaplane brought it to San Francisco's Buena Vista in 1952. Strong coffee, "
-             "smooth Irish whiskey, and a collar of gently whipped cream—a hug in a stemmed "
-             "mug.",
-    "tip": "Whip the cream lightly so it still pours, then float it over the back of a "
-           "spoon. Sip hot coffee straight through the cool cream—never stir it in.",
+    "about": "In the winter of 1943, a bad storm forced a transatlantic flying boat back "
+             "to Foynes airbase in County Limerick, Ireland, and chef Joe Sheridan added "
+             "Irish whiskey to the passengers' coffee. When an American passenger asked "
+             "if it was Brazilian coffee, Sheridan told him it was Irish coffee.",
+    "tip": "Lightly whip or shake cold heavy cream just until it thickens slightly, then "
+           "pour it over the back of a spoon so it floats on top. Drink the hot coffee "
+           "straight through the cool cream without stirring.",
 },
 "Jamaican Mule": {
-    "about": "Trade neutral vodka for funky, aromatic Jamaican rum and the Mule suddenly "
-             "wakes up. Those ripe tropical spice notes punch right through spicy ginger "
-             "beer instead of politely hiding behind it.",
-    "tip": "Reach for fiery ginger beer, never mild ginger ale—ale turns sweet and makes "
-           "the rum feel noticeably flatter.",
+    "about": "Replacing the vodka in a Moscow Mule with pot-still Jamaican rum gives the "
+             "drink a lot more personality. The ripe banana, molasses, and spice notes "
+             "in Jamaican rum hold their own right alongside hot ginger beer and fresh lime.",
+    "tip": "Use real ginger beer rather than ginger ale. Ginger ale is much sweeter and "
+           "lacks the peppery ginger bite that makes a Mule work.",
 },
 "Japanese Cocktail": {
-    "about": "Published in Jerry Thomas's 1862 Bartender's Guide and likely named to salute "
-             "the first Japanese diplomatic mission visiting America in 1860. With cognac, "
-             "almond orgeat, and bitters—and nothing remotely Japanese inside—it pours like "
-             "a velvety Old Fashioned.",
-    "tip": "There is no citrus juice inside the mixing glass, so don't skip the lemon twist "
-           "at the end—its oil brings the brightness.",
+    "about": "Jerry Thomas published this recipe in his 1862 Bartender's Guide, almost "
+             "certainly naming it in honour of the first Japanese diplomatic embassy's "
+             "celebrated 1860 visit to New York. There is nothing Japanese in the glass: "
+             "just cognac stirred with almond orgeat syrup and bitters.",
+    "tip": "Because there is no citrus juice in the recipe, make sure you squeeze a strip "
+           "of lemon peel over the top at the end to keep the sweet almond from feeling heavy.",
 },
 "John Collins": {
-    "about": "The sunny highball family of spirit, lemon, sugar, and soda water traces its "
-             "name back to a popular head waiter at Limmer's Hotel in London. Originally "
-             "poured with gin as a Tom Collins, today's John almost always leans on whiskey.",
+    "about": "An 1860s London rhyme credited a head waiter named John Collins at Limmer's "
+             "Hotel around Conduit Street with pouring gin, lemon, sugar, and soda over "
+             "ice. Once bartenders began making the gin version with Old Tom gin and calling "
+             "it a Tom Collins, the name John Collins shifted over to the bourbon or "
+             "whiskey version.",
 },
 "Juan Collins": {
-    "about": "Give that tall, lemon-bright Collins build a shot of tequila and the drink "
-             "gets a crisp, earthy kick gin simply doesn't have. Tall, sparkling, and made "
-             "for lingering over ice.",
+    "about": "A Juan Collins simply takes the tall lemon-and-soda Collins build and swaps "
+             "the base spirit for blanco or reposado tequila. If you want a long, fizzy "
+             "tequila drink with lemon instead of lime or grapefruit, this is it.",
 },
 "Jungle Bird": {
-    "about": "Invented at the Kuala Lumpur Hilton in 1978 and rescued decades later by tiki "
-             "revivalists, this throws dark rum and bitter Campari into tropical pineapple "
-             "juice. It is that rare tiki escape that leans proudly bittersweet instead of "
-             "sugary.",
-    "tip": "Campari sparring with pineapple is the whole personality here—don't cut back "
-           "the bitter pour trying to make it polite.",
+    "about": "Jeffrey Ong created the Jungle Bird in 1978 for the Aviary Bar at the Kuala "
+             "Lumpur Hilton, where it was originally served in a ceramic bird vessel. "
+             "Putting bitter Italian Campari into a tropical mix of dark rum, pineapple "
+             "juice, lime, and sugar makes it one of the most distinct tiki drinks ever made.",
+    "tip": "Do not cut back on the Campari. The whole point of a Jungle Bird is how "
+           "pineapple juice and dark rum tame that bitter red liqueur.",
 },
 "Kalimotxo": {
-    "about": "Equal parts red wine and cola straight out of Spain's Basque Country, "
-             "popularly traced to a 1970s festival in Getxo looking to rescue a batch of "
-             "tragic wine. Locals swear by it in summer, and once you try one cold over "
-             "ice it makes surprising sense.",
-    "tip": "Leave the pricey bottle on the rack. This was born to make cheap, rough table "
-           "red delightful—great wine just tastes wasted.",
+    "about": "Half red wine and half cola over ice sounds like a dare until you try one "
+             "on a warm day. Popularised in Spain's Basque Country in the early 1970s "
+             "(reportedly after festival organisers in Getxo needed to salvage 2,000 litres "
+             "of rough red wine), it drinks a lot like an easy two-ingredient sangria.",
+    "tip": "Save your good wine for dinner. An inexpensive young red with a bit of tannin "
+           "actually works best against the sweet cola.",
 },
 "Kamikaze": {
-    "about": "Equal parts vodka, triple sec, and fresh lime—either a Margarita that traded "
-             "tequila for vodka, or a Cosmopolitan stripped down to pure citrus bite. Crisp, "
-             "tart, and bracingly clean.",
+    "about": "Equal parts vodka, triple sec, and lime juice surfaced in American bars in "
+             "the 1970s, served both as a chilled shooter and a proper up cocktail. It is "
+             "essentially a Margarita with vodka in place of the tequila.",
 },
 "Kentucky Mule": {
-    "about": "Swapping Kentucky bourbon into a Moscow Mule does wonders for the glass: "
-             "instead of staying quiet behind spicy ginger and lime, warm oak and vanilla "
-             "join the party.",
+    "about": "Using bourbon instead of vodka in a Moscow Mule adds vanilla, caramel, and "
+             "oak to the ginger beer and lime. Bourbon and ginger are already an easy match, "
+             "and the fresh lime keeps the finish clean.",
 },
 "Kir Royale": {
-    "about": "Named after Félix Kir, a French Resistance hero and longtime mayor of Dijon who "
-             "championed local blackcurrant crème de cassis mixed into white wine. The "
-             "Royale simply upgrades the still wine to Champagne for an effortless jewel-toned "
-             "toast.",
-    "tip": "Pour cassis into the flute first, then tilt and gently top with Champagne—drop "
-           "syrup into bubbles and it volcanoes over the rim.",
+    "about": "Canon Félix Kir, a French priest, Resistance fighter, and longtime postwar "
+             "mayor of Dijon, served white Burgundy with local blackcurrant crème de cassis "
+             "at official city receptions so often that the drink was named after him. "
+             "The Kir Royale simply replaces the still white wine with Champagne.",
+    "tip": "Put the crème de cassis in the bottom of the flute first, then pour the "
+           "Champagne in slowly. The bubbles mix the two on their own without needing a spoon.",
 },
 "Lemon Drop": {
-    "about": "Invented in 1970s San Francisco by Norman Jay Hobday at Henry Africa's—often "
-             "called the original fern bar. Vodka, orange liqueur, and fresh lemon dressed "
-             "with a sugared rim deliver grown-up lemon candy in a chilled coupe.",
+    "about": "Norman Jay Hobday invented the Lemon Drop in the 1970s at Henry Africa's, "
+             "his neighbourhood saloon in San Francisco's Russian Hill. Named after the "
+             "hard lemon candies, it shakes vodka, triple sec, and fresh lemon juice into "
+             "a sugar-rimmed glass for a sweet-tart finish.",
 },
 "Long Island Iced Tea": {
-    "about": "Both Robert Butt at Long Island's Oak Beach Inn in 1972 and an earlier "
-             "Prohibition concoction out of Long Island, Tennessee claim the crown. Five "
-             "clear spirits and a splash of cola somehow masquerade as sweet iced tea with "
-             "zero tea anywhere near the glass.",
-    "tip": "Don't let the smooth cola disguise fool you—half an ounce across five bottles "
-           "adds up fast, so measure faithfully.",
+    "about": "Robert 'Rosebud' Butt claims he invented this drink in 1972 for a contest "
+             "at the Oak Beach Inn on Long Island, New York, using vodka, gin, white rum, "
+             "tequila, and triple sec with sour mix and a splash of cola. Somehow those "
+             "five clear liquors and lemon end up tasting remarkably like sweet iced tea.",
+    "tip": "Measure the five spirits with a jigger rather than free-pouring. Even at "
+           "half an ounce each, you are already looking at two and a half ounces of liquor.",
 },
 
 # ============================ M ============================================
 
 "Mai Tai": {
-    "about": "Trader Vic claimed he created it in Oakland in 1944 while Don the Beachcomber "
-             "insisted on an earlier version, kicking off tiki's most famous rivalry. The name "
-             "comes from the Tahitian 'maita'i,' meaning 'good'—supposedly the first words "
-             "out of a friend's mouth—and the original never touched pineapple juice.",
-    "tip": "Almond orgeat is the soul of a real Mai Tai; skip it and you've just poured "
-           "a rum sour.",
+    "about": "Victor Bergeron (Trader Vic) mixed the first Mai Tai at his Oakland restaurant "
+             "in 1944 for two friends visiting from Tahiti, one of whom took a sip and "
+             "said, 'Mai tai, roa ae!' ('Out of this world, the best!'). Despite what hotel "
+             "pool bars poured in the 1970s and 1980s, the real recipe has no pineapple "
+             "juice, no orange juice, and no grenadine.",
+    "tip": "Almond orgeat syrup is essential here. Without orgeat and orange curaçao, you "
+           "are just making a rum sour.",
 },
 "Mamie Taylor": {
-    "about": "Mixed in Rochester, New York in 1899 for an opera singer who asked for "
-             "something else and wound up inspiring a hit anyway. Predating the Moscow Mule "
-             "by half a century, Scotch, citrus, and ginger beer turn out remarkably bright.",
-    "tip": "Don't shy away from a lightly smoky Scotch here—spicy ginger beer has plenty "
-           "of sweetness to hug the peat.",
+    "about": "In the summer of 1899, Broadway musical star Mamie Taylor took a boat trip "
+             "in Rochester, New York and asked a bartender for a light ginger drink. His "
+             "mix of Scotch whisky, lime juice, and spicy ginger beer became a massive "
+             "turn-of-the-century fad forty years before the Moscow Mule was invented.",
+    "tip": "A blended Scotch with a bit of peat smoke works really well against the "
+           "spicy ginger beer and fresh lime.",
 },
 "Manhattan": {
-    "about": "Born in 1880s New York and tied to the famous Manhattan Club. The enduring "
-             "rumour that Winston Churchill's mother hosted the party where it debuted makes "
-             "great dinner-table trivia, though she happened to be pregnant in England at "
-             "the time.",
-    "tip": "Always stir, never shake. Shaking an all-spirit drink turns it cloudy, frothy, "
-           "and noticeably harsher on the palate.",
+    "about": "The Manhattan came out of New York's Manhattan Club in the 1870s or 1880s "
+             "as one of the earliest cocktails to pair American whiskey with Italian vermouth. "
+             "A famous old story claimed Winston Churchill's mother invented it for an "
+             "1874 election banquet, though historians later pointed out she was in England "
+             "giving birth to Winston at the time.",
+    "tip": "Always stir a Manhattan over ice rather than shaking it. Shaking makes an "
+           "all-spirit drink cloudy and thin.",
 },
 "Margarita": {
-    "about": "Built on the classic nineteenth-century Daisy shape—spirit, citrus, and orange "
-             "liqueur—which even gave it its name, since 'margarita' is Spanish for daisy. "
-             "At least half a dozen bartenders and socialites take credit for inventing it, "
-             "and none of the paperwork settles it cleanly.",
-    "tip": "Salt only half the rim so you can decide between crisp citrus and salty bite "
-           "from sip to sip.",
+    "about": "Half a dozen bartenders in Tijuana, Ensenada, Ciudad Juárez, and Acapulco "
+             "claimed to have invented the Margarita between the 1930s and late 1940s, "
+             "often for a glamorous actress or socialite. More likely, it grew directly "
+             "out of the nineteenth-century Brandy Daisy: when Americans crossed into "
+             "Mexico during Prohibition and asked for a Daisy with tequila, 'margarita' "
+             "was simply the Spanish word for daisy.",
+    "tip": "Salt only half the rim of the glass so you can take a salted sip or an "
+           "unsalted sip whenever you like.",
 },
 "Martinez": {
-    "about": "Widely celebrated as the crucial missing link between the sweet Manhattan and "
-             "the crisp Martini. Old Tom gin, sweet vermouth, cherry-pit maraschino, and "
-             "orange bitters make it rounder, plushier, and gentler than modern Martinis.",
-    "tip": "Rich Old Tom gin is historic and smooth; if you're pouring crisp London Dry, "
-           "dial the sweet vermouth back slightly so it stays balanced.",
+    "about": "The Martinez showed up in cocktail books of the 1880s, traced either to the "
+             "California town of Martinez or San Francisco's Occidental Hotel, as the "
+             "direct bridge between the Manhattan and the Martini. Using gin, sweet "
+             "vermouth, maraschino liqueur, and bitters makes it darker and sweeter than "
+             "any modern Martini.",
+    "tip": "If you use a dry London Dry gin instead of a slightly sweeter Old Tom gin, "
+           "use a touch less sweet vermouth so the drink doesn't lean cloying.",
 },
 "Mary Pickford": {
-    "about": "Created in 1920s Havana for silent-film darling Mary Pickford during the "
-             "glamorous years Hollywood hopped down to Cuba to escape Prohibition. White rum, "
-             "pineapple, grenadine, and maraschino pour blushing pink yet finish crisp and "
-             "grown-up.",
-    "tip": "Recipes disagree wildly on how much maraschino belongs inside—start gently, "
-           "since that funky cherry liqueur speaks up fast.",
+    "about": "When silent-film stars Mary Pickford, Douglas Fairbanks, and Charlie Chaplin "
+             "travelled to Havana in the 1920s, bartender Fred Kaufman at the Hotel Nacional "
+             "(or Eddie Woelke at the Sevilla-Biltmore) named this pale pink rum drink "
+             "for her. Pineapple juice and white rum get a dry, nutty edge from maraschino "
+             "liqueur and a blush of grenadine.",
+    "tip": "Go easy on the maraschino liqueur. You just want a subtle cherry-pit aroma "
+           "behind the pineapple and rum.",
 },
 "Matador": {
-    "about": "A snappy three-piece mix of blanco tequila, sunny pineapple juice, and crisp "
-             "lime. If you want an easy, refreshing tequila sip without hunting down "
-             "grapefruit soda, this hits the spot.",
+    "about": "Whereas the Margarita pairs tequila with orange liqueur and lime, the Matador "
+             "drops the triple sec and shakes blanco tequila with pineapple juice and "
+             "fresh lime instead. It first popped up in print in the 1930s and grew popular "
+             "across the mid-century tiki years.",
 },
 "Mexican Mule": {
-    "about": "Swap vodka out of a Moscow Mule for bright tequila and the glass catches fire "
-             "in the best way. Fiery ginger beer and peppery agave feel like they were "
-             "introduced to each other years ago.",
+    "about": "Swapping the vodka in a Moscow Mule for tequila turns a mild ginger highball "
+             "into something much livelier. Earthy agave, fresh lime juice, and peppery "
+             "ginger beer fit together naturally.",
 },
 "Mezcal Negroni": {
-    "about": "Trading gin for smoky mezcal pulls a classic Negroni straight toward the "
-             "bonfire. That mineral smoke leans right into Campari's herbal bitterness, "
-             "giving you a darker, earthier slow sipper.",
-    "tip": "Mezcal has a bigger voice than most gins, so ease it to 3/4 oz against a full "
-           "ounce each of Campari and sweet vermouth if the smoke threatens to steal the show.",
+    "about": "Replacing the gin in a Negroni with mezcal is one of the best modern cocktail "
+             "swaps you can make at home. Mezcal's woodsmoke and roasted agave stand right "
+             "up to the bitterness of Campari and the richness of sweet vermouth.",
+    "tip": "If your mezcal is heavily smoky, try dropping it to 3/4 oz while keeping the "
+           "Campari and sweet vermouth at 1 oz each.",
 },
 "Milano-Torino": {
-    "about": "Equal parts Campari from Milan and sweet vermouth from Turin—the original "
-             "1860s duo that spawned the Americano and, later, the Negroni. Stripped of "
-             "soda and gin, it lets you taste both iconic Italian bottles face to face.",
-    "tip": "Add soda and you're sipping an Americano; swap in gin and it becomes a Negroni. "
-           "Taste this one first and the whole family clicks.",
+    "about": "Before the Americano or the Negroni existed, Italian cafés in the 1860s "
+             "served this simple half-and-half pour named after its two hometowns: Campari "
+             "from Milan and sweet vermouth (originally Punt e Mes) from Turin. Served over "
+             "ice with an orange peel, it is rich, bittersweet, and low in proof.",
+    "tip": "Top this with soda water and you have an Americano. Add an equal measure of "
+           "gin instead and you have a Negroni.",
 },
 "Mimosa": {
-    "about": "Credited to the Paris Ritz around 1925 and named after the fluffy yellow "
-             "mimosa blossoms dotting the Riviera. Fresh orange juice and cold Champagne in "
-             "easy harmony—brunch's favourite excuse for morning bubbles.",
-    "tip": "Chill both bottles hard and pour Champagne gently down the tilted glass. Warm "
-           "juice flattens bubbles in seconds.",
+    "about": "Frank Meier is usually credited with pouring equal parts orange juice and "
+             "Champagne at the Ritz Hotel in Paris around 1925, naming it after the yellow "
+             "flowers of the mimosa tree that blooms across southern France. Three years "
+             "earlier in London, Buck's Club was already pouring nearly the same drink as "
+             "a Buck's Fizz.",
+    "tip": "Have both the orange juice and the Champagne thoroughly chilled before you "
+           "open them, since there is no ice in the flute.",
 },
 "Mint Julep": {
-    "about": "An American porch fixture long before the Kentucky Derby adopted it officially "
-             "in 1938. Bourbon, sugar, and bruised mint packed over a snow cone of crushed "
-             "ice, traditionally inside silver or pewter so frost beads on the outside.",
-    "tip": "Press the mint gently against the sugar to wake up the oils—shredding the "
-           "leaves releases bitter chlorophyll that turns the glass grassy.",
+    "about": "Southerners were drinking Juleps made with brandy or whiskey as early as "
+             "the late 1700s, long before Churchill Downs made the bourbon version the "
+             "official drink of the Kentucky Derby in 1938. Packing the cup with finely "
+             "crushed ice is what makes the outside of the cup frost over.",
+    "tip": "Press the mint leaves gently into the sugar and water at the bottom of the "
+           "cup. Grinding or tearing the leaves releases bitter green sap from the stems.",
 },
 "Mojito": {
-    "about": "Havana's cooling gift to hot afternoons, often traced back to El Draque—a "
-             "sixteenth-century lime, mint, and sugarcane tonic linked to Francis Drake's "
-             "crew. The paper trail fades in places, yet its refreshing crunch has outlived "
-             "empires.",
-    "tip": "Coax the mint, don't pulverise it—a couple of firm presses wake the aroma while "
-           "pulped leaves taste like lawn clippings.",
+    "about": "Havana's signature highball combines white rum, lime, sugar, mint, and soda "
+             "water, and exploded in popularity at La Bodeguita del Medio in the 1930s and "
+             "1940s. Cuban lore traces its roots all the way back to a sixteenth-century "
+             "rum-and-mint remedy called El Draque after English privateer Francis Drake.",
+    "tip": "Press the mint leaves gently two or three times to release the oil from the "
+           "leaves. If you shred the mint to bits, it makes the drink bitter and gets "
+           "stuck in your teeth.",
 },
 "Morning Glory Fizz": {
-    "about": "Born in Jerry Thomas's Victorian era when morning-after tonics were practically "
-             "written as prescriptions, this layers Scotch, bright citrus, silky egg white, "
-             "and an absinthe kiss beneath fizzing soda. Bold, frothy, and astonishingly "
-             "civilised for noon.",
-    "tip": "Dry-shake without ice first for froth, shake with ice second, and add soda "
-           "strictly in the glass—soda inside a shaker only ends on your shirt.",
+    "about": "Late-nineteenth-century American bar guides had a whole category of morning "
+             "fizzes designed to put late-night revellers back on their feet. Combining "
+             "Scotch whisky, lemon, lime, egg white, soda, and a few dashes of absinthe "
+             "sounds wild on paper, but the citrus and foam tame the Scotch and anise.",
+    "tip": "Shake the ingredients without ice first to whip the egg white, then shake "
+           "with ice, strain, and add the soda water directly to the glass at the end.",
 },
 "Moscow Mule": {
-    "about": "Hatched in 1941 Los Angeles when a Smirnoff executive with surplus vodka "
-             "teamed up with a bar owner sitting on crates of unwanted ginger beer—and a "
-             "friend trying to unload copper mugs. Turns out a cocktail built out of "
-             "leftover inventory can become immortal.",
-    "tip": "That copper mug isn't purely for show: metal conducts chill right to your "
-           "fingertips and keeps the drink icy far longer than glass.",
+    "about": "In 1941, Americans barely drank vodka at all. Then John Martin (who had just "
+             "bought the rights to Smirnoff) sat down in Los Angeles with Jack Morgan of "
+             "the Cock 'n' Bull pub, who had a basement full of house-made ginger beer, "
+             "and an acquaintance who happened to have a load of copper mugs to sell.",
+    "tip": "If you don't have a copper mug, a chilled highball glass works just fine. "
+           "What matters is using real, spicy ginger beer instead of sweet ginger ale.",
 },
 
 # ============================ N - O ========================================
 
 "Negroni": {
-    "about": "In 1919 Florence, Count Camillo Negroni asked his bartender to give his "
-             "usual Americano a little more backbone by swapping the soda water for gin. "
-             "It hit the mark so well that regulars started ordering it by name, and that "
-             "dead-simple equal-parts trio of gin, Campari, and sweet vermouth has barely "
-             "needed a tweak in a century.",
-    "tip": "Stir it straight over one big rock of ice. Small cubes melt quickly, and a "
-           "Negroni rewards taking your time.",
+    "about": "In 1919 Florence, Count Camillo Negroni asked his bartender Fosco Scarselli "
+             "at Caffè Casoni to strengthen his usual Americano by replacing the soda "
+             "water with gin. Other customers started asking for 'one of Count Negroni's "
+             "drinks,' and that equal-parts mix of gin, Campari, and sweet vermouth has "
+             "stayed on bar menus ever since.",
+    "tip": "Build and stir it over one large ice cube if you have one. Small cubes melt "
+           "fast, and a Negroni tastes best as it opens up slowly.",
 },
 "Negroni Sbagliato": {
-    "about": "'Sbagliato' means mistaken—and happily so. One evening at Milan's Bar Basso, "
-             "Mirko Stocchetto reached for gin, accidentally grabbed sparkling wine, and "
-             "served the fizzy, half-strength accident anyway.",
+    "about": "In Italian, 'sbagliato' means 'mistaken' or 'botched.' Back in the late 1960s "
+             "or early 1970s at Bar Basso in Milan, bartender Mirko Stocchetto reached for "
+             "the gin bottle while making a Negroni, grabbed a bottle of sparkling spumante "
+             "by mistake, and discovered a lighter, fizzy classic.",
 },
 "New York Sour": {
-    "about": "A late-1800s Whiskey Sour crowned with a ruby-red collar of dry red wine. "
-             "That wine float isn't just pretty—it brings dark fruit and dry tannin right "
-             "into the lemon on your first sip.",
-    "tip": "Pour the red wine gently over the back of a spoon and leave it un-stirred. Mix "
-           "it in and you muddy the ruby crown before tasting it.",
+    "about": "Bartenders in Chicago and New York were floating a spoonful of dry red wine "
+             "on top of a Whiskey Sour by the 1880s, originally calling it a Continental "
+             "Sour or Southern Whiskey Sour. Beyond the two-tone look in the glass, the "
+             "dry red wine adds a nice tannic bite to the first few sips of bourbon and lemon.",
+    "tip": "Hold the back of a spoon just above the surface of the drink and pour the "
+           "red wine slowly over it so the wine stays in a distinct band on top.",
 },
 "Nikolaschka": {
-    "about": "More of a charming German bar ritual than a stirred cocktail: a neat pour of "
-             "cognac topped with a lemon wheel wearing sugar on one half and ground coffee "
-             "on the other. Eat the lemon slice first, then chase it with the brandy.",
-    "tip": "Fold the lemon wheel in half, bite the whole thing first, then drink the "
-           "cognac straight away—the reverse order misses the magic completely.",
+    "about": "This German after-dinner ritual started in Hamburg and was supposedly named "
+             "after Tsar Nicholas II. You balance a thin peeled lemon slice on the rim "
+             "of a small brandy glass, pile sugar and finely ground coffee on the lemon, "
+             "and mix the drink in your own mouth.",
+    "tip": "Fold the coffee-and-sugar-topped lemon slice in half, chew and swallow it "
+           "first, then immediately drink the cognac right behind it.",
 },
 "Oaxaca Old Fashioned": {
-    "about": "Dreamed up by Phil Ward at New York's Death & Co around 2007, this smoky "
-             "showstopper did more than almost any modern drink to bring mezcal onto back "
-             "bars everywhere. Pairing tequila and mezcal with agave syrup and chocolatey "
-             "mole bitters tastes like campfire and dark cacao.",
-    "tip": "Try flaming the orange peel over the glass—warmed citrus oils caramelise right "
-           "into the mezcal's smoke.",
+    "about": "Phil Ward created the Oaxaca Old Fashioned in 2007 while working at Death & "
+             "Co in New York's East Village, and it quickly became the drink that introduced "
+             "thousands of bar-goers to mezcal. Splitting the base between reposado tequila "
+             "and smoky mezcal with agave nectar and mole bitters gives you smoke, oak, "
+             "and dark cocoa in one glass.",
+    "tip": "If you have matches handy, flame the orange peel over the glass before dropping "
+           "it in. The lightly scorched orange oil works really well with the mezcal.",
 },
 "Old Fashioned": {
-    "about": "Before fancy vermouths and syrups arrived, 'cocktail' simply meant spirit, "
-             "sugar, water, and bitters—full stop. When late-1800s bartenders got clever "
-             "with liqueurs, nostalgic regulars demanded theirs 'the old-fashioned way,' "
-             "handing us the most famous name in the bar.",
-    "tip": "Skip the muddled fruit salad—crushed orange slices and neon cherries turn a "
-           "crisp spirit sipper cloudy. Just squeeze a fresh orange peel over the top.",
+    "about": "In 1806, an upstate New York newspaper defined the brand-new word 'cocktail' "
+             "as any spirit mixed with sugar, water, and bitters. By the 1870s and 1880s, "
+             "bartenders were adding absinthe, curaçao, and vermouth to everything, so "
+             "traditionalists began asking for a whiskey cocktail made 'the old-fashioned "
+             "way.'",
+    "tip": "Skip muddling whole orange slices and neon cherries in the bottom of the glass. "
+           "Just stir whiskey, sugar, and bitters with ice and squeeze an orange peel over "
+           "the top.",
 },
 "Old Pal": {
-    "about": "Recorded in Harry MacElhone's 1927 Barflies and Cocktails out of the same "
-             "lively Paris scene as the Boulevardier, this swaps sweet vermouth for crisp "
-             "dry vermouth and rye. Lean, bitter, and unapologetically brisk.",
-    "tip": "Equal parts is the classic spec, though bumping rye up to 1 1/2 oz mellows the "
-           "bite if the dry build feels too stern.",
+    "about": "Harry MacElhone printed the Old Pal in his 1927 Paris guide Barflies and "
+             "Cocktails, dedicating it to his friend William 'Sparrow' Robertson, a colourful "
+             "American sports editor at the Paris branch of the New York Herald. Where a "
+             "Boulevardier uses bourbon and sweet vermouth, the Old Pal switches to spicy "
+             "rye and dry vermouth for a much drier drink.",
+    "tip": "Equal parts is the original 1920s spec. If you find the Campari a bit strong "
+           "against dry vermouth, bump the rye up to 1 1/2 oz.",
 },
 "Oreo Mudslide": {
-    "about": "Vodka, coffee liqueur, and creamy Irish cream spun with vanilla ice cream and "
-             "crushed cookies. It wears no monocle and pretends no heritage—it is simply an "
-             "unapologetic adult milkshake.",
-    "tip": "Blend the ice cream and liqueurs silky smooth before tossing in the cookie, "
-           "otherwise stubborn icy lumps spoil the texture.",
+    "about": "The regular Mudslide (vodka, coffee liqueur, and Irish cream) took off at "
+             "the Wreck Bar on Grand Cayman in the 1970s, and American chain restaurants "
+             "soon started blending it with vanilla ice cream and Oreo cookies. It is "
+             "straight-up dessert in a glass: a boozy cookies-and-cream milkshake.",
+    "tip": "Blend the ice cream and liquors until smooth before adding the cookies, then "
+           "pulse briefly so you still get small bits of cookie rather than grey slush.",
 },
 
 # ============================ P ============================================
 
 "Painkiller": {
-    "about": "Born at the Soggy Dollar Bar on Jost Van Dyke in the British Virgin Islands—so "
-             "named because boaters literally swam ashore with soaked cash. Rum, "
-             "pineapple, orange, and coconut turned into liquid sunshine, and Pusser's Rum "
-             "later trademarked the recipe.",
-    "tip": "Freshly grated nutmeg on top is the secret weapon—it's what turns this from a "
-           "sunny Piña Colada spin into a proper Painkiller.",
+    "about": "Daphne Henderson started pouring the Painkiller in the 1970s at the six-stool "
+             "Soggy Dollar Bar on White Bay in the British Virgin Islands, a beach with no "
+             "dock where boaters had to swim to shore with wet money in their pockets. "
+             "Dark rum, pineapple, orange juice, and cream of coconut topped with fresh "
+             "nutmeg later had its name trademarked by Pusser's Rum.",
+    "tip": "Do not skip the freshly grated nutmeg on top. The smell of dry nutmeg over "
+           "the coconut and pineapple is what separates a Painkiller from a standard "
+           "beach punch.",
 },
 "Paloma": {
-    "about": "Mexico's runaway favourite tequila refresher—way ahead of the Margarita on "
-             "home turf—usually poured freehand straight from a cold bottle of grapefruit "
-             "soda. Bright, snappy, and effortless.",
-    "tip": "Use bubbly grapefruit soda like Squirt or Jarritos Toronja—never purple grape "
-           "soda! Salt the rim and squeeze extra lime to keep it crisp.",
+    "about": "While the Margarita is the most famous tequila cocktail abroad, the Paloma "
+             "('the Dove') is what people actually drink all day across Mexico. Nobody is "
+             "completely sure who poured the first one, though it is often linked to Don "
+             "Javier Delgado Corona in Tequila, Jalisco, and it takes less than a minute "
+             "to build in the glass.",
+    "tip": "Make sure you grab Mexican grapefruit soda (like Squirt or Jarritos Toronja), "
+           "not purple grape soda. Add a pinch of salt and fresh lime juice to wake up "
+           "the bottled soda.",
 },
 "Paper Plane": {
-    "about": "Created by Sam Ross in 2007 for Chicago's The Violet Hour and named after "
-             "the M.I.A. track. Four equal parts—bourbon, bright Aperol, herbal Amaro "
-             "Nonino, and fresh lemon—lock together so cleanly it feels effortless.",
-    "tip": "Amaro Nonino is unusually light and grappa-based; heavier substitutes like "
-           "Averna or Montenegro weigh the balance down noticeably.",
+    "about": "Sam Ross created the Paper Plane in 2007 for the opening menu of Chicago's "
+             "Violet Hour, naming it after the M.I.A. song he couldn't stop listening to "
+             "that summer. Following the equal-parts pattern of the Last Word, it shakes "
+             "bourbon, Aperol, Amaro Nonino, and fresh lemon juice into an easy bittersweet "
+             "sour.",
+    "tip": "Amaro Nonino is lighter and more citrusy than most dark Italian amaros. Using "
+           "a heavier bottle like Averna changes the drink completely.",
 },
 "Pegu Club": {
-    "about": "Named for the British officers' club in Rangoon and published in the 1930 Savoy "
-             "Cocktail Book. Gin, orange curaçao, and lime get sharpened up by two distinct "
-             "dashes of bitters so it drinks crisper than a standard sour.",
+    "about": "In colonial Burma during the 1920s, the Pegu Club outside Rangoon served "
+             "this dry gin, orange curaçao, and lime cocktail as its house signature. Two "
+             "dashes of bitters take the edge off the orange liqueur and make it much "
+             "drier than a standard citrus sour.",
 },
 "Penicillin": {
-    "about": "Sam Ross crafted this future legend at New York's Milk & Honey around 2005, "
-             "and it's easily the most imitated cocktail of the twenty-first century. "
-             "Blended Scotch meets ginger, honey, and lemon under a whisper of peated Islay "
-             "Scotch that greets your nose first.",
-    "tip": "Float that smoky Islay Scotch right over the ice and don't stir it in—one "
-           "blended bottle works in a pinch, but a peated topper brings the magic.",
+    "about": "Sam Ross invented the Penicillin in 2005 while working at Milk & Honey in "
+             "New York, combining a Gold Rush (whiskey, lemon, and honey) with fresh "
+             "ginger and Scotch. Floating a spoonful of smoky Islay single malt over the "
+             "top turned it into one of the defining cocktails of the 2000s.",
+    "tip": "Pour the smoky Islay Scotch gently over the top of the ice at the very end "
+           "instead of shaking it in. You want that campfire smoke to hit your nose first.",
 },
 "Pimm's Cup": {
-    "about": "James Pimm began selling his spiced gin cup at his London oyster bar in the "
-             "1840s as a lively digestive tonic. Today it belongs forever to Wimbledon "
-             "lawns, where crowds polish off roughly 300,000 tall glasses every fortnight.",
-    "tip": "British 'lemonade' means crisp sparkling lemon soda—not still American "
-           "lemonade. Ginger ale makes an easy, refreshing North American stand-in.",
+    "about": "James Pimm, a farmer's son from Kent, opened an oyster bar in the City of "
+             "London in the 1820s and began serving his house gin-and-herb tonic in a small "
+             "tankard known as the 'No. 1 Cup.' Today it is synonymous with British summer "
+             "and the Wimbledon tennis championships, where fans drink hundreds of thousands "
+             "of cups every June and July.",
+    "tip": "When British recipes call for 'lemonade' in a Pimm's Cup, they mean clear "
+           "fizzy lemon-lime soda like 7UP or Sprite, not cloudy American lemonade. "
+           "Ginger ale works great too.",
 },
 "Pina Colada": {
-    "about": "Puerto Rico's official national drink, most famously credited to Ramón Marrero "
-             "at San Juan's Caribe Hilton in 1954—though two other island bartenders "
-             "claimed bragging rights too. Pineapple, rum, and sweet coconut whirled frosty "
-             "remains pure poolside bliss.",
-    "tip": "Use sweetened cream of coconut (like Coco López), not unsweetened coconut milk "
-           "or coconut water—that thick, sugary richness is what gives the drink its body.",
+    "about": "At least three bartenders in 1950s and 1960s San Juan claimed to have "
+             "invented the Piña Colada, with the Caribe Hilton's Ramón 'Monchito' Marrero "
+             "getting the best-known nod for his 1954 recipe made with newly invented "
+             "Coco López cream of coconut. Puerto Rico officially declared it the island's "
+             "national drink in 1978.",
+    "tip": "You need sweetened cream of coconut (like Coco López), not unsweetened canned "
+           "coconut milk or coconut water. Coconut milk is too thin and has none of the "
+           "sugar the recipe relies on.",
 },
 "Pink Lady": {
-    "about": "Gin, grenadine, cream, and silky egg white spent decades treated like a "
-             "frilly punchline, which couldn't be more unfair. Shaken properly, it lands as "
-             "a lush, velvety gin sour with gentle pomegranate blush.",
-    "tip": "Dry-shake without ice first, then shake again cold—that blushing crown only "
-           "forms if you build the foam before ice hits the tin.",
+    "about": "Ivan Caryll's hit 1911 Broadway musical comedy The Pink Lady lent its name "
+             "to this pre-Prohibition mix of gin, lemon, cream, egg white, and a splash "
+             "of grenadine for colour. For decades it got written off as an overly sweet "
+             "ladies'-lunch drink, even though a properly made one is actually a balanced, "
+             "dry gin sour.",
+    "tip": "Shake all the liquid ingredients without ice first to whip the egg white and "
+           "cream together, then add ice and shake hard to chill it.",
 },
 "Pisco Punch": {
-    "about": "Bartender Duncan Nicol poured this legendary San Francisco crowd-pleaser at "
-             "the Bank Exchange saloon in the late 1800s—and famously took the secret "
-             "recipe to his grave, leaving every modern pour a loving tribute.",
+    "about": "During the late 1800s in San Francisco, Scottish bartender Duncan Nicol "
+             "served the famous Pisco Punch at the Bank Exchange saloon, where writers "
+             "like Mark Twain and Rudyard Kipling marvelled at how easily it went down. "
+             "Nicol guarded his pineapple-infused recipe so closely that he died in 1926 "
+             "without ever giving it away.",
 },
 "Pisco Sour": {
-    "about": "Usually traced to Victor Vaughen Morris at his 1920s bar in Lima, though "
-             "both Peru and Chile proudly claim the silky pisco-and-lime classic as "
-             "national treasure—and neither backs down lightly.",
-    "tip": "Dash the Angostura bitters right on top of the egg-white cloud at the end "
-           "instead of shaking them in—it keeps the foam snowy white and fragrant.",
+    "about": "An American expat named Victor Vaughen Morris opened Morris' Bar in Lima, "
+             "Peru in 1916 and began serving a pisco version of the Whiskey Sour, before "
+             "his bartender Mario Bruiget added egg white and Angostura bitters in the "
+             "1920s. Both Peru and Chile treat pisco as a matter of national pride and "
+             "celebrate their own annual Pisco Sour holidays.",
+    "tip": "Drop the Angostura bitters onto the white foam head after straining rather "
+           "than shaking them in. They cut the raw egg smell on the nose.",
 },
 "Planter's Punch": {
-    "about": "Hailing from Jamaica and old enough to arrive with its own rhyming recipe—"
-             "'one of sour, two of sweet, three of strong, four of weak'—this lively, "
-             "fruit-bright punch laid the blueprint for generations of island rum drinks.",
+    "about": "A Jamaican rum punch old enough that an 1878 London magazine printed its "
+             "recipe in verse, and a 1908 New York Times piece boiled the island formula "
+             "down to 'one of sour, two of sweet, three of strong, and four of weak.' "
+             "Every Caribbean hotel had its own house mix of dark rum, lime, sugar, juice, "
+             "and bitters.",
 },
 "Pornstar Martini": {
-    "about": "Douglas Ankrah dreamed this crowd-magnet up in London around 2002 (originally "
-             "calling it the Maverick Martini). Lush passion fruit and vanilla vodka land "
-             "with a chilled shot of prosecco alongside, making it Britain's modern "
-             "menu juggernaut.",
-    "tip": "Serve the sparkling wine in a shot glass beside the coupe so you can alternate "
-           "sips—dumping it straight in flattens the lively contrast.",
+    "about": "Douglas Ankrah created this in 2002 at the Townhouse bar in Knightsbridge, "
+             "London (originally calling it the Maverick Martini), combining vanilla vodka, "
+             "passion-fruit liqueur, passion-fruit puree, and lime with a separate shot "
+             "glass of prosecco on the side. Over the past twenty years it has become the "
+             "single best-selling cocktail across U.K. bars.",
+    "tip": "Serve the prosecco in a small glass on the side rather than pouring it straight "
+           "into the coupe, so you can alternate sips between the tart passion fruit and "
+           "the dry bubbles.",
 },
 
 # ============================ Q - R ========================================
 
 "Queen's Park Swizzle": {
-    "about": "Born at Trinidad's Queen's Park Hotel, this is basically a Mojito that put on "
-             "a tailored suit. Rich aged rum, fresh lime, sugar, and mint swizzled frosty "
-             "over crushed ice get finished with a dramatic crimson cap of bitters.",
-    "tip": "Float those Angostura bitters right over the crushed ice dome and leave them "
-           "un-stirred so the spicy aroma leads every sip.",
+    "about": "Trinidad's grand Queen's Park Hotel opened in Port of Spain in 1895 and made "
+             "this tall crushed-ice rum drink famous across the Caribbean. Trader Vic "
+             "once called it 'the most delightful form of anesthesia given out today,' "
+             "thanks to dark rum, mint, lime, sugar, and a heavy float of Angostura bitters "
+             "made right down the road in Trinidad.",
+    "tip": "Dash the Angostura bitters generously over the top of the crushed ice at the "
+           "end so they sit in a dark red layer above the green mint.",
 },
 "Ramos Gin Fizz": {
-    "about": "Born in 1888 New Orleans, Henry Ramos's cloud-like gin fizz became so wildly "
-             "popular that his bar lined up teams of 'shaker boys' passing tins down the "
-             "counter for a legendary twelve-minute shake. You don't actually need twelve "
-             "minutes at home—though your arms will still earn every velvety sip.",
-    "tip": "Dry-shake for a full minute first, shake hard with ice second, and let the "
-           "drink rest briefly in the glass before topping with soda so the meringue crown "
-           "rises cleanly.",
+    "about": "Henry C. Ramos opened the Imperial Cabinet Saloon in New Orleans in 1888 and "
+             "served a gin fizz enriched with cream, egg white, lemon, lime, and orange "
+             "flower water. During Mardi Gras in 1915, his bar employed thirty-five 'shaker "
+             "boys' who stood behind the counter passing shakers from one pair of tired "
+             "arms to the next.",
+    "tip": "Shake the ingredients without ice for a good thirty seconds first, then shake "
+           "hard with ice until the tin frosts over. Let it sit for a minute in the glass "
+           "before adding soda so the foam rises cleanly above the rim.",
 },
 "Ranch Water": {
-    "about": "West Texas porch perfection: good tequila and fresh lime topped straight with "
-             "icy sparkling mineral water. Barely a recipe, totally unpretentious, and "
-             "almost impossible to mess up.",
-    "tip": "Big-bubble mineral water like Topo Chico actually matters here over mild club "
-           "soda—with three ingredients, crisp fizz carries the glass.",
+    "about": "Long before anyone sold it in cans, ranchers and oil hands out in West Texas "
+             "made Ranch Water by taking a big swig off a cold glass bottle of Topo Chico "
+             "mineral water and refilling the neck with blanco tequila and lime juice. "
+             "Poured over ice in a glass, it is the cleanest, driest tequila highball you "
+             "can make.",
+    "tip": "Heavily carbonated mineral water like Topo Chico makes a real difference here "
+           "compared to softer club soda.",
 },
 "Remember the Maine": {
-    "about": "Preserved by globetrotting writer Charles H. Baker, who swore he sipped one "
-             "in 1933 Havana while gunfire rattled outside—named for the USS Maine, whose "
-             "harbour explosion sparked the Spanish-American War. Rye, sweet vermouth, "
-             "cherry liqueur, and an absinthe wink taste wonderfully dramatic.",
-    "tip": "Baker's playful directive was to stir gently clockwise while gazing wistfully "
-           "into the distance. Gazing optional; gentle stirring essential.",
+    "about": "Travel and food writer Charles H. Baker Jr. published this in his 1939 book "
+             "The Gentleman's Companion, recalling drinking it in Havana during the 1933 "
+             "revolution while gunfire echoed down the street. Named after the battleship "
+             "USS Maine that sank in Havana Harbor in 1898, it adds cherry liqueur and a "
+             "touch of absinthe to a rye Manhattan.",
+    "tip": "Either swirl the absinthe around the chilled glass and dump the excess, or "
+           "stir in just a few drops. You want a faint anise background, not a mouthful "
+           "of licorice.",
 },
 "Revolver": {
-    "about": "Created by Jon Santer in 2000s San Francisco, this clever bourbon riff trades "
-             "sweet vermouth for coffee liqueur and wakes it up with flamed orange peel. "
-             "Rich, roasted, and faintly bittersweet.",
-    "tip": "Light a match an inch from the glass and squeeze an orange peel through the "
-           "flame—that toasted citrus oil is half the drink's signature.",
+    "about": "Bartender Jon Santer created the Revolver in 2004 while working at Bruno's "
+             "in San Francisco's Mission District. By replacing the sweet vermouth in a "
+             "Manhattan with coffee liqueur and finishing with orange bitters and a flamed "
+             "orange peel, he turned bourbon and coffee into a proper stirred cocktail.",
+    "tip": "If you have wooden matches, flame an orange peel over the surface of the "
+           "glass before serving. Toasted orange oil and coffee liqueur smell fantastic "
+           "together.",
 },
 "Rob Roy": {
-    "about": "Created at New York's Waldorf Astoria in 1894 to celebrate an operetta about "
-             "Scottish folk hero Rob Roy MacGregor. Replacing rye with Scotch transforms "
-             "the familiar Manhattan into something smokier, maltier, and surprisingly plush.",
+    "about": "A bartender at New York's Waldorf Astoria created the Rob Roy in 1894 to "
+             "mark the premiere of an operetta about eighteenth-century Scottish outlaw "
+             "Rob Roy MacGregor. It is simply a Manhattan made with Scotch whisky instead "
+             "of rye, which trades the peppery grain bite for malty warmth and light smoke.",
 },
 "Rosita": {
-    "about": "Essentially a tequila Negroni dressed with both sweet and dry vermouth, "
-             "printed in the 1970s Mr. Boston guide before Gary Regan brought it back "
-             "into circulation. Bright, herbal, and far drier than typical agave pours.",
+    "about": "Gary Regan spotted an obscure recipe called the Rosita in a 1974 edition of "
+             "the Mr. Boston bartender's guide, tweaked the proportions, and put it back "
+             "on modern bar menus. Splitting the vermouth in a tequila Negroni between "
+             "sweet and dry keeps the drink leaner and lets the agave come through.",
 },
 "Rum Old Fashioned": {
-    "about": "The timeless spirit-sugar-bitters blueprint welcomes almost any aged bottle, "
-             "and dark rum fills those boots wonderfully. Because oak-aged rum already "
-             "carries natural vanilla and molasses warmth, a light touch of sugar shines.",
-    "tip": "Dial back the syrup compared to bourbon, and try rich demerara syrup next time "
-           "for toasted sugar depth.",
+    "about": "Any well-aged dark spirit works in the classic Old Fashioned mix of spirit, "
+             "sugar, water, and bitters, and an aged Caribbean rum fits right in. Because "
+             "barrel-aged rum already tastes of molasses, vanilla, and oak, it needs very "
+             "little sweetener to come together.",
+    "tip": "Go slightly lighter on the syrup than you would with bourbon or rye, since "
+           "aged rum starts out rounder on the palate.",
 },
 "Rusty Nail": {
-    "about": "Scotch meets Drambuie—itself Scotch infused with heather honey and warm "
-             "spices—in a pairing that conquered 1960s lounges and became instant Rat Pack "
-             "shorthand. Smooth, golden, and cosy.",
-    "tip": "Start around three parts Scotch to one part Drambuie. Old 1:1 recipes read "
-           "cloyingly sweet to modern palates.",
+    "about": "Two Scottish bottles, blended Scotch and heather-honey Drambuie liqueur, "
+             "settled into their famous name at New York's 21 Club in the early 1960s "
+             "(reportedly after earlier runs under names like the B.I.F. and the Mig-21). "
+             "Waiters poured oceans of them through the Rat Pack years.",
+    "tip": "Three parts Scotch to one part Drambuie is a much better balance for most "
+           "drinkers than the old mid-century 1:1 pours, which can get pretty syrupy.",
 },
 
 # ============================ S ============================================
 
 "Salty Dog": {
-    "about": "Take a grapefruit Greyhound and give the rim a collar of salt—suddenly it "
-             "becomes a whole new sipper. Salt tames grapefruit's sharpest bite so the "
-             "citrus tastes mysteriously juicier and rounder.",
-    "tip": "Salt only half the rim so you can compare the salted edge against the bare glass "
-           "side by side.",
+    "about": "A Salty Dog is simply a Greyhound (gin or vodka with grapefruit juice) "
+             "served in a salt-rimmed glass, popularised across American bars in the 1950s. "
+             "Salt blocks the tongue's perception of bitterness, which makes tart grapefruit "
+             "juice taste noticeably sweeter and fuller without adding sugar.",
+    "tip": "Put salt on only half the rim so you aren't locked into a mouthful of salt "
+           "on every single sip.",
 },
 "Saratoga": {
-    "about": "Printed in Jerry Thomas's 1887 guide back when New York high society packed "
-             "trunks for Saratoga Springs each summer. Brandy and rye sharing a glass with "
-             "sweet vermouth gives you a plush, double-spirited throwback.",
+    "about": "Jerry Thomas included the Saratoga Cocktail in the 1887 edition of his "
+             "Bartender's Guide, naming it after the upstate New York spa resort and "
+             "horse-racing town of Saratoga Springs. Splitting the base of a Manhattan "
+             "evenly between rye whiskey and cognac gives you both the spice of rye and "
+             "the fruit of brandy.",
 },
 "Sazerac": {
-    "about": "New Orleans's prized original, named for Sazerac de Forge et Fils—the French "
-             "cognac inside the earliest pours before rye whiskey stepped in. Local "
-             "apothecary Antoine Peychaud's anise-scented bitters give it a soul no "
-             "ordinary Old Fashioned can imitate.",
-    "tip": "The absinthe is strictly a rinse: swirl it inside the chilled glass, dump the "
-           "rest, then pour the drink in—and squeeze a lemon peel over the top and discard "
-           "it so the oil brightens the rye without taking over.",
+    "about": "New Orleans's official cocktail traces back to the 1850s at the Sazerac "
+             "Coffee House on Royal Street, which originally made it with imported French "
+             "Sazerac-de-Forge et Fils cognac and local apothecary Antoine Peychaud's "
+             "bitters. After the 1870s phylloxera plague wiped out French vineyards, "
+             "New Orleans bartenders switched the base to spicy American rye whiskey.",
+    "tip": "Rinse the chilled glass with absinthe, dump the excess, and pour the stirred "
+           "drink in without ice. Squeeze the lemon peel over the top and discard it or "
+           "perch it on the rim rather than dropping it into the liquid.",
 },
 "Scofflaw": {
-    "about": "Born at Paris's Harry's New York Bar in 1924, just days after a Boston contest "
-             "coined 'scofflaw' to mock folks drinking right through Prohibition. Mixing a "
-             "tart rye-and-grenadine drink named after it in freewheeling Paris was half "
-             "the punchline.",
+    "about": "In January 1924, a Massachusetts prohibitionist held a nationwide contest "
+             "to invent a shaming word for people who illegally drank alcohol, and the "
+             "winning entry was 'scofflaw.' Within weeks, Harry's New York Bar in Paris "
+             "cheekily answered back with the Scofflaw cocktail: rye whiskey, dry vermouth, "
+             "lemon juice, and grenadine.",
 },
 "Scotch Highball": {
-    "about": "Crisp Scotch lengthened over sparkling soda and ice—the everyday style most of "
-             "the whisky-loving world prefers, refined into an art form in Japan's sleek "
-             "highball bars.",
-    "tip": "Chill the glass first, load it with solid ice, stir the Scotch briefly before "
-           "pouring cold soda, then lift once gently—excess stirring knocks the sparkle out.",
+    "about": "Scotch and cold soda over plenty of ice is how a lot of the whisky-drinking "
+             "world actually drinks Scotch with dinner, especially in Japan, where "
+             "highball bars treat a simple two-ingredient pour with real care.",
+    "tip": "Chill the glass first and pack it with ice. Give the Scotch a quick stir "
+           "before you pour the cold soda, then lift the ice once with your spoon so "
+           "you don't knock the fizz out.",
 },
 "Screwdriver": {
-    "about": "Vodka and bright orange juice, famously explained by oil workers stirring "
-             "their morning juice with whatever pocket tool was handy. There's zero proof "
-             "for the tale, yet it's too good to lose.",
+    "about": "Vodka and orange juice first showed up in print in the late 1940s, backed "
+             "by a famous bar yarn that American oil engineers working in the Persian "
+             "Gulf secretly spiked their cans of orange juice with vodka and stirred them "
+             "with their screwdrivers.",
 },
 "Sea breeze": {
-    "about": "Vodka brightened by tart cranberry and crisp pink grapefruit—cousin to the "
-             "Cape Codder and Bay Breeze, with zesty grapefruit keeping things lively "
-             "instead of sugary.",
+    "about": "Whereas an early 1930 Savoy recipe used gin and grenadine under the same "
+             "name, the modern Sea Breeze took shape in California in the 1970s once Ocean "
+             "Spray started pushing cranberry juice mixers. Pairing cranberry with tart "
+             "grapefruit juice over vodka keeps it much drier than a pineapple Bay Breeze.",
 },
 "Seelbach": {
-    "about": "Passed off for twenty years as a lost 1917 classic from Louisville's Seelbach "
-             "Hotel, until its former bar manager confessed in 2016 that he'd invented the "
-             "drink—and the legend—himself in the 1990s. Bourbon, triple sec, Champagne, "
-             "and heaps of bitters taste so right nobody cared about the fib.",
-    "tip": "Seven dashes each of Angostura and Peychaud's sounds wild, yet that's the real "
-           "spec—the bitters act like a spice liqueur here, not a shy seasoning.",
+    "about": "In 1995, Louisville's historic Seelbach Hotel introduced this drink with a "
+             "great story about rediscovering a lost 1917 pre-Prohibition recipe in the "
+             "hotel vaults. Twenty-one years later, former bar manager Adam Seger admitted "
+             "to the New York Times that he had made the whole story up in 1995, though "
+             "bourbon, Cointreau, Champagne, and fourteen dashes of bitters tastes good "
+             "enough that nobody minded.",
+    "tip": "Do not shy away from the seven dashes each of Angostura and Peychaud's bitters. "
+           "That heavy spice dose is what gives the Champagne its amber colour and dry bite.",
 },
 "Sex on the Beach": {
-    "about": "A sunny late-1980s Florida invention born during spring-break peach schnapps "
-             "contests. Mixing vodka, peach, cranberry, and orange juice leans unabashedly "
-             "fruity—cheesy name aside, it knows its crowd.",
+    "about": "In 1987, a peach schnapps distributor in Fort Lauderdale, Florida offered a "
+             "cash bonus to whichever local bartender sold the most bottles during Spring "
+             "Break. Young bartender Ted Pizio mixed peach schnapps with vodka, orange "
+             "juice, and cranberry, named it after the two reasons students told him they "
+             "came to Florida, and sold legions of them.",
 },
 "Sherry Cobbler": {
-    "about": "One of nineteenth-century America's wildest obsessions and the drink that "
-             "taught polite society to sip through straws over shaved ice. Charles Dickens "
-             "even paused Martin Chuzzlewit to show an Englishman tasting one and marveling.",
-    "tip": "Gently press the orange slices straight into the syrup before packing the glass "
-           "with crushed ice—those bright peel oils bring nutty sherry to life.",
+    "about": "By the 1840s, the Sherry Cobbler was the single most popular mixed drink in "
+             "the United States, made possible by the new New England ice trade and paper "
+             "or rye-grass straws. When Charles Dickens toured America, he praised it in "
+             "his novel Martin Chuzzlewit as a 'wonderful invention.'",
+    "tip": "Muddle a couple of orange slices gently with the syrup before filling the "
+           "glass with crushed ice. The orange oil wakes up the nutty sherry.",
 },
 "Sidecar": {
-    "about": "Claimed by both the Paris Ritz and London's Buck's Club around the close of "
-             "World War I, usually with a charming yarn about a chilly officer arriving by "
-             "motorcycle sidecar. Proof stays fuzzy, while cognac, Cointreau, and lemon "
-             "remain timeless.",
-    "tip": "Only rim the glass with sugar if your triple sec leans dry—between orange "
-           "liqueur and sugar, it's easy to lose the tart snap.",
+    "about": "Both the Ritz Hotel in Paris and Buck's Club in London claim to have mixed "
+             "the first Sidecar around the end of World War I, naming it after the "
+             "motorcycle sidecar an American army captain rode to the bar in. Whatever "
+             "the exact bar, cognac, Cointreau, and lemon juice set the standard for "
+             "almost every citrus sour that came after.",
+    "tip": "If you put a sugar rim on the glass, coat only half the rim. That way you "
+           "can take a sweeter sip or a tarter sip depending on how dry your cognac and "
+           "triple sec taste.",
 },
 "Siesta": {
-    "about": "Created by Katie Stipe in 2006 New York, this plays like a Hemingway Daiquiri "
-             "reimagined on sunny tequila, swapping maraschino for bitter Campari. Tart "
-             "grapefruit and crisp agave linger cleanly on the finish.",
+    "about": "New York bartender Katie Stipe created the Siesta at Flatiron Lounge in 2006 "
+             "by taking the grapefruit-and-lime structure of a Hemingway Daiquiri and "
+             "moving it over to blanco tequila. Instead of maraschino liqueur, a small "
+             "measure of Campari adds a dry, bitter pink finish.",
 },
 "Singapore Sling": {
-    "about": "First shaken by bartender Ngiam Tong Boon at Raffles Hotel's Long Bar around "
-             "1915, before the original handwritten spec vanished—meaning every modern "
-             "Singapore Sling is a colourful, cherry-bright reconstruction.",
+    "about": "Ngiam Tong Boon created the Singapore Sling around 1915 at the Long Bar of "
+             "Singapore's Raffles Hotel, designing a rosy-pink gin punch that looked "
+             "respectable for ladies to drink in public on the verandah. Because the "
+             "original recipe book was lost, bars have argued for a century over the "
+             "exact proportions of gin, cherry liqueur, Bénédictine, and fruit juice.",
 },
 "Southside": {
-    "about": "Gin, lime, sugar, and garden mint—essentially a cool, fizz-free Mojito. Story "
-             "splits between a tidy Long Island sportsmen's club and Chicago's South Side "
-             "during Prohibition, where lively mint helped disguise rough bootleg gin.",
+    "about": "Shake gin with fresh lime juice, simple syrup, and a handful of mint leaves "
+             "and you get a Southside, which tastes a lot like a Mojito made with gin "
+             "and no soda water. Both the Southside Sportsmen's Club on Long Island and "
+             "Al Capone's South Side gangs in Prohibition Chicago claim the name.",
 },
 "Suffering Bastard": {
-    "about": "Mixed in 1942 Cairo by bartender Joe Scialom at Shepheard's Hotel as a "
-             "morning-after rescue for weary Allied officers. Combining gin and cognac in "
-             "one ginger-spiced glass sounds rebellious and drinks remarkably smoothly.",
-    "tip": "Keep the shake brief before pouring over ice and ginger beer—too much melt in "
-           "the shaker dilutes the ginger snap.",
+    "about": "In 1942, as Rommel's tanks advanced toward Egypt, bartender Joe Scialom at "
+             "Cairo's Shepheard's Hotel mixed a tall hangover cure of gin, brandy, lime "
+             "juice, bitters, and ginger beer for Allied soldiers and correspondents. "
+             "Reportedly, the Eighth Army wired ahead from the desert for gallons of it.",
+    "tip": "Give the gin, brandy, lime, and bitters a quick shake with ice, then strain "
+           "over fresh ice and top with cold ginger beer in the glass.",
 },
 
 # ============================ T ============================================
 
 "Tequila Old Fashioned": {
-    "about": "Taking the Old Fashioned blueprint south with aged tequila and agave syrup "
-             "flips what most people expect from agave. Stirred cold and unhurried, oak-warm "
-             "tequila steps cleanly into bourbon's shoes.",
-    "tip": "Blanco gets the job done, though reposado shines here—its gentle vanilla barrel "
-           "notes echo whiskey warmth.",
+    "about": "Once barrel-aged reposado and añejo tequilas started landing on cocktail "
+             "bars outside Mexico in the early 2000s, bartenders noticed how well they "
+             "worked in a stirred Old Fashioned. Using agave syrup instead of white sugar "
+             "plays straight into the roasted agave and oak.",
+    "tip": "An aged reposado or añejo tequila works best here, since barrel time adds "
+           "the vanilla and spice you usually get from whiskey.",
 },
 "Tequila Sour": {
-    "about": "Tequila, lemon, sugar, and frothy egg white give agave the starring role with "
-             "zero orange liqueur standing in the way. Softer and silkier than a Margarita, "
-             "with all the bright citrus snap intact.",
-    "tip": "Dry-shake without ice first to whip up that silky crown, then shake again with "
-           "ice—skip the dry shake and the glass falls flat.",
+    "about": "Before the Margarita took over American bar menus in the 1950s and 1960s, "
+             "the standard way to order tequila in a cocktail was a Tequila Sour: tequila, "
+             "lemon juice, sugar, and optional egg white. Skipping the orange liqueur "
+             "lets you taste the agave much more directly.",
+    "tip": "If you include the egg white, shake everything without ice first for ten "
+           "seconds, then add ice and shake hard.",
 },
 "Tequila Sunrise": {
-    "about": "Modernised at Sausalito's Trident in the early 1970s and launched into orbit "
-             "when the Rolling Stones drank their way across America on tour in 1972. That "
-             "glowing dawn gradient happens automatically as dense grenadine sinks down "
-             "through orange juice.",
-    "tip": "Pour the grenadine slowly down the inside glass wall last and keep your spoon "
-           "away—gravity paints the sunrise on its own.",
+    "about": "Bobby Lozoff and Billy Rice were pouring the modern orange-juice-and-grenadine "
+             "Tequila Sunrise at the Trident in Sausalito, California in 1972 when Mick "
+             "Jagger tried one at a private party kicking off the Rolling Stones' American "
+             "tour. The band ordered them in every city across the country and turned it "
+             "into the defining drink of the 1970s.",
+    "tip": "Pour the grenadine down the inside wall of the glass at the very end and do "
+           "not stir it. Because grenadine is heavier than orange juice, it sinks to the "
+           "bottom and rises in a natural gradient.",
 },
 "The Last Word": {
-    "about": "Invented at the Detroit Athletic Club around 1916 and tucked away in dusty "
-             "books until Seattle bartender Murray Stenson revived it in 2004. Four bold "
-             "equal parts—gin, green Chartreuse, maraschino, and lime—collide into pure "
-             "magic.",
-    "tip": "Monastery-made green Chartreuse has no real twin, and equal quarters are what "
-           "hold this high-wire act together.",
+    "about": "The Detroit Athletic Club started serving this equal-parts mix of gin, green "
+             "Chartreuse, maraschino liqueur, and lime juice around 1916 (reportedly "
+             "introduced by vaudeville monologist Frank Fogarty), before it spent seventy "
+             "years forgotten in Ted Saucier's 1951 book Bottoms Up. In 2004, Seattle "
+             "bartender Murray Stenson put it on the menu at the Zig Zag Café and sparked "
+             "a worldwide revival.",
+    "tip": "Measure all four ingredients in exact equal quarters. Green Chartreuse and "
+           "maraschino are both loud bottles, and the lime juice is what holds them "
+           "in check.",
 },
 "Ti' Punch": {
-    "about": "Martinique's beloved daily ritual, named simply for 'petit punch.' A small "
-             "coin of lime peel and sugarcane sweetener get tucked into grassy rhum "
-             "agricole without ice—and famously, each guest mixes their own glass to taste.",
-    "tip": "Fresh cane-juice rhum agricole brings grassy, bright snap; a solid crisp white "
-           "rum still pours a lovely easy drink.",
+    "about": "In Martinique and Guadeloupe, 'Ti' Punch' is short for 'petit punch' and "
+             "serves as the islands' everyday social ritual. Traditionally, the host sets "
+             "out a bottle of grassy rhum agricole, cane syrup, and a plate of limes so "
+             "everyone at the table can mix their own glass ('chacun prépare sa propre mort').",
+    "tip": "Rhum agricole (distilled from fresh sugarcane juice) gives this drink its "
+           "earthy, grassy flavor, though a good dry white rum still makes a clean glass.",
 },
 "Toasted Almond": {
-    "about": "Amaretto, coffee liqueur, and rich cream poured straight over ice—an effortless "
-             "retro nightcap that tastes exactly as cosy and nutty as its name promises.",
+    "about": "During the 1970s and 1980s lounge era, bartenders paired two workhorse "
+             "after-dinner bottles, amaretto and coffee liqueur, with cold cream over "
+             "ice. It has no base spirit like vodka or whiskey, so it drinks around half "
+             "the strength of a standard cocktail and tastes like roasted nuts and iced "
+             "coffee.",
 },
 "Tom Collins": {
-    "about": "Named after the slightly sweeter Old Tom gin it started on, and also tangled "
-             "up with an 1874 New York practical joke where victims were sent chasing a "
-             "fictitious loudmouth named 'Tom Collins' from bar to bar.",
-    "tip": "Shake or stir the gin, lemon, and sugar, then build over ice with soda last—"
-           "never shake carbonated water unless you fancy redecorating the ceiling.",
+    "about": "During the Great Tom Collins Hoax of 1874, pranksters across New York and "
+             "Philadelphia told friends that a stranger named Tom Collins was sitting in "
+             "the tavern around the corner talking trash about them. When the angry victim "
+             "stormed into the bar demanding 'Tom Collins,' the bartender handed them "
+             "this tall gin, lemon, sugar, and soda highball.",
+    "tip": "Shake or stir the gin, lemon juice, and syrup with ice first, then top with "
+           "cold club soda in the glass.",
 },
 "Tommy's Margarita": {
-    "about": "Created around 1990 by Julio Bermejo at his family's San Francisco restaurant "
-             "by ditching orange liqueur altogether in favour of pure agave syrup. Three "
-             "clean pieces let crisp, bright 100%-agave tequila take centre stage.",
-    "tip": "Agave syrup packs more sweetness than plain sugar syrup, so pour modestly—and "
-           "thinning it with a drop of warm water keeps it from clumping on ice.",
+    "about": "In 1990 at Tommy's Mexican Restaurant in San Francisco's Richmond District, "
+             "Julio Bermejo replaced the triple sec in his house Margarita with agave "
+             "nectar so guests could taste the 100%-agave tequila clearly. That three-part "
+             "recipe of tequila, fresh lime, and agave syrup now sits on bar menus all "
+             "over the world.",
+    "tip": "Agave nectar is sweeter and thicker than 1:1 simple syrup, so measure it "
+           "carefully and shake hard so it dissolves completely in the cold lime juice.",
 },
 
 # ============================ V - Z ========================================
 
 "Vampiro": {
-    "about": "Straight out of Jalisco, marrying blanco tequila with zesty sangrita—a "
-             "spicy, citrus-and-tomato chaser traditionally sipped alongside neat tequila "
-             "and here united in one savoury, fiery tall glass.",
+    "about": "Roadside stands in San Luis Soyatlán, Jalisco started pouring the deep "
+             "blood-red Vampiro when fruit-stand vendor Oscar Hernández combined blanco "
+             "tequila with citrus, grapefruit soda, and sangrita (the spicy tomato, orange, "
+             "and chili chaser usually sipped beside neat tequila).",
 },
 "Vermouth Cocktail": {
-    "about": "Sweet vermouth, bitters, and a bright citrus twist—one of the oldest pours "
-             "in cocktail history, reminding everyone that good vermouth was always meant "
-             "to be sipped as a star rather than relegated to a supporting splash.",
-    "tip": "Only pour this with a fresh, fridge-kept bottle. Oxidised vermouth from a warm "
-           "cupboard tastes flat and cooked when nothing else shares the glass.",
+    "about": "Before Dry Martinis pushed vermouth into the background, late-nineteenth-century "
+             "American cocktail books routinely treated sweet or dry vermouth as the main "
+             "pour in the glass, stirred cold with a couple of dashes of bitters and "
+             "finished with a lemon peel. It is a great half-strength drink when you have "
+             "a good bottle of vermouth open.",
+    "tip": "Only make this with a fresh bottle of vermouth that has been kept in the "
+           "refrigerator. With no gin or whiskey in the glass, stale vermouth has nowhere "
+           "to hide.",
 },
 "Vesper": {
-    "about": "Ian Fleming wrote this crisp gin-and-vodka powerhouse straight into 1953's "
-             "Casino Royale, naming it after Vesper Lynd. Because vintage Kina Lillet no "
-             "longer exists in its original bitter formula, today's pours are tasty echoes "
-             "of 007's glass.",
-    "tip": "Fleming famously demanded 'shaken, not stirred,' which clouds an all-spirit "
-           "drink. Stir gently if you prize silky clarity over movie lore.",
+    "about": "In the opening chapters of Ian Fleming's 1953 novel Casino Royale, James "
+             "Bond invents a strong Martini of three measures of Gordon's gin, one of "
+             "vodka, and half a measure of Kina Lillet, then names it after double agent "
+             "Vesper Lynd. Because the original quinine-bitter Kina Lillet was reformulated "
+             "in 1986, Lillet Blanc or Cocchi Americano stands in today.",
+    "tip": "Bond insists on shaking his until it is ice-cold, which clouds the drink and "
+           "leaves tiny ice shards on top. Stirring it gives you a clearer, smoother glass.",
 },
 "Vieux Carré": {
-    "about": "Walter Bergeron composed this at New Orleans's Hotel Monteleone in 1938 and "
-             "named it for the historic French Quarter. Rye, cognac, sweet vermouth, "
-             "herbal Bénédictine, and two bitters weave together like slow New Orleans jazz.",
-    "tip": "Don't skimp on the dual spirits—half-ounce pours of both rye and cognac keep "
-           "this layered nightcap balanced, even if it drinks smoother than its proof.",
+    "about": "Head bartender Walter Bergeron created the Vieux Carré in 1938 at the "
+             "Carousel Bar in New Orleans's Hotel Monteleone, naming it after the French "
+             "term for the French Quarter ('Old Square'). Rye whiskey, cognac, sweet "
+             "vermouth, Bénédictine, and two bitters mirror the different cultures that "
+             "shaped the neighbourhood.",
+    "tip": "Even though Bénédictine is only a small measure, do not leave it out. That "
+           "little spoonful of honeyed herbs is what separates a Vieux Carré from a "
+           "split-base Manhattan.",
 },
 "Vodka Gimlet": {
-    "about": "Stripping gin's botanical herbs out of a classic Gimlet leaves just crisp, "
-             "icy cold meeting pure lime snap. Clean, sharp, and straight to the point.",
-    "tip": "Stick to fresh-squeezed lime and simple syrup here—sweet bottled cordial hits "
-           "far heavier without gin's piney lift.",
+    "about": "By the 1960s and 1970s, as American drinkers drifted away from juniper-heavy "
+             "gin toward vodka, the Vodka Gimlet overtook the original gin recipe in many "
+             "restaurants and lounges. Without gin's botanicals, it is a pure, cold lime "
+             "sour.",
+    "tip": "Fresh lime juice and simple syrup work much better with vodka than bottled "
+           "lime cordial, which can taste overly syrupy without gin to cut it.",
 },
 "Vodka Martini": {
-    "about": "What started as a quieter riff on the classic Gin Martini swept post-war bars "
-             "through clever marketing and icy cinema glamour. Because vodka brings chill "
-             "and texture instead of juniper, the vermouth steals the spotlight.",
-    "tip": "Make sure you reach for crisp, refrigerated dry vermouth—with zero gin "
-           "botanicals inside, stale or sweet vermouth jumps straight out.",
+    "about": "Early 1930s and 1940s bar guides called this a Kangaroo Cocktail, before the "
+             "Vodka Martini took over American steakhouses in the second half of the "
+             "twentieth century (helped along by 007 on the big screen). Because vodka "
+             "brings chill and weight without botanical spice, you taste the dry vermouth "
+             "and lemon twist or olive right up front.",
+    "tip": "Use a fresh, refrigerated bottle of dry vermouth. When you pair it with "
+           "neutral vodka, an old oxidized bottle of vermouth stands out immediately.",
 },
 "Vodka Sour": {
-    "about": "Proof of how bulletproof the classic sour ratio really is: replace assertive "
-             "whiskey with neutral vodka, and fresh lemon, sugar, and silky foam still "
-             "turn out effortlessly balanced.",
-    "tip": "Always dry-shake without ice first, then shake again cold—that egg-white velvet "
-           "is the texture star here.",
+    "about": "Shaking neutral vodka in the classic sour ratio of spirit, fresh lemon juice, "
+             "simple syrup, and optional egg white strips the sour down to pure texture "
+             "and lemon tartness. It goes down easily and shows just how well the basic "
+             "sour proportion works.",
+    "tip": "If you use egg white, shake the ingredients without ice first for ten seconds, "
+           "then add ice and shake hard again to get a thick foam top.",
 },
 "Ward Eight": {
-    "about": "Mixed in Boston in 1898—tradition says at Locke-Ober on the eve of a decisive "
-             "Eighth Ward election victory before the ballots were even tallied. A rye "
-             "sour brightened with orange juice and ruby grenadine.",
+    "about": "In 1898, Massachusetts politician Martin Lomasney ran for the state legislature "
+             "backed by Boston's powerful Ward 8 Democratic machine, and bartenders at "
+             "Locke-Ober Café mixed this drink in his honour the night before the polls "
+             "even opened. It is a rye Whiskey Sour with small splashes of orange juice "
+             "and pomegranate grenadine.",
 },
 "Whiskey Smash": {
-    "about": "Documented since the 1800s as a lively Mint Julep enriched with fresh muddled "
-             "citrus, this brings together whiskey, bright lemon, sugar, and garden mint "
-             "over crushed ice. It converts whiskey sceptics on the first sunny afternoon.",
-    "tip": "Muddle the chopped lemon wedges whole—not just juice—because the fragrant oil "
-           "in the peel is half the magic.",
+    "about": "Jerry Thomas included the Whiskey Smash in his 1887 Bartender's Guide as "
+             "'simply a Julep on a small plan,' before New York bartender Dale DeGroff "
+             "modernised it at the Rainbow Room in the 1990s by muddling whole lemon "
+             "wedges with the mint and sugar. It drinks halfway between a Mint Julep and "
+             "a Whiskey Sour.",
+    "tip": "Muddle cut lemon wedges skin-and-all in the bottom of the shaker rather than "
+           "using pre-squeezed lemon juice. Pressing the rind adds lemon oil that makes "
+           "the drink.",
 },
 "Whiskey Sour": {
-    "about": "Written down by Jerry Thomas in 1862, this timeless triangle of bold whiskey, "
-             "bright lemon, and sugar underpins half the drinks behind a modern bar. "
-             "Master these three ratios and the rest of cocktail land opens right up.",
-    "tip": "Swirl the sugar into the lemon juice before adding ice and whiskey—gritty sugar "
-           "sinks straight to the bottom otherwise.",
+    "about": "The first printed Whiskey Sour recipe appeared in Jerry Thomas's 1862 "
+             "Bartender's Guide, though sailors had been mixing spirits, citrus, and "
+             "sugar for decades before that. Once you know this three-part balance of "
+             "whiskey, fresh lemon juice, and sweetener, half of all cocktail recipes "
+             "make instant sense.",
+    "tip": "Make sure your sugar or simple syrup dissolves completely in the lemon juice. "
+           "If you add optional egg white, shake without ice first before shaking with ice.",
 },
 "White Lady": {
-    "about": "Harry MacElhone actually served two versions—an early mint-liqueur number he "
-             "later retired, and the timeless gin, Cointreau, and lemon classic everyone "
-             "loves today. Basically a crisp, lacy Sidecar wearing gin.",
+    "about": "Harry MacElhone's first 1919 London version of the White Lady was a bizarre "
+             "mix of crème de menthe, Cointreau, and lemon juice. Once he took over Harry's "
+             "New York Bar in Paris in 1929, he wisely swapped the mint liqueur for dry "
+             "gin, creating what is essentially a Gin Sidecar.",
 },
 "White Russian": {
-    "about": "A cosy Black Russian topped with a soft blanket of cream. It simmered quietly "
-             "on cocktail lists for decades until The Big Lebowski hit cinemas in 1998 "
-             "and made it an overnight cult hero.",
-    "tip": "Float the cream gently over the back of a spoon instead of whipping it in—every "
-           "sip slides naturally from silky cream to bold coffee.",
+    "about": "Adding a float of cream or milk to a Black Russian first appeared in print "
+             "in a 1965 Oakland Tribune newspaper ad for Kahlúa. It remained a quiet "
+             "retro nightcap until Jeff Bridges drank nine of them as 'The Dude' in the "
+             "1998 cult comedy The Big Lebowski.",
+    "tip": "Pour the heavy cream slowly over the back of a spoon onto the top of the "
+           "drink and let it marble down through the ice on its own.",
 },
 "Woo Woo": {
-    "about": "A carefree late-1980s neon crowd-pleaser mixing vodka, juicy peach schnapps, "
-             "and tart cranberry juice. It makes zero claims to solemnity—it simply sets "
-             "out to be bright, fruity, and easy, and nails it.",
+    "about": "Emerging from late-1980s American college bars and nightclubs alongside "
+             "Sex on the Beach, the Woo Woo drops the orange juice and shakes vodka, "
+             "peach schnapps, and cranberry juice over ice. It is fruity, tart, and easy "
+             "to mix for a crowd.",
 },
 "Zombie": {
-    "about": "Don the Beachcomber brewed this notorious tiki powerhouse in mid-1930s "
-             "Hollywood—limiting guests to two apiece and pouring from coded, pre-mixed "
-             "bottles so rival bartenders couldn't swipe the formula.",
-    "tip": "That two-drink ceiling wasn't marketing flair: three pours of rum topped with "
-           "overproof 151 pack nearly four standard drinks into one tall glass.",
+    "about": "Ernest Gantt (Don the Beachcomber) invented the Zombie in late-1934 Hollywood, "
+             "reportedly to help a hungover regular get through a business flight, who "
+             "came back days later and said he had felt like the living dead the whole "
+             "trip. For years, Don's menu famously limited every customer to two Zombies "
+             "apiece.",
+    "tip": "Take that two-drink limit seriously. Between the white rum, gold rum, dark "
+           "rum, and overproof 151 float, one glass holds nearly four standard drinks.",
 },
 
 }
