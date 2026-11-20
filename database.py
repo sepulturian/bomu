@@ -202,9 +202,11 @@ def init_db(force=False, seed=True):
                 ingredient_name TEXT,
                 measure TEXT,
                 note TEXT,
-                source TEXT,
-                sort_order INTEGER DEFAULT 0
+                source TEXT NOT NULL,
+                sort_order INTEGER NOT NULL DEFAULT 0,
+                UNIQUE (recipe_id, name)
             )""",
+            "CREATE INDEX IF NOT EXISTS idx_recipe_enhancements_recipe ON recipe_enhancements (recipe_id)",
         ]
         for stmt in ddl_statements:
             c.execute(stmt)
@@ -455,6 +457,19 @@ def scans_today(user_id):
         else "SELECT COUNT(*) FROM scan_log WHERE user_id = ? AND scanned_at >= date('now')"
     )
     n = conn.execute(sql, (user_id,)).fetchone()[0]
+    conn.close()
+    return n
+
+
+def scans_today_global():
+    """Total scans across all users since midnight UTC."""
+    conn = get_db()
+    sql = (
+        "SELECT COUNT(*) FROM scan_log WHERE scanned_at >= CURRENT_DATE"
+        if _is_postgres()
+        else "SELECT COUNT(*) FROM scan_log WHERE scanned_at >= date('now')"
+    )
+    n = conn.execute(sql).fetchone()[0]
     conn.close()
     return n
 

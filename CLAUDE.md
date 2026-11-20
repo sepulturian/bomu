@@ -32,8 +32,13 @@ see the other's chat history, so anything not written here is lost.
 ## Where things stand
 
 Live and healthy. 171 recipes, 51 ingredients, 5 users, 35 bottles logged.
+Open signup is enabled (`INVITE_CODE` removed; guarded by an offscreen honeypot
+and a shared `SCAN_GLOBAL_DAILY_LIMIT = 60` cap alongside the `15`/user/day cap).
+Catalog & DB hygiene are clean: `check_specs.py` reports 0 flags across 171
+recipes, `sweep_namematch.py` reports 0 BROKEN rows, and Neon `recipe_enhancements`
+matches the SQLite constraint/index schema.
 
-**Counts below were read off live Neon on 2026-11-15** via
+**Counts below were read off live Neon on 2026-11-19** via
 `matching.get_recommendations()`, not simulated.
 
 | id | user | bottles | mixers ticked | makeable | one-away |
@@ -45,9 +50,11 @@ Live and healthy. 171 recipes, 51 ingredients, 5 users, 35 bottles logged.
 | 5 | Maho | 1 | 12 | 1 | 13 |
 
 Aaron went 22 → 34 between 2026-07-26 and 2026-11-15 purely by ticking 3 more
-mixers on the live site (16 → 19); the catalog did not change. Shehan is still
-on **0 makeable from 16 bottles**, which is the single worst number in this file
-and is backlog #2. Two users still have nothing at all (backlog #1).
+mixers on the live site (16 → 19); the catalog did not change. Avishka,
+Rajapaksha, and Shehan still have 0 makeable in the DB until they next open
+Tonight, where 2-step empty-bar onboarding (`POST /quick-setup`) and the
+0-ready Quick Kitchen Check card (10 kitchen picks unlocking up to 21 drinks for
+Shehan) now guide them directly to their first pour.
 
 **Live has diverged from the local snapshot.** `bomu_live.db` / `bomu.db` still
 hold Aaron at 16 mixers (22 / 72). Catalog tables match live exactly; per-user
@@ -553,23 +560,21 @@ without it keep the triangle deliberately, since it's the only affordance saying
 
 ## Backlog
 
-1. **Never-started users.** Two of five accounts (Avishka, Rajapaksha) have zero
-   bottles and zero mixers. They signed up and did nothing. The mixer nudge
-   cannot reach them — their problem is getting to a first bottle, not ticking a
-   checklist. This is now the biggest untouched gap and it needs a different fix
-   from #2: a reason to scan the first bottle, or a starter bar they can accept
-   in one tap.
-2. **Empty-state onboarding, partially addressed.** The mixer-gap nudge shipped
-   2026-07-25 and helps, but unevenly: Aaron 3 ingredients → 14 drinks, Shehan
-   3 → 3, because Shehan's blockers are mostly *bottles*. The original theory
-   ("he just never filled in the checklist, he'd have 30+") was right for Aaron
-   and only partly right for Shehan. Do not over-trust it again without checking
-   whose blockers are mixers vs bottles.
-3. **Tune the spotlight.** Superseded the old "tune the nudge" item on
-   2026-11-15 (floor of 2 drinks shipped). Open questions to settle by watching
-   real use: whether the spotlight should rotate between top ingredients rather
-   than always showing the best one, and whether zero-makeable users should
-   see single-drink mixers (Shehan's mixers each unlock 1).
+1. ~~**Never-started users.**~~ Done 2026-11-19: empty-bar Tonight (`bottle_count == 0`)
+   now renders 2-step onboarding right on `/` (`Scan a shelf` / `Scan a bottle`
+   or 12 starter spirit tiles → 12 kitchen basics with `Sugar` and `Salt`
+   pre-ticked and live `Show my N drinks →` counting via `build_onboarding_data()`
+   and `POST /quick-setup`).
+2. ~~**Empty-state onboarding, partially addressed.**~~ Done 2026-11-19: users
+   with bottles logged and 0 makeable (like Shehan) now get a personalized
+   **Quick Kitchen Check** card on Tonight (`build_kitchen_check()` greedy
+   set-cover over non-wine 1/2/3+ away kitchen blockers), surfacing 10 picks
+   (21 unlockable drinks for Shehan) with live unlock preview and additive
+   `POST /stock-add`.
+3. ~~**Tune the spotlight.**~~ Done 2026-11-19: `build_one_away_spotlight()` now
+   rotates daily by date across the top 4 eligible blockers (`day_seed`), and
+   the spotlight is suppressed when a 0-ready user is shown the Quick Kitchen
+   Check card.
 4. ~~**Fix local dev.**~~ Effectively done 2026-11-15: `bomu.db` is now the
    multi-user snapshot and `.env` points at Neon. Remaining nicety: a way to
    refresh the snapshot from Neon, since per-user rows already lag live.
@@ -600,14 +605,13 @@ without it keep the triangle deliberately, since it's the only affordance saying
 14. ~~**Push the corrected `sweep_namematch.py`.**~~ Done in `7b6fa39`; it now
     reads `raw_name`. (`2745190` read `ingredient_name` and reported ~35 false
     BROKEN rows; don't run that revision.)
-15. **Hugo Spritz, `recipe_ingredients` row 398.** Still unfixed on live Neon as
-    of 2026-11-15. The one genuine BROKEN row. `raw_name` is `Elderflower Liqueur (St-Germain)`; the
-    brackets make every key it generates unmatchable, so the drink can never
-    appear for anybody. Verified against three plausible bottle names, all
-    False. Set `raw_name` to `St-Germain` or `Elderflower Liqueur`. Zero users
-    own an elderflower liqueur today, so this is correctness, not impact.
-16. **Word-boundary `NOISE_WORDS` in `_liqueur_keys`.** `str.replace` strips
-    `"the"` from inside `Menthe`. Latent, not currently biting. See The matcher.
+15. ~~**Hugo Spritz, `recipe_ingredients` row 398.**~~ Done 2026-11-19 via
+    `migrate_hygiene_2026_11.py` on both local `bomu.db` and live Neon:
+    `raw_name = 'Elderflower Liqueur'`, `notes = 'St-Germain'`. `sweep_namematch.py`
+    now reports 0 BROKEN.
+16. ~~**Word-boundary `NOISE_WORDS` in `_liqueur_keys`.**~~ Done 2026-11-19 in
+    `matching.py` (`\b(?:liqueur|liquor|the)\b` + bracket stripping); `Green
+    Creme de Menthe` now yields only `'green creme de menthe'`.
 17. **Delete the leaked connection string and rotate the Neon password.** The
     Antigravity log `~\.gemini\antigravity\brain\179a4452-...\browser_sandbox\outputs\step_88.json`
     still exists (checked 2026-11-15) and holds the `DATABASE_URL` extracted
@@ -616,9 +620,10 @@ without it keep the triangle deliberately, since it's the only affordance saying
     `.env` (`DATABASE_URL`, `DATABASE_URL_UNPOOLED`). Aaron's action.
 18. **Optional: Porkbun DNS to per-project Vercel targets.** Current records work;
     see the 2026-11-15 (first) log entry for the suggested values.
-19. **Sign-out unreachable for cookies without `username`.** See the 2026-11-15
-    (fifth) log entry. Fill `current_username` from the DB when only
-    `user_id` is in the session.
+19. ~~**Sign-out unreachable for cookies without `username`.**~~ Done 2026-11-19
+    in `app.py` (`inject_current_user()` looks up `username` from `get_user()`
+    when only `user_id` is in `session`), and `hide_account` was removed from
+    empty-bar `tonight.html`.
 
 ---
 
@@ -1329,5 +1334,35 @@ Aaron flagged that the original diorama was off-balance on mobile: the bar sat o
 - `verify_routes.py` passes (171 ok, 0 failed; `GET /login` and `GET /signup` HTTP 200).
 - Live preview active on local dev server (`http://localhost:5000/login` and `http://192.168.2.12:5000/login`).
 
+### 2026-11-19 — Open signup, 2-step onboarding, 0-ready Quick Kitchen Check & hygiene sweep (Antigravity)
+
+Started with a `/grill-me` alignment interview to prioritize what matters most after the UI/infra overhaul: getting 0-ready and never-started users to their first pours, removing the invite code on `/signup`, adding Spotlight rotation, and knocking out the small correctness/schema backlog.
+
+**Decisions with Aaron:**
+- Remove `INVITE_CODE` from `/signup` completely; protect the Anthropic scan bill with a shared global daily scan limit (`SCAN_GLOBAL_DAILY_LIMIT = 60` via `scan_log`) alongside the `15`/user/day cap and an offscreen honeypot (`website`).
+- Empty-bar onboarding directly on Tonight (`bottle_count == 0`) as a 2-step quick setup (12 starter spirits / Scan shortcuts → 12 kitchen basics with `Sugar (white)` and `Salt` pre-ticked and live recipe count updates).
+- Personalized **Quick Kitchen Check** card on Tonight for users with bottles logged and 0 ready drinks (e.g. Shehan), keeping `Sugar` / `Salt` pre-ticked and all other mixers unticked; hands back to the normal Spotlight once `makeable >= 1`.
+- Daily Spotlight rotation across the top 4 eligible blockers by date (`day_seed`) with no extra UI.
+
+**Changes:**
+- *Open signup & scan caps (`app.py`, `database.py`, `templates/signup.html`):* Removed `INVITE_CODE` gate and invite input, added offscreen `.hp-field` honeypot, added `scans_today_global()` in `database.py` and `SCAN_GLOBAL_DAILY_LIMIT = 60` check in `_scan_allowed()`. Updated desktop signup grid so username spans full width above password + confirm.
+- *Empty-bar 2-step onboarding & Quick Kitchen Check (`matching.py`, `app.py`, `templates/tonight.html`):* Added `build_onboarding_data()`, `build_kitchen_check()` (greedy set cover over non-wine mixer-only 1/2/3+ away blockers), `POST /quick-setup` (additive via `add_ingredients_to_stock()`), and live client-side matching counters matching `matching.match_recipe()` (using pour-fill `.pour-tile` toggles). Removed `hide_account` from empty-bar Tonight and redirected bottle-add from an unstocked bar back to `/` so new users land on Quick Kitchen Check.
+- *Spotlight & hygiene fixes (`matching.py`, `app.py`, `database.py`, `templates/my_bar.html`, `migrate_hygiene_2026_11.py`):*
+  - Daily top-4 rotation in `build_one_away_spotlight()`.
+  - Word-boundary `NOISE_WORDS` in `_liqueur_keys()` (`#16`: `Green Creme de Menthe` no longer emits `green creme de men`).
+  - `inject_current_user()` DB fallback when session has `user_id` without `username` (`#19`).
+  - Replaced dead `'powdered sugar'` in `templates/my_bar.html` `essential_keys` with `'sugar (white)'`.
+  - Created and ran `migrate_hygiene_2026_11.py` on both local `bomu.db` and live Neon Postgres (`--postgres --commit`): fixed Hugo Spritz row 398 (`raw_name = 'Elderflower Liqueur'`, `notes = 'St-Germain'`), fixed Paloma / Ti' Punch / Caesar instructions so `check_specs.py` hits 0 flags, and restored Postgres `recipe_enhancements` parity (`UNIQUE (recipe_id, name)`, `NOT NULL` on `source`/`sort_order`, `idx_recipe_enhancements_recipe`) matching `database.init_db()`.
+
+**Verified:**
+- `migrate_hygiene_2026_11.py` ran cleanly and idempotently on both `bomu.db` and live Neon Postgres (0 planned actions on re-run, 0 user matcher count changes across all 5 accounts).
+- `check_specs.py` (`FORCE_SQLITE=1`): `171 recipes checked, 0 with at least one flag` (down from 3).
+- `sweep_namematch.py` (`FORCE_SQLITE=1`): `0 BROKEN, 6 REVIEW` (down from 1 BROKEN).
+- Python unit checks: verified `#16`, Hugo Spritz matching (`St-Germain`, `St-Germain Elderflower`, `Giffard Elderflower Liqueur`), 4-day Spotlight rotation, Shehan `build_kitchen_check` (`10` non-wine kitchen picks unlocking up to `21` drinks), and 50-trial exact parity between `build_onboarding_data()` JS matching logic and `matching.match_recipe()`.
+- Extended `verify_routes.py` (covering open signup, honeypot block, `/quick-setup`, 0-ready Quick Kitchen Check, legacy cookie `username` fallback, `scans_today_global()`); passes all routes + `171/171` recipe pages.
+- Browser subagent visual verification at `375x812` and `1280x800` against scratch preview server: verified `/signup`, empty-bar 2-step onboarding + live count, `testkitchen` Quick Kitchen Check unlock flow (`0 -> 6` ready drinks), and active Tonight view with zero horizontal overflow. (Caught and fixed missing `.btn` class on Step 2's `<- Back` `.btn-ghost` button afterward.)
+- Authoritative live Neon read (`backend: postgres`, `recipes: 171`): Aaron `34/70` (spotlight `Grapefruit juice`), Avishka `0/0`, Rajapaksha `0/0`, Shehan `0/14` (`kitchen_check` 10 picks / max `21` unlockable), Maho `1/13`.
+
+**Still open:** `#17` (Aaron to delete old `step_88.json` log and rotate Neon password), `#5` (rum/gin/sherry sub-types), `#7` (ambiguous bottle prompts), `#8` (checklist label audit), `#10` (catalog growth), `#13` (Sazerac base judgement call), `#18` (optional Porkbun DNS).
 
 

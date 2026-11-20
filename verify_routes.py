@@ -196,11 +196,72 @@ def main():
         # Anything behind auth should redirect, not explode.
         visit(c, "GET", "/recommend", label="GET /recommend (logged out)")
 
+        # Honeypot blocks spam signup without creating a user.
+        visit(c, "POST", "/signup", label="POST /signup (honeypot ignored)",
+              data={"username": "spam_bot_user", "password": "password123",
+                    "confirm": "password123", "website": "https://spam.example"},
+              follow_redirects=True)
+
+        # Open signup works with no invite code and lands on 2-step onboarding.
+        resp = visit(c, "POST", "/signup", label="POST /signup (open)",
+                     data={"username": "verify_open_user",
+                           "password": "password123",
+                           "confirm": "password123"},
+                     follow_redirects=True)
+        if resp and "onboard-step-1" not in resp.get_data(as_text=True):
+            failures.append(("open signup onboarding", "missing onboard-step-1 on /"))
+            print("  FAIL  open signup missing onboard-step-1")
+
+        # Quick-setup adds bottles + mixers and unlocks ready drinks.
+        conn_q = sqlite3.connect(scratch)
+        ing_rows = conn_q.execute(
+            "SELECT id, name FROM ingredients WHERE name IN ('Lemon juice (fresh)', 'Simple syrup')"
+        ).fetchall()
+        conn_q.close()
+        resp = visit(c, "POST", "/quick-setup", label="POST /quick-setup",
+                     data={"bottle": ["gin", "bourbon"],
+                           "ingredient": [str(r[0]) for r in ing_rows]},
+                     follow_redirects=True)
+        if resp and "ready" not in resp.get_data(as_text=True).lower():
+            failures.append(("quick-setup", "ready state not shown after /quick-setup"))
+            print("  FAIL  quick-setup did not render ready state")
+
+    # Bottles-only user (0 mixers) sees Quick Kitchen Check on Tonight.
+    with app_module.app.test_client() as c:
+        resp = visit(c, "POST", "/signup", label="POST /signup (bottles-only user)",
+                     data={"username": "verify_kitchen_user",
+                           "password": "password123",
+                           "confirm": "password123"},
+                     follow_redirects=True)
+        conn_k = sqlite3.connect(scratch)
+        k_uid = conn_k.execute(
+            "SELECT id FROM users WHERE username = 'verify_kitchen_user'"
+        ).fetchone()[0]
+        conn_k.executemany(
+            "INSERT INTO bottles (user_id, name, type, brand) VALUES (?, ?, ?, '')",
+            [(k_uid, "Beefeater", "gin"), (k_uid, "Laphroaig 10", "scotch"), (k_uid, "Havana Club 3", "rum")],
+        )
+        conn_k.commit()
+        conn_k.close()
+        resp = visit(c, "GET", "/", label="GET / (0-ready Quick Kitchen Check)")
+        if resp and "Quick kitchen check" not in resp.get_data(as_text=True):
+            failures.append(("kitchen check", "missing Quick kitchen check card for 0-ready user"))
+            print("  FAIL  missing Quick kitchen check card")
+
     print("\nLogged in:")
     with app_module.app.test_client() as c:
         visit(c, "POST", "/login", label="POST /login",
               data={"username": username, "password": password},
               follow_redirects=True)
+
+        # Legacy cookie with user_id but no username still renders account topbar (#19).
+        with c.session_transaction() as sess:
+            sess.clear()
+            sess["user_id"] = uid
+        resp = visit(c, "GET", "/", label="GET / (legacy cookie without username)")
+        if resp and username not in resp.get_data(as_text=True):
+            failures.append(("legacy cookie username", "username missing from topbar"))
+            print("  FAIL  legacy cookie missing username in topbar")
 
         for path in ("/", "/add", "/scan", "/scan-bulk", "/checklist", "/bar",
                      "/recommend", "/one-away", "/favorites", "/surprise"):
@@ -251,10 +312,24 @@ def main():
 
         visit(c, "POST", "/logout", follow_redirects=True)
 
+    database.log_scan(uid)
+    if database.scans_today_global() < 1:
+        failures.append(("scans_today_global", "expected >= 1 after log_scan"))
+        print("\n  FAIL  scans_today_global() < 1 after log_scan")
+    else:
+        print(f"\n  ok    scans_today_global() = {database.scans_today_global()}")
+
     conn = sqlite3.connect(scratch)
     junk = conn.execute(
         "SELECT type FROM bottles WHERE name = 'Verify Junk Bottle'").fetchone()
+    spam = conn.execute(
+        "SELECT id FROM users WHERE username = 'spam_bot_user'").fetchone()
     conn.close()
+    if spam:
+        failures.append(("honeypot", "spam_bot_user was created despite honeypot"))
+        print("\n  FAIL  honeypot user was created")
+    else:
+        print("  ok    honeypot blocked spam user creation")
     if junk and junk[0] != "other":
         failures.append(("safe_bottle_type", f"junk type stored as {junk[0]!r}, expected 'other'"))
         print(f"\n  FAIL  junk bottle type stored as {junk[0]!r}, expected 'other'")

@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 {% from "components/icons.html" import glass_icon, ui_icon %}
-{% if bottle_count == 0 and stocked_count == 0 %}{% set hide_account = true %}{% endif %}
 
 {% block title %}Tonight &middot; Bomu{% endblock %}
 
@@ -294,7 +293,7 @@
 
     .onboard-media {
         position: relative;
-        height: 224px;
+        height: 136px;
         overflow: hidden;
         background: #110d0a;
     }
@@ -310,41 +309,236 @@
         content: "";
         position: absolute;
         inset: 0;
-        background: linear-gradient(180deg, rgba(17, 13, 10, 0) 45%, #1b1510 100%);
+        background: linear-gradient(180deg, rgba(17, 13, 10, 0) 40%, #1b1510 100%);
     }
 
     .onboard-content {
-        padding: 0.35rem 1.2rem 1.35rem;
+        padding: 0.35rem 1.05rem 1.2rem;
     }
 
-    .onboard-steps {
+    .onboard-kicker {
+        font-family: var(--font-display);
+        font-weight: 700;
+        font-size: 0.74rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--zest);
+        margin-bottom: 0.2rem;
+    }
+
+    .onboard-summary {
+        font-size: 0.88rem;
+        color: var(--ink-dim);
+        line-height: 1.4;
+        margin-bottom: 0.8rem;
+    }
+
+    .step2-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .scan-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.55rem;
+        margin: 0.75rem 0 0.7rem;
+    }
+
+    .scan-card {
         display: flex;
         flex-direction: column;
-        gap: 0.7rem;
-        margin: 0.95rem 0 1.2rem;
-    }
-
-    .onboard-step {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        font-size: 0.9rem;
-        color: var(--ink);
-    }
-
-    .step-num {
-        width: 24px;
-        height: 24px;
-        border-radius: 50%;
-        background: var(--zest);
-        color: var(--ink-on-zest);
-        font-family: var(--font-display);
-        font-weight: 800;
-        font-size: 0.88rem;
-        display: inline-flex;
         align-items: center;
         justify-content: center;
-        flex-shrink: 0;
+        gap: 0.35rem;
+        min-height: 68px;
+        padding: 0.55rem;
+        border-radius: 10px;
+        background: #1c1611;
+        border: 1px solid rgba(240, 228, 205, 0.18);
+        text-align: center;
+        font-family: var(--font-display);
+        font-weight: 600;
+        font-size: 1.02rem;
+        letter-spacing: 0.02em;
+        color: #f0e4cd;
+        -webkit-tap-highlight-color: transparent;
+        transition: border-color 200ms var(--ease-snap), background-color 200ms var(--ease-snap);
+    }
+
+    .scan-card:hover { border-color: rgba(244, 196, 48, 0.55); }
+    .scan-card:active { background: #241c15; }
+
+    .scan-card svg {
+        width: 20px;
+        height: 20px;
+        color: var(--zest);
+    }
+
+    .sheet-divider {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        color: var(--ink-dim);
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 0.65rem;
+    }
+
+    .sheet-divider::before,
+    .sheet-divider::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: var(--border-subtle);
+    }
+
+    /* Flat 10px pour-fill tiles matching Add Bottle's type picker */
+    .tile-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.42rem;
+        margin-bottom: 0.7rem;
+    }
+
+    .kc-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .pour-tile {
+        position: relative;
+        overflow: hidden;
+        isolation: isolate;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 46px;
+        padding: 0.32rem 0.4rem;
+        border-radius: 10px;
+        background: #1c1611;
+        border: 1px solid rgba(240, 228, 205, 0.18);
+        color: #f0e4cd;
+        font-family: var(--font-display);
+        font-size: 0.96rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        line-height: 1.08;
+        text-align: center;
+        cursor: pointer;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+        transition: color 200ms var(--ease-snap), border-color 200ms var(--ease-snap);
+    }
+
+    .pour-tile input {
+        position: absolute;
+        opacity: 0;
+        width: 1px;
+        height: 1px;
+        pointer-events: none;
+    }
+
+    .pour-tile::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        background: #efb92b;
+        border-top: 1.5px solid #fff3c2;
+        transform: translateY(102%);
+        transition: transform 260ms cubic-bezier(0.3, 0.7, 0.2, 1);
+    }
+
+    .pour-tile:hover { border-color: rgba(244, 196, 48, 0.55); }
+
+    .pour-tile:has(input:focus-visible),
+    .pour-tile:focus-within {
+        outline: 2px solid #fff3c2;
+        outline-offset: 2px;
+    }
+
+    .pour-tile.is-selected,
+    .pour-tile:has(input:checked) {
+        border-color: #efb92b;
+        color: #1a1208;
+    }
+
+    .pour-tile.is-selected::before,
+    .pour-tile:has(input:checked)::before {
+        transform: translateY(0);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .pour-tile::before { transition: none; }
+    }
+
+    .onboard-hint {
+        font-size: 0.8rem;
+        color: var(--ink-dim);
+        margin: 0 0 0.65rem;
+        min-height: 1.15em;
+    }
+
+    .onboard-footer {
+        margin-top: 0.75rem;
+        text-align: center;
+    }
+
+    .onboard-skip {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--ink-dim);
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+    }
+
+    .onboard-skip:hover { color: var(--zest); }
+
+    /* Quick Kitchen Check (0-ready users with bottles) */
+    .kitchen-check {
+        background: var(--bg-elevated);
+        border: 1px solid var(--zest-border);
+        border-radius: var(--radius-card);
+        padding: 0.95rem 1rem 1rem;
+        margin-bottom: 0.85rem;
+    }
+
+    .kc-sub {
+        font-size: 0.86rem;
+        color: var(--ink-dim);
+        margin: 0 0 0.75rem;
+        line-height: 1.4;
+    }
+
+    .kc-preview {
+        font-size: 0.82rem;
+        color: var(--sage);
+        font-weight: 600;
+        margin: 0 0 0.7rem;
+        min-height: 1.2em;
+    }
+
+    .kc-preview.is-muted {
+        color: var(--ink-dim);
+        font-weight: 400;
+    }
+
+    .kc-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem 0.9rem;
+    }
+
+    .kc-actions .btn {
+        flex: 1 1 200px;
     }
 
     @media (min-width: 768px) {
@@ -393,13 +587,13 @@
 
         .onboard-hero {
             display: grid;
-            grid-template-columns: 1.05fr 1fr;
+            grid-template-columns: 0.82fr 1.18fr;
             align-items: stretch;
         }
 
         .onboard-media {
             height: auto;
-            min-height: 320px;
+            min-height: 390px;
         }
 
         .onboard-media::after {
@@ -407,43 +601,93 @@
         }
 
         .onboard-content {
-            padding: 1.75rem 1.75rem;
+            padding: 1.5rem 1.6rem;
+        }
+
+        .tile-grid {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+
+        .kc-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
         }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-{% if bottle_count == 0 and stocked_count == 0 %}
+{% if bottle_count == 0 %}
     {# Empty / First-Run Experience #}
     <section class="onboard-hero">
         <div class="onboard-media">
             <img src="/static/empty-bar.webp" alt="Coupe cocktail glass and fresh citrus peel on dark espresso counter">
         </div>
         <div class="onboard-content">
-            <h1>Set up your bar</h1>
-            <p style="color: var(--ink-dim); font-size: 0.92rem; line-height: 1.5;">
-                Log bottles on your shelf and mixers in your fridge. Bomu maps all 171 recipes to what you can pour right now.
-            </p>
-            <div class="onboard-steps">
-                <div class="onboard-step">
-                    <span class="step-num">1</span>
-                    <span>Snap a shelf photo or add 2&ndash;3 bottles you own</span>
+            <form method="POST" action="/quick-setup" id="quick-setup-form">
+                <div id="onboard-step-1">
+                    {% if stocked_count == 0 %}
+                        <div class="onboard-kicker">Step 1 of 2</div>
+                    {% endif %}
+                    <h1>What&rsquo;s on your shelf?</h1>
+                    <div class="scan-grid">
+                        <a href="/scan-bulk" class="scan-card">
+                            {{ ui_icon("shelf") }}
+                            <span>Scan a shelf</span>
+                        </a>
+                        <a href="/scan" class="scan-card">
+                            {{ ui_icon("camera") }}
+                            <span>Scan a bottle</span>
+                        </a>
+                    </div>
+                    <div class="sheet-divider">or tap what you have</div>
+                    <div class="tile-grid" id="onboard-bottle-grid">
+                        {% for b in onboard_data.bottles %}
+                            <label class="pour-tile" data-bottle-key="{{ b.key }}" data-bottle-label="{{ b.label }}">
+                                <input type="checkbox" name="bottle" value="{{ b.key }}">
+                                <span>{{ b.label }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                    {% if stocked_count == 0 %}
+                        <p class="onboard-hint" id="step1-hint">Pick at least one spirit, or scan your shelf above.</p>
+                        <button type="button" class="btn" id="onboard-next" style="width: 100%;" disabled>
+                            Next: kitchen basics <span class="arrow" aria-hidden="true">&rarr;</span>
+                        </button>
+                    {% else %}
+                        <p class="onboard-hint" id="step1-hint">You already have {{ stocked_count }} mixer{{ 's' if stocked_count != 1 else '' }} ticked. Pick what&rsquo;s on your shelf.</p>
+                        <button type="submit" class="btn" id="onboard-submit" style="width: 100%;" disabled>
+                            Save bottles <span class="arrow" aria-hidden="true">&rarr;</span>
+                        </button>
+                    {% endif %}
+                    <div class="onboard-footer">
+                        <a href="/explore" class="onboard-skip">Just browsing? Explore all 171 recipes &rarr;</a>
+                    </div>
                 </div>
-                <div class="onboard-step">
-                    <span class="step-num">2</span>
-                    <span>Tick lemons, bitters, syrup &amp; soda in your kitchen</span>
+
+                {% if stocked_count == 0 %}
+                <div id="onboard-step-2" hidden>
+                    <div class="step2-top">
+                        <button type="button" class="btn btn-ghost btn-sm" id="onboard-back" style="margin-left: -0.65rem;">&larr; Back</button>
+                        <span class="onboard-kicker" style="margin-bottom: 0;">Step 2 of 2</span>
+                    </div>
+                    <h1>What&rsquo;s in your kitchen?</h1>
+                    <p class="onboard-summary" id="step2-summary"></p>
+                    <div class="tile-grid" id="onboard-mixer-grid">
+                        {% for m in onboard_data.mixers %}
+                            <label class="pour-tile {% if m.preticked %}is-selected{% endif %}">
+                                <input type="checkbox" name="ingredient" value="{{ m.id }}" {% if m.preticked %}checked{% endif %}>
+                                <span>{{ m.label }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                    <p class="onboard-hint" id="step2-hint"></p>
+                    <button type="submit" class="btn" id="onboard-submit" style="width: 100%;">
+                        Save my bar <span class="arrow" aria-hidden="true">&rarr;</span>
+                    </button>
                 </div>
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 0.6rem;">
-                <a href="/bar?sheet=add" class="btn" style="width: 100%;">
-                    {{ ui_icon("plus", "btn-icon") }}
-                    <span>Add your first bottle</span>
-                </a>
-                <a href="/bar?tab=mixers" class="btn btn-secondary" style="width: 100%;">
-                    Check common mixers
-                </a>
-            </div>
+                {% endif %}
+            </form>
+            <script type="application/json" id="onboard-json">{{ onboard_data.recipes | tojson }}</script>
         </div>
     </section>
 {% else %}
@@ -496,9 +740,8 @@
         </a>
     {% endif %}
 
-    {# One Ingredient Away spotlight: the single ingredient (mixer or bottle)
-       that unlocks the most drinks. Data from build_one_away_spotlight(). #}
-    {% if spot %}
+    {# One Ingredient Away spotlight: hidden when Quick Kitchen Check is rescuing a 0-ready shelf #}
+    {% if spot and not kitchen_check %}
         <section class="spotlight" id="one-away-spotlight">
             <div class="spot-kicker">One {{ 'ingredient' if spot.kind == 'ingredient' else 'bottle' }} away</div>
             <p class="spot-headline">
@@ -648,13 +891,37 @@
                 </details>
             {% endif %}
         {% endif %}
+    {% elif kitchen_check %}
+        <section class="kitchen-check" id="kitchen-check">
+            <div class="spot-kicker">Quick kitchen check</div>
+            <p class="spot-headline">
+                You already have the bottles for <span class="spot-drink">{{ kitchen_check.max_unlockable }} drink{{ 's' if kitchen_check.max_unlockable != 1 else '' }}</span>.
+            </p>
+            <p class="kc-sub">Tap what&rsquo;s in your fridge or pantry to unlock them now.</p>
+            <form method="POST" action="/stock-add" id="kitchen-check-form">
+                <div class="tile-grid kc-grid">
+                    {% for p in kitchen_check.picks %}
+                        <label class="pour-tile {% if p.preticked %}is-selected{% endif %}">
+                            <input type="checkbox" name="ingredient" value="{{ p.id }}" {% if p.preticked %}checked{% endif %}>
+                            <span>{{ p.label }}</span>
+                        </label>
+                    {% endfor %}
+                </div>
+                <p class="kc-preview is-muted" id="kc-preview"></p>
+                <div class="kc-actions">
+                    <button type="submit" class="btn" id="kc-submit">Save mixers <span class="arrow" aria-hidden="true">&rarr;</span></button>
+                    <a href="/bar?tab=mixers" class="section-link">All 51 mixers &rarr;</a>
+                </div>
+            </form>
+            <script type="application/json" id="kc-json">{{ kitchen_check.recipes | tojson }}</script>
+        </section>
     {% else %}
         <div class="card empty-state">
-            <h2 style="margin-bottom: 0.35rem;">No full matches yet</h2>
+            <h2 style="margin-bottom: 0.35rem;">Add one more bottle to start mixing</h2>
             <p style="color: var(--ink-dim); font-size: 0.9rem; margin-bottom: 1rem;">
-                You have {{ bottle_count }} bottle{{ 's' if bottle_count != 1 else '' }} and {{ stocked_count }} mixer{{ 's' if stocked_count != 1 else '' }}. Stocking 1 or 2 common mixers usually unlocks your first dozen drinks.
+                Your shelf doesn&rsquo;t match a full recipe yet. A base spirit like gin, rum, vodka, or bourbon opens up dozens of drinks.
             </p>
-            <a href="/bar?tab=mixers" class="btn btn-secondary">Check common mixers</a>
+            <a href="/bar?sheet=add" class="btn">Add a bottle</a>
         </div>
     {% endif %}
 
@@ -686,4 +953,192 @@
         </div>
     {% endif %}
 {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    function bindTiles(root) {
+        if (!root) return;
+        root.querySelectorAll(".pour-tile input[type=checkbox]").forEach(function (cb) {
+            cb.addEventListener("change", function () {
+                cb.closest(".pour-tile").classList.toggle("is-selected", cb.checked);
+            });
+        });
+    }
+
+    // 1. Empty-bar 2-step onboarding
+    var setupForm = document.getElementById("quick-setup-form");
+    var onboardJson = document.getElementById("onboard-json");
+    if (setupForm && onboardJson) {
+        var recipes = JSON.parse(onboardJson.textContent || "[]");
+        var step1 = document.getElementById("onboard-step-1");
+        var step2 = document.getElementById("onboard-step-2");
+        var nextBtn = document.getElementById("onboard-next");
+        var backBtn = document.getElementById("onboard-back");
+        var submitBtn = document.getElementById("onboard-submit");
+        var step1Hint = document.getElementById("step1-hint");
+        var step2Summary = document.getElementById("step2-summary");
+        var step2Hint = document.getElementById("step2-hint");
+
+        bindTiles(setupForm);
+
+        function canFillSlots(slots, selectedBottles) {
+            if (!slots.length) return true;
+            var used = new Set();
+            function backtrack(idx) {
+                if (idx === slots.length) return true;
+                var choices = slots[idx];
+                for (var i = 0; i < choices.length; i++) {
+                    var key = choices[i];
+                    if (selectedBottles.has(key) && !used.has(key)) {
+                        used.add(key);
+                        if (backtrack(idx + 1)) return true;
+                        used.delete(key);
+                    }
+                }
+                return false;
+            }
+            return backtrack(0);
+        }
+
+        function countUnlocked() {
+            var bottles = new Set();
+            setupForm.querySelectorAll('input[name="bottle"]:checked').forEach(function (el) {
+                bottles.add(el.value);
+            });
+            var mixers = new Set();
+            setupForm.querySelectorAll('input[name="ingredient"]:checked').forEach(function (el) {
+                mixers.add(parseInt(el.value, 10));
+            });
+            var count = 0;
+            for (var i = 0; i < recipes.length; i++) {
+                var r = recipes[i];
+                var ok = true;
+                for (var j = 0; j < r.m.length; j++) {
+                    if (!mixers.has(r.m[j])) {
+                        ok = false;
+                        break;
+                    }
+                }
+                if (ok && canFillSlots(r.b, bottles)) count++;
+            }
+            return { count: count, bottleCount: bottles.size };
+        }
+
+        function selectedBottleLabels() {
+            var out = [];
+            setupForm.querySelectorAll('input[name="bottle"]:checked').forEach(function (el) {
+                var tile = el.closest(".pour-tile");
+                if (tile) out.push(tile.getAttribute("data-bottle-label") || el.value);
+            });
+            return out;
+        }
+
+        function refreshSetup() {
+            var state = countUnlocked();
+            if (nextBtn) {
+                nextBtn.disabled = state.bottleCount === 0;
+                if (step1Hint) {
+                    step1Hint.textContent = state.bottleCount === 0
+                        ? "Pick at least one spirit, or scan your shelf above."
+                        : state.bottleCount + " bottle" + (state.bottleCount === 1 ? "" : "s") + " selected.";
+                }
+            }
+            if (submitBtn) {
+                if (!step2) {
+                    submitBtn.disabled = state.bottleCount === 0;
+                    if (state.bottleCount === 0) {
+                        submitBtn.innerHTML = 'Save bottles <span class="arrow" aria-hidden="true">&rarr;</span>';
+                    } else if (state.count > 0) {
+                        submitBtn.innerHTML = 'Show my ' + state.count + ' drink' + (state.count === 1 ? '' : 's') + ' <span class="arrow" aria-hidden="true">&rarr;</span>';
+                    } else {
+                        submitBtn.innerHTML = 'Save bottles <span class="arrow" aria-hidden="true">&rarr;</span>';
+                    }
+                } else {
+                    if (state.count > 0) {
+                        submitBtn.innerHTML = 'Show my ' + state.count + ' drink' + (state.count === 1 ? '' : 's') + ' <span class="arrow" aria-hidden="true">&rarr;</span>';
+                        if (step2Hint) step2Hint.textContent = "";
+                    } else {
+                        submitBtn.innerHTML = 'Save my bar <span class="arrow" aria-hidden="true">&rarr;</span>';
+                        if (step2Hint) step2Hint.textContent = "Tap a citrus or mixer above to unlock your first pour.";
+                    }
+                }
+            }
+            if (step2Summary) {
+                var labels = selectedBottleLabels();
+                if (labels.length <= 3) {
+                    step2Summary.textContent = labels.length ? "For your " + labels.join(", ") + "." : "";
+                } else {
+                    step2Summary.textContent = "For your " + labels.slice(0, 3).join(", ") + " + " + (labels.length - 3) + " more.";
+                }
+            }
+        }
+
+        setupForm.addEventListener("change", refreshSetup);
+        if (nextBtn && step1 && step2) {
+            nextBtn.addEventListener("click", function () {
+                step1.hidden = true;
+                step2.hidden = false;
+                refreshSetup();
+            });
+        }
+        if (backBtn && step1 && step2) {
+            backBtn.addEventListener("click", function () {
+                step2.hidden = true;
+                step1.hidden = false;
+                refreshSetup();
+            });
+        }
+        refreshSetup();
+    }
+
+    // 2. Quick Kitchen Check (0-ready with bottles)
+    var kcForm = document.getElementById("kitchen-check-form");
+    var kcJson = document.getElementById("kc-json");
+    if (kcForm && kcJson) {
+        var kcRecipes = JSON.parse(kcJson.textContent || "[]");
+        var kcSubmit = document.getElementById("kc-submit");
+        var kcPreview = document.getElementById("kc-preview");
+
+        bindTiles(kcForm);
+
+        function refreshKc() {
+            var checked = new Set();
+            kcForm.querySelectorAll('input[name="ingredient"]:checked').forEach(function (el) {
+                checked.add(parseInt(el.value, 10));
+            });
+            var unlocked = [];
+            for (var i = 0; i < kcRecipes.length; i++) {
+                var r = kcRecipes[i];
+                var ok = true;
+                for (var j = 0; j < r.req_ids.length; j++) {
+                    if (!checked.has(r.req_ids[j])) {
+                        ok = false;
+                        break;
+                    }
+                }
+                if (ok) unlocked.push(r.name);
+            }
+            kcSubmit.disabled = checked.size === 0;
+            if (unlocked.length > 0) {
+                kcSubmit.innerHTML = 'Unlock ' + unlocked.length + ' drink' + (unlocked.length === 1 ? '' : 's') + ' <span class="arrow" aria-hidden="true">&rarr;</span>';
+                var shown = unlocked.slice(0, 3).join(", ");
+                if (unlocked.length > 3) shown += ", +" + (unlocked.length - 3) + " more";
+                kcPreview.textContent = "Ready right away: " + shown;
+                kcPreview.classList.remove("is-muted");
+            } else {
+                kcSubmit.innerHTML = 'Save mixers <span class="arrow" aria-hidden="true">&rarr;</span>';
+                kcPreview.textContent = checked.size === 0
+                    ? "Select at least one item above to save."
+                    : "Keep tapping citrus, syrup, or soda to unlock a full drink.";
+                kcPreview.classList.add("is-muted");
+            }
+        }
+
+        kcForm.addEventListener("change", refreshKc);
+        refreshKc();
+    }
+})();
+</script>
 {% endblock %}

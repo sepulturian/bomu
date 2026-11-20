@@ -14,7 +14,9 @@ Matching is split into two strategies:
   bottle just because they're both 'liqueur' type.
 """
 
+import re
 import unicodedata
+from datetime import date
 
 from database import get_all_recipes, get_all_bottles, get_all_ingredients, get_all_ratings
 
@@ -112,10 +114,9 @@ def _liqueur_keys(raw_name, notes):
             continue
         s = _fold(source)
         keys.add(s.strip())
-        # Strip noise words to get the brand/spirit name on its own
-        cleaned = s
-        for w in NOISE_WORDS:
-            cleaned = cleaned.replace(w, " ")
+        # Strip noise words (at word boundaries) and brackets to isolate the brand/spirit name
+        cleaned = re.sub(r"[()]", " ", s)
+        cleaned = re.sub(r"\b(?:liqueur|liquor|the)\b", " ", cleaned)
         cleaned = " ".join(cleaned.split())  # collapse whitespace
         if cleaned:
             keys.add(cleaned)
@@ -501,7 +502,7 @@ def _bottle_requirement(entry):
     return entry["missing"]["name"], False
 
 
-def build_one_away_spotlight(one_away_entries, ingredients, ratings, min_drinks=2):
+def build_one_away_spotlight(one_away_entries, ingredients, ratings, min_drinks=2, day_seed=None):
     """The single ingredient that would unlock the most drinks, for Tonight.
 
     Every one-away recipe is blocked by exactly one thing, so grouping blockers
@@ -517,7 +518,8 @@ def build_one_away_spotlight(one_away_entries, ingredients, ratings, min_drinks=
     a mixer is very often something the user already owns and never ticked (on
     2026-07-25 three unticked checkboxes were worth 14 drinks), while a bottle
     is a shopping trip. So a bottle takes the spotlight only when it unlocks at
-    least two more drinks than the best mixer.
+    least two more drinks than the best mixer. Rotates daily across the top 4
+    eligible blockers so Tonight doesn't pin the same bottle indefinitely.
 
     Mixer blockers that are not a real checklist row are skipped: the
     "I have this" button needs an ingredient id to tick.
@@ -555,7 +557,10 @@ def build_one_away_spotlight(one_away_entries, ingredients, ratings, min_drinks=
         head_start = 1 if g["kind"] == "ingredient" else 0
         return (-(len(g["drinks"]) + head_start), g["kind"] != "ingredient", g["name"].lower())
 
-    best = sorted(eligible, key=rank)[0]
+    if day_seed is None:
+        day_seed = date.today().toordinal()
+    top_tier = sorted(eligible, key=rank)[:4]
+    best = top_tier[day_seed % len(top_tier)]
 
     # The headline names one drink, so it should be the most tempting one:
     # liked first, never a disliked one if there's a choice, then the LOWEST
@@ -571,6 +576,225 @@ def build_one_away_spotlight(one_away_entries, ingredients, ratings, min_drinks=
     return best
 
 
+ALCOHOLIC_CHECKLIST = {"champagne", "prosecco", "red wine", "white wine"}
+PRETICKED_STAPLES = {"sugar (white)", "salt"}
+
+ONBOARD_BOTTLES = [
+    {"key": "gin", "name": "Gin", "label": "Gin", "type": "gin"},
+    {"key": "vodka", "name": "Vodka", "label": "Vodka", "type": "vodka"},
+    {"key": "rum", "name": "Rum", "label": "Rum", "type": "rum"},
+    {"key": "tequila", "name": "Tequila", "label": "Tequila", "type": "tequila"},
+    {"key": "bourbon", "name": "Bourbon", "label": "Bourbon", "type": "bourbon"},
+    {"key": "scotch", "name": "Scotch", "label": "Scotch", "type": "scotch"},
+    {"key": "rye", "name": "Rye", "label": "Rye", "type": "rye"},
+    {"key": "cognac", "name": "Cognac", "label": "Cognac", "type": "cognac"},
+    {"key": "vermouth_sweet", "name": "Sweet Vermouth", "label": "Sweet vermouth", "type": "vermouth_sweet"},
+    {"key": "vermouth_dry", "name": "Dry Vermouth", "label": "Dry vermouth", "type": "vermouth_dry"},
+    {"key": "campari", "name": "Campari", "label": "Campari", "type": "liqueur"},
+    {"key": "triple_sec", "name": "Triple Sec", "label": "Triple sec", "type": "liqueur"},
+]
+
+ONBOARD_MIXER_NAMES = [
+    "Lemon juice (fresh)",
+    "Lime juice (fresh)",
+    "Simple syrup",
+    "Sugar (white)",
+    "Salt",
+    "Soda water / club soda",
+    "Tonic water",
+    "Cola",
+    "Ginger beer",
+    "Angostura bitters",
+    "Honey",
+    "Orange juice",
+]
+
+SHORT_MIXER_LABELS = {
+    "lemon juice (fresh)": "Lemon juice",
+    "lime juice (fresh)": "Lime juice",
+    "soda water / club soda": "Soda water",
+    "sugar (white)": "Sugar",
+    "angostura bitters": "Angostura",
+    "tabasco / hot sauce": "Hot sauce",
+    "worcestershire sauce": "Worcestershire",
+}
+
+
+def _short_mixer_label(name):
+    return SHORT_MIXER_LABELS.get((name or "").lower(), name)
+
+
+def build_kitchen_check(bottles, ingredients, recipes, max_items=10):
+    """For a user with bottles logged but 0 ready drinks, select up to
+    max_items unticked non-wine mixers (across 1/2/3+ away) that unlock the
+    most cocktails for their exact bottle shelf via greedy set cover.
+
+    Never names a key 'items' in the returned dict (Jinja dict.items() footgun).
+    """
+    stocked = {i["name"].lower() for i in ingredients if i["in_stock"]}
+    by_lower = {i["name"].lower(): i for i in ingredients}
+
+    mixer_only = []
+    for rec in recipes:
+        st, missing = match_recipe(rec, bottles, stocked)
+        if st == "makeable" or not missing:
+            continue
+        if not all(m["type"] == "ingredient" for m in missing):
+            continue
+        ms = [m["name"] for m in missing]
+        if any(x.lower() in ALCOHOLIC_CHECKLIST for x in ms):
+            continue
+        if not all(x.lower() in by_lower for x in ms):
+            continue
+        mixer_only.append((rec["recipe"]["id"], rec["recipe"]["name"], ms))
+
+    if not mixer_only:
+        return None
+
+    chosen = set()
+    chosen_order = []
+    for _ in range(max_items):
+        cands = {m for _, _, ms in mixer_only for m in ms if m not in chosen}
+        if not cands:
+            break
+        best = None
+        best_score = (-1, -1)
+        for c in sorted(cands, key=str.lower):
+            s = chosen | {c}
+            full = sum(1 for _, _, ms in mixer_only if all(x in s for x in ms))
+            prog = sum(1 for _, _, ms in mixer_only if c in ms and not all(x in chosen for x in ms))
+            if (full, prog) > best_score:
+                best_score = (full, prog)
+                best = c
+        if not best or best_score == (0, 0):
+            break
+        chosen.add(best)
+        chosen_order.append(best)
+
+    picks = []
+    for name in chosen_order:
+        ing = by_lower[name.lower()]
+        picks.append({
+            "id": ing["id"],
+            "name": ing["name"],
+            "label": _short_mixer_label(ing["name"]),
+            "preticked": ing["name"].lower() in PRETICKED_STAPLES,
+        })
+
+    recipes_js = []
+    for rec_id, rec_name, ms in mixer_only:
+        if all(m in chosen for m in ms):
+            recipes_js.append({
+                "id": rec_id,
+                "name": rec_name,
+                "req_ids": [by_lower[m.lower()]["id"] for m in ms],
+            })
+
+    if not recipes_js:
+        return None
+
+    return {
+        "picks": picks,
+        "max_unlockable": len(recipes_js),
+        "recipes": recipes_js,
+    }
+
+
+def build_onboarding_data(ingredients, recipes):
+    """Build starter bottle + kitchen mixer options and a compact matching map
+    for live client-side recipe unlock counting during empty-bar onboarding."""
+    by_lower = {i["name"].lower(): i for i in ingredients}
+    already_stocked = {i["name"].lower() for i in ingredients if i["in_stock"]}
+
+    resolved_mixers = []
+    onboard_mixer_names = set()
+    for name in ONBOARD_MIXER_NAMES:
+        ing = by_lower.get(name.lower())
+        if not ing:
+            continue
+        onboard_mixer_names.add(ing["name"].lower())
+        in_stock = bool(ing["in_stock"])
+        resolved_mixers.append({
+            "id": ing["id"],
+            "name": ing["name"],
+            "label": _short_mixer_label(ing["name"]),
+            "in_stock": in_stock,
+            "preticked": (not in_stock) and (ing["name"].lower() in PRETICKED_STAPLES),
+        })
+
+    starter_bottles = [
+        {"id": idx + 1, "key": spec["key"], "name": spec["name"], "type": spec["type"], "brand": ""}
+        for idx, spec in enumerate(ONBOARD_BOTTLES)
+    ]
+
+    compact_recipes = []
+    for rec in recipes:
+        req_mixer_ids = []
+        seen_mixer_ids = set()
+        mixer_ok = True
+        for ing in rec["ingredients"]:
+            if ing["requirement_type"] == "ingredient" and ing["ingredient_name"]:
+                req_lower = ing["ingredient_name"].lower()
+                if req_lower in already_stocked:
+                    continue
+                if req_lower in onboard_mixer_names and req_lower in by_lower:
+                    iid = by_lower[req_lower]["id"]
+                    if iid not in seen_mixer_ids:
+                        seen_mixer_ids.add(iid)
+                        req_mixer_ids.append(iid)
+                else:
+                    mixer_ok = False
+                    break
+        if not mixer_ok:
+            continue
+
+        seen_bottle_reqs = set()
+        bottle_slot_keys = []
+        slots_accepted = []
+        bottle_ok = True
+        for ing in rec["ingredients"]:
+            if ing["requirement_type"] == "optional":
+                continue
+            if ing["requirement_type"] == "bottle_type" and ing["bottle_type"]:
+                req_type = ing["bottle_type"]
+                if _use_name_match(ing):
+                    key = ("name", (ing["raw_name"] or "").lower())
+                    if key in seen_bottle_reqs:
+                        continue
+                    seen_bottle_reqs.add(key)
+                    matches = matching_user_bottles(ing, starter_bottles)
+                    keys = [b["key"] for b in matches]
+                    if not keys:
+                        bottle_ok = False
+                        break
+                    bottle_slot_keys.append(keys)
+                else:
+                    key = ("type", req_type)
+                    if key in seen_bottle_reqs:
+                        continue
+                    seen_bottle_reqs.add(key)
+                    matches = matching_user_bottles(ing, starter_bottles)
+                    keys = [b["key"] for b in matches]
+                    if not keys:
+                        bottle_ok = False
+                        break
+                    bottle_slot_keys.append(keys)
+                    slots_accepted.append(FUNGIBLE_TYPES.get(req_type, {req_type}))
+
+        if not bottle_ok:
+            continue
+        if slots_accepted and _assign_distinct_bottles(slots_accepted, starter_bottles):
+            continue
+
+        compact_recipes.append({"b": bottle_slot_keys, "m": req_mixer_ids})
+
+    return {
+        "bottles": ONBOARD_BOTTLES,
+        "mixers": resolved_mixers,
+        "recipes": compact_recipes,
+    }
+
+
 def get_recommendations(user_id, max_makeable=50, max_one_away=25):
     """Top-level: read the user's bar, score every recipe, return two lists.
     Makeable drinks are sorted: thumbs-up first, unrated next, thumbs-down last.
@@ -578,6 +802,7 @@ def get_recommendations(user_id, max_makeable=50, max_one_away=25):
     bottles = get_all_bottles(user_id)
     ingredients = get_all_ingredients(user_id)
     ratings = get_all_ratings(user_id)
+    all_recipes = get_all_recipes()
 
     stocked_ingredients = {
         i["name"].lower() for i in ingredients if i["in_stock"]
@@ -586,7 +811,7 @@ def get_recommendations(user_id, max_makeable=50, max_one_away=25):
     makeable = []
     one_away = []
 
-    for r in get_all_recipes():
+    for r in all_recipes:
         status, missing = match_recipe(r, bottles, stocked_ingredients)
         if status == "makeable":
             makeable.append(r)
@@ -596,6 +821,11 @@ def get_recommendations(user_id, max_makeable=50, max_one_away=25):
     # Pick the spotlight BEFORE one_away gets truncated for display, so the
     # count reflects every blocked drink rather than the first handful.
     spotlight = build_one_away_spotlight(one_away, ingredients, ratings)
+    kitchen_check = (
+        build_kitchen_check(bottles, ingredients, all_recipes)
+        if len(makeable) == 0 and len(bottles) > 0
+        else None
+    )
 
     # Sort makeable by rating bucket: liked (1) -> unrated (0) -> disliked (-1).
     # bucket map keeps liked at top, disliked at bottom.
@@ -619,4 +849,5 @@ def get_recommendations(user_id, max_makeable=50, max_one_away=25):
         "total_one_away": len(one_away),
         "ratings": ratings,
         "spotlight": spotlight,
+        "kitchen_check": kitchen_check,
     }

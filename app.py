@@ -21,12 +21,13 @@ from database import (
     get_recipe, get_all_recipes, set_rating, get_rating, get_all_ratings, get_favorites,
     get_auto_added_ingredients, is_auto_added,
     create_user, get_user_by_username, get_user,
-    log_scan, scans_today,
+    log_scan, scans_today, scans_today_global,
 )
 from matching import (
     get_recommendations, get_recommendations_grouped, get_one_away_grouped,
     matching_user_bottles, missing_ingredient_ids,
     classify_base_spirit, match_recipe, used_user_bottles,
+    ONBOARD_BOTTLES, build_onboarding_data,
 )
 from suggestions import get_suggestions
 
@@ -46,8 +47,9 @@ app.secret_key = os.environ.get("SECRET_KEY", "bomu-dev-key")
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 app.config["SESSION_COOKIE_SECURE"] = os.environ.get("SECURE_COOKIES", "0") == "1"
 
-# Per-user daily photo-scan cap: friends' scans bill Aaron's API key.
+# Per-user and global daily photo-scan caps: friends' scans bill Aaron's API key.
 SCAN_DAILY_LIMIT = int(os.environ.get("SCAN_DAILY_LIMIT", "15"))
+SCAN_GLOBAL_DAILY_LIMIT = int(os.environ.get("SCAN_GLOBAL_DAILY_LIMIT", "60"))
 
 UPLOAD_FOLDER = (
     os.path.join(tempfile.gettempdir(), "bomu_uploads")
@@ -85,7 +87,13 @@ def uid():
 @app.context_processor
 def inject_current_user():
     """Make current_username available to every template (for the nav)."""
-    return {"current_username": session.get("username")}
+    username = session.get("username")
+    if not username and session.get("user_id"):
+        user = get_user(session["user_id"])
+        if user:
+            username = user["username"]
+            session["username"] = username
+    return {"current_username": username}
 
 
 def _safe_next(target):
@@ -99,18 +107,13 @@ def signup():
     if session.get("user_id"):
         return redirect(url_for("home"))
     if request.method == "POST":
-        invite = request.form.get("invite", "").strip()
+        if request.form.get("website", "").strip():
+            return redirect(url_for("login"))
+
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "")
         confirm = request.form.get("confirm", "")
 
-        expected_invite = os.environ.get("INVITE_CODE", "")
-        if not expected_invite:
-            flash("Signups are disabled right now (no invite code configured).")
-            return render_template("signup.html")
-        if invite.lower() != expected_invite.lower():
-            flash("That invite code isn't right. Ask Aaron for the code!")
-            return render_template("signup.html", username=username)
         if not re.fullmatch(r"[A-Za-z0-9_.-]{2,30}", username):
             flash("Username should be 2-30 characters: letters, numbers, . _ -")
             return render_template("signup.html", username=username)
@@ -129,7 +132,7 @@ def signup():
         session["user_id"] = user_id
         session["username"] = username
         session.permanent = True
-        flash(f"Welcome to Bomu, {username}! Add some bottles to get started.")
+        flash(f"Welcome to Bomu, {username}!")
         return redirect(url_for("home"))
     return render_template("signup.html")
 
@@ -761,7 +764,13 @@ def home():
     else:
         recs = get_recommendations(user_id, max_makeable=60, max_one_away=12)
     bottles = get_all_bottles(user_id)
-    stocked_count = sum(1 for i in get_all_ingredients(user_id) if i["in_stock"])
+    all_ingredients = get_all_ingredients(user_id)
+    stocked_count = sum(1 for i in all_ingredients if i["in_stock"])
+    onboard_data = (
+        build_onboarding_data(all_ingredients, get_all_recipes())
+        if len(bottles) == 0
+        else None
+    )
 
     rated = recs["ratings"]
     pool = [r for r in recs["makeable"] if rated.get(r["recipe"]["id"], 0) != -1] or recs["makeable"]
@@ -789,9 +798,55 @@ def home():
         featured=featured,
         spot=spot,
         spot_view=spot_view,
+        kitchen_check=recs.get("kitchen_check"),
+        onboard_data=onboard_data,
         bottle_count=len(bottles),
         stocked_count=stocked_count,
     )
+
+
+@app.route("/quick-setup", methods=["POST"])
+@login_required
+def quick_setup():
+    """Save starter bottles + kitchen mixers from Tonight's empty-bar setup."""
+    user_id = uid()
+    by_key = {b["key"]: b for b in ONBOARD_BOTTLES}
+    existing = {
+        ((b["name"] or "").lower(), b["type"])
+        for b in get_all_bottles(user_id)
+    }
+
+    added_bottles = 0
+    for key in request.form.getlist("bottle"):
+        spec = by_key.get(key)
+        if not spec:
+            continue
+        sig = (spec["name"].lower(), spec["type"])
+        if sig in existing:
+            continue
+        add_bottle(user_id, spec["name"], spec["type"], "")
+        existing.add(sig)
+        added_bottles += 1
+
+    valid_ing_ids = {i["id"] for i in get_all_ingredients(user_id)}
+    ing_ids = []
+    for raw_id in request.form.getlist("ingredient"):
+        try:
+            iid = int(raw_id)
+        except ValueError:
+            continue
+        if iid in valid_ing_ids and iid not in ing_ids:
+            ing_ids.append(iid)
+    if ing_ids:
+        add_ingredients_to_stock(user_id, ing_ids)
+
+    if added_bottles and ing_ids:
+        flash("Your bar is set up!")
+    elif added_bottles:
+        flash(f"Added {added_bottles} bottle{'s' if added_bottles != 1 else ''} to your bar!")
+    elif ing_ids:
+        flash("Saved your kitchen mixers!")
+    return redirect(url_for("home"))
 
 
 @app.route("/add", methods=["GET", "POST"])
@@ -803,6 +858,8 @@ def add():
         brand = request.form.get("brand", "")
         add_bottle(uid(), name, bottle_type, brand)
         flash(f"Added {name} to your bar!")
+        if not any(i["in_stock"] for i in get_all_ingredients(uid())):
+            return redirect(url_for("home"))
         return redirect(url_for("bar"))
     return render_template("add_bottle.html")
 
@@ -817,8 +874,11 @@ def _save_upload(photo):
 
 
 def _scan_allowed():
-    """Enforce the per-user daily scan cap. Returns None if allowed, or a
-    friendly message if the user is out of scans for today."""
+    """Enforce per-user and global daily scan caps. Returns None if allowed,
+    or a friendly message if either limit is reached."""
+    if scans_today_global() >= SCAN_GLOBAL_DAILY_LIMIT:
+        return ("Our bottle scanner has hit today's shared limit -- "
+                "add bottles manually for now, or try scanning again tomorrow.")
     used = scans_today(uid())
     if used >= SCAN_DAILY_LIMIT:
         return (f"You've used all {SCAN_DAILY_LIMIT} scans for today -- "
@@ -921,6 +981,8 @@ def confirm_bulk():
             added += 1
         i += 1
     flash(f"Added {added} bottle{'s' if added != 1 else ''} to your bar!")
+    if added and not any(i["in_stock"] for i in get_all_ingredients(uid())):
+        return redirect(url_for("home"))
     return redirect(url_for("bar"))
 
 
