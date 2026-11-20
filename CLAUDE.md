@@ -227,14 +227,14 @@ git push origin main
 `users`, `bottles`, `ingredients`, `user_stock`, `recipes`, `recipe_ingredients`,
 `recipe_enhancements`, `ratings`, `scan_log`.
 
-**`recipe_enhancements`** (added 2026-07-29, pruned 2026-11-20 to 57 rows across 55 recipes): optional "make it your
+**`recipe_enhancements`** (added 2026-07-29, pruned 2026-11-20 to 24 genuine riffs across 23 recipes after moving standard garnishes into `recipe_ingredients` as `optional`): optional "make it your
 own" suggestions shown on the recipe page. Columns `recipe_id`, `name`,
 `ingredient_name` (checklist key, may be NULL), `measure`, `note`, `source`,
 `sort_order`. Copy lives in `enhance_text.py`. **The matcher never reads it**, so
 it cannot change makeability. `migrate_enhancements.py` refuses rows with no
 source, rows naming a nonexistent checklist ingredient, and rows duplicating
 something the recipe already requires. It deletes rows whose name is no longer
-in `enhance_text.py` (renames), and `--postgres` writes to Neon. `migrate_hygiene_2026_11.py` restored `UNIQUE (recipe_id, name)`, `NOT NULL` defaults, and `idx_recipe_enhancements_recipe` on Neon on 2026-11-19 (matching `database.init_db()`), while still using update-then-insert for portability. The page shows `source` only as a tag, "By the book" or "Bartender's habit"; the copy rules are rule 5 in `enhance_text.py`.
+in `enhance_text.py` (renames), and `--postgres` writes to Neon. `migrate_hygiene_2026_11.py` restored `UNIQUE (recipe_id, name)`, `NOT NULL` defaults, and `idx_recipe_enhancements_recipe` on Neon on 2026-11-19 (matching `database.init_db()`), while still using update-then-insert for portability. The page shows `source` only as a tag, "By the book" or "Bartender's habit"; the copy rules are rule 4 in `enhance_text.py`.
 
 Users as of 2026-07-24: 1 aaron, 2 Avishka, 3 Rajapaksha, 4 lenasheh (Shehan,
 Aaron's brother), 5 Maho.
@@ -580,16 +580,6 @@ without it keep the triangle deliberately, since it's the only affordance saying
     Remaining `2` (`mamie_taylor.webp` vs `scotch_highball.webp` and
     `woo_woo.webp` vs `cape_codder.webp`) hit the image-generator 5-hour quota
     (`429 RESOURCE_EXHAUSTED`, resets `2026-11-20T20:00:45Z`).
-21. **Personality & bartender-voice pass on recipe copy (`about_text.py`, `enhance_text.py`).**
-    The 2026-11-20 de-AI pass removed all 142 em-dashes, menu-fluff adjectives,
-    and dangling participle openings, but overcorrected into dry "cocktail
-    encyclopedia" prose in three spots: (a) 21 `about` entries read like a
-    bibliography citing 1862/1887/1930 bar guides and publication years where
-    the book itself isn't the story; (b) 13+ variant drinks lean on the same
-    mechanical `"X is simply a Y made with Z instead of W"` definition without
-    saying why or when you'd actually want one; and (c) several simple/no-history
-    drinks and `enhance_text.py` notes sound flat/instructional rather than like
-    a bartender talking to a friend (keep zero em-dashes and zero AI menu fluff).
 
 ---
 
@@ -1422,6 +1412,35 @@ Audited the 20-item backlog against the codebase and `bomu.db`, pruned completed
 2. Regenerate the final 2 `#20` WebPs (`mamie_taylor.webp` & `woo_woo.webp`, quota resets `2026-11-20T20:00:45Z`).
 3. Security chore (`#17`): Aaron to delete `step_88.json` log and rotate Neon password.
 4. Remaining backlog (`#5` rum and sherry sub-types).
+
+### 2026-11-20 (third session) — #21 Bartender-voice pass, standard garnishes moved to optional recipe rows & UI copy critique (Antigravity)
+
+Reviewed the live copy critique with Aaron and aligned on four decisions:
+1. For drinks without a major origin story, focus on mood, occasion, and *why* it works in the glass.
+2. Drop dry bibliography/publication-year openings (`1862 Jerry Thomas`, `1930 Savoy`, `1922 MacElhone`, `1914 Straub`, `1939 Baker`, `1974 Mr. Boston`) unless there is a great quote or story attached.
+3. Give the copy a bit more point of view and dry bartender wit while keeping `0` em-dashes and `0` menu fluff.
+4. Move standard classic garnishes out of "Make it your own" (`enhance_text.py`) into the recipes themselves as `optional` rows in `recipe_ingredients` (which render at soft opacity `0.84` with the `optional` badge and never affect makeability) plus explicitly optional final-step phrasing (`"...if you have one"` / `"...if you like"`). Reserve `enhance_text.py` strictly for real bartender riffs.
+
+**Changes made:**
+- **Bartender-voice pass (`about_text.py`):** Rewrote `51` `about` entries to replace bibliography citations and mechanical `"X is simply a Y made with Z"` definitions with warm, opinionated bartender prose focused on flavour, mood, and occasion (`0` em/en-dashes).
+- **Standard garnishes moved to `optional` recipe rows (`migrate_copy_2026_11.py`):** Added `35` `optional` garnish rows across `30` classic recipes (e.g., `Negroni`, `Old Fashioned`, `Daiquiri`, `Hemingway Daiquiri`, `Moscow Mule`, `Mint Julep`, `Penicillin`, `Bramble`, `Clover Club`, `Corpse Reviver #2`, `The Last Word`, `Mai Tai`, `Jungle Bird`, `Zombie`, `Gold Rush`, `Brandy Sour`) and updated their final instruction step so every row is covered and clearly phrased as optional.
+- **Pruned & sharpened `enhance_text.py`:** Pruned `recipe_enhancements` from `57` rows down to `24` genuine bartender riffs across `23` recipes (orange bitters riffs, Pink G&T, flamed orange twist on Cosmopolitan, orange twist on Black Russian/Godfather/French Connection, grated dark chocolate on Grasshopper, grated nutmeg on Irish Coffee/Planter's Punch/Toasted Almond, crushed Oreo rim on Oreo Mudslide, celery salt & cracked pepper on Bloody Mary, orange flower water drop on Ramos Gin Fizz).
+- **Stale UI count fix (`templates/tonight.html`):** Updated Quick Kitchen Check link from `"All 51 mixers →"` to `"All 49 mixers →"` to match the 49-item checklist after `#8`.
+- **UI writing & micro-copy polish (`app.py`, `templates/tonight.html`, `templates/one_away.html`, `templates/saved.html`):**
+  - Added a 1-line clamped `.featured-teaser` on Tonight's Featured Pour hero card showing the opening sentence of `featured.recipe.about`.
+  - Dropped the redundant `"Ready ·"` prefix on every drink card inside Tonight's Ready section (keeping `"Ready ·"` on mixed-status lists in Explore and Saved).
+  - Tightened `SPOTLIGHT_LINES[0]` in `app.py` to `"One {unit} stands between you and {drink}."`.
+  - Updated `/one-away` type label from `"Mixer / Ingredient"` to `"Kitchen / Mixer"`, and warmed up `/saved`'s empty state (`"Nothing on your tab yet"` / `"Tap 'Like' on any cocktail you mix to keep your go-to pours ready here."`).
+
+**Verified:**
+- Local SQLite (`FORCE_SQLITE=1`): `migrate_copy_2026_11.py --commit` (`51` about edits, `35` optional rows, `30` step updates; 0 matcher delta), `migrate_enhancements.py --commit` (`24` rows across `23` recipes), `0` em/en-dashes across all `recipes` and `recipe_enhancements`, `check_specs.py` (`171` checked / `0` flags), `sweep_namematch.py` (`0 BROKEN, 6 REVIEW`), `verify_routes.py` (all routes + `171/171` recipe pages HTTP 200 on both `bomu.db` and `--db bomu_live.db`).
+- Live Neon Postgres (`--postgres --commit`): `migrate_copy_2026_11.py --postgres --commit` and `migrate_enhancements.py --postgres --commit` ran cleanly; matcher counts verified unchanged (`aaron 35/69`, `Avishka 0/0`, `Rajapaksha 0/0`, `lenasheh 0/13`, `Maho 1/13`).
+
+**Open / next:**
+1. Regenerate the final 2 `#20` WebPs (`mamie_taylor.webp` & `woo_woo.webp`, quota resets `2026-11-20T20:00:45Z`).
+2. Security chore (`#17`): Aaron to delete `step_88.json` log and rotate Neon password.
+3. Remaining backlog (`#5` rum and sherry sub-types).
+
 
 
 

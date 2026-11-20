@@ -510,7 +510,7 @@ app.jinja_env.filters["glass_label"] = format_glass_label
 # on the next line, so its casing ("Fresh mint", "Angostura bitters") never has
 # to survive the middle of a sentence.
 SPOTLIGHT_LINES = [
-    "You're one {unit} from even more good times with {drink}.",
+    "One {unit} stands between you and {drink}.",
     "{Drink} is closer than you think.",
     "So close to {drink} you can almost taste it.",
     "Your {name} is waiting on one thing.",

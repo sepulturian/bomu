@@ -128,6 +128,17 @@
         text-overflow: ellipsis;
     }
 
+    .featured-teaser {
+        font-size: 0.79rem;
+        line-height: 1.35;
+        color: #d3c6b1;
+        margin-top: 0.22rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
     /* One Ingredient Away spotlight */
     .spotlight {
         background: var(--bg-elevated);
@@ -733,6 +744,9 @@
                         {% elif featured.recipe.glass %}
                             <div class="featured-bottles" style="color: var(--ink-dim);">{{ featured.recipe.glass|glass_label }}</div>
                         {% endif %}
+                        {% if featured.recipe.about %}
+                            <div class="featured-teaser">{{ featured.recipe.about.split('. ')[0] ~ '.' }}</div>
+                        {% endif %}
                     </div>
                     <span class="btn btn-sm" style="flex-shrink: 0;">Mix it</span>
                 </div>
@@ -823,7 +837,7 @@
                         {% endif %}
                     </div>
                     {% if r.your_bottles %}
-                        <div class="drink-sub">Ready &middot; {{ r.your_bottles | map('short_name') | join(' · ') }}</div>
+                        <div class="drink-sub">{{ r.your_bottles | map('short_name') | join(' · ') }}</div>
                     {% endif %}
                     <div class="drink-glass-line">
                         {{ glass_icon(r.recipe.glass) }}
@@ -910,7 +924,7 @@
                 <p class="kc-preview is-muted" id="kc-preview"></p>
                 <div class="kc-actions">
                     <button type="submit" class="btn" id="kc-submit">Save mixers <span class="arrow" aria-hidden="true">&rarr;</span></button>
-                    <a href="/bar?tab=mixers" class="section-link">All 51 mixers &rarr;</a>
+                    <a href="/bar?tab=mixers" class="section-link">All 49 mixers &rarr;</a>
                 </div>
             </form>
             <script type="application/json" id="kc-json">{{ kitchen_check.recipes | tojson }}</script>
