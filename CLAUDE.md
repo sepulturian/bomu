@@ -227,7 +227,7 @@ git push origin main
 `users`, `bottles`, `ingredients`, `user_stock`, `recipes`, `recipe_ingredients`,
 `recipe_enhancements`, `ratings`, `scan_log`.
 
-**`recipe_enhancements`** (added 2026-07-29, 106 rows): optional "make it your
+**`recipe_enhancements`** (added 2026-07-29, pruned 2026-11-20 to 57 rows across 55 recipes): optional "make it your
 own" suggestions shown on the recipe page. Columns `recipe_id`, `name`,
 `ingredient_name` (checklist key, may be NULL), `measure`, `note`, `source`,
 `sort_order`. Copy lives in `enhance_text.py`. **The matcher never reads it**, so
@@ -1390,6 +1390,22 @@ Audited the 20-item backlog against the codebase and `bomu.db`, pruned completed
   - `Avishka` & `Rajapaksha`: `0/0`
   - `lenasheh` (Shehan): `0/13` (`3/49` mixers ticked after removing `Water`; spotlight `Amaretto`, 2 drinks)
   - `Maho`: `1/13` (`12/49` mixers ticked; spotlight `Lemon juice (fresh)`, 2 drinks)
+
+**Open / next:**
+1. Optionally regenerate `mamie_taylor.webp` & `woo_woo.webp` (`#20`) after `2026-11-20T20:00:45Z`.
+2. Security chore (`#17`): Aaron to delete `step_88.json` log and rotate Neon password.
+3. Remaining backlog (`#5` rum and sherry sub-types).
+
+### 2026-11-20 (second session) — Copy overhaul: About, Worth knowing tips & Make it your own (Antigravity)
+
+**Changes made:**
+- **About & Worth knowing (`about_text.py`):** Rewrote all `171` `recipes.about` entries in a warm, flowing bartender voice (removing choppy fragments and clinical/generic phrasing while keeping facts grounded) and lightly polished clunky `recipes.tip` entries (keeping `125` tips; `46` recipes remain tipless).
+- **Make it your own (`enhance_text.py`):** Audited and pruned `recipe_enhancements` from `106` rows down to `57` genuinely additive riffs across `55` recipes (`116` recipes omit the section): removed all skipped duplicate-ingredient entries, non-riffs/contradictions, and entries repeating existing steps/tips/ingredients; contrasted paired riffs (e.g., Negroni's `Orange bitters` vs `Orange twist or slice`); fixed Zombie copy (`four rums` -> `three rums`) and checklist links (including `5` `Maraschino cherries` links).
+- **Idempotent copy migration (`migrate_copy_2026_11.py`):** Created dual-mode script (dry-run default, `--commit`, `--db`, `--postgres`) updating only `recipes.about` and `recipes.tip` and asserting zero matcher delta across all users before committing.
+
+**Verified:**
+- Local SQLite (`FORCE_SQLITE=1`): `migrate_copy_2026_11.py --commit` (`171` updates, re-run `0` planned), `migrate_enhancements.py --commit` (`57` rows across `55` recipes, `0` skipped warnings, re-run `0 new / 57 present / 0 stale`), `check_specs.py` (`171` checked / `0` flags), `sweep_namematch.py` (`0 BROKEN, 6 REVIEW`), `verify_routes.py` (all routes + `171/171` recipe pages pass).
+- Authoritative live Neon (`--postgres`): `migrate_copy_2026_11.py --postgres --commit` (`171` updates, re-run `0` planned) and `migrate_enhancements.py --postgres --commit` (`2 new, 55 updated, 51 stale deleted -> 57 rows across 55 recipes`, re-run `0 new / 57 present / 0 stale`). Live Neon read confirmed `about=171/171`, `tip=125`, `recipe_enhancements=57` across `55` recipes, and unchanged matcher counts (`aaron 35/69`, `Avishka 0/0`, `Rajapaksha 0/0`, `lenasheh 0/13`, `Maho 1/13`).
 
 **Open / next:**
 1. Optionally regenerate `mamie_taylor.webp` & `woo_woo.webp` (`#20`) after `2026-11-20T20:00:45Z`.
