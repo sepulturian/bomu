@@ -193,8 +193,32 @@ def main():
     with app_module.app.test_client() as c:
         for path in ("/login", "/signup", "/sw.js"):
             visit(c, "GET", path)
-        # Anything behind auth should redirect, not explode.
-        visit(c, "GET", "/recommend", label="GET /recommend (logged out)")
+        # Public catalog browsing: /explore and /recipe/<id> render 200 without
+        # personal bar data, while private routes redirect to /login.
+        r_pub_exp = visit(c, "GET", "/explore", label="GET /explore (logged out)")
+        if r_pub_exp:
+            exp_body = r_pub_exp.get_data(as_text=True)
+            if "Match my bar" not in exp_body or "Ready (" in exp_body or "cocktails" not in exp_body:
+                failures.append(("public /explore", "missing public callout or leaked Ready chip"))
+                print("  FAIL  public /explore assertions failed")
+        if recipe_ids:
+            r_pub_rec = visit(c, "GET", f"/recipe/{recipe_ids[0]}", label=f"GET /recipe/{recipe_ids[0]} (logged out)")
+            if r_pub_rec:
+                rec_body = r_pub_rec.get_data(as_text=True)
+                if ('property="og:title"' not in rec_body
+                        or 'property="og:image"' not in rec_body
+                        or "Match my bar" not in rec_body
+                        or "Missing from bar" in rec_body
+                        or 'action="/rate/' in rec_body):
+                    failures.append(("public /recipe", "missing OG tags/CTA or leaked personal bar state"))
+                    print("  FAIL  public /recipe assertions failed")
+        for priv in ("/recommend", "/one-away", "/bar"):
+            r_priv = c.get(priv, follow_redirects=False)
+            if not (r_priv.status_code == 302 and "/login" in r_priv.headers.get("Location", "")):
+                failures.append((f"logged-out {priv}", f"expected 302 -> /login, got {r_priv.status_code}"))
+                print(f"  FAIL  GET {priv} (logged out)")
+            else:
+                print(f"  ok    GET {priv} (logged out) -> /login")
 
         # Honeypot blocks spam signup without creating a user.
         visit(c, "POST", "/signup", label="POST /signup (honeypot ignored)",
@@ -292,6 +316,44 @@ def main():
             failures.append(("mixer casing", "found Peychaud'S Bitters in /bar?tab=mixers"))
             print("  FAIL  found Peychaud'S Bitters in /bar?tab=mixers")
 
+        resp_oa = visit(c, "GET", "/one-away", label="GET /one-away (one-tap actions)")
+        if resp_oa:
+            oa_html = resp_oa.get_data(as_text=True)
+            if "I have this" not in oa_html and "Add to my bar" not in oa_html:
+                failures.append(("one-away actions", "missing one-tap action on /one-away"))
+                print("  FAIL  missing one-tap action on /one-away")
+
+        import matching
+        oa_groups = matching.get_one_away_grouped(uid)
+        if oa_groups:
+            miss_rid = oa_groups[0]["recipes"][0]["recipe"]["id"]
+            r_miss = visit(c, "GET", f"/recipe/{miss_rid}", label=f"GET /recipe/{miss_rid} (missing action)")
+            if r_miss:
+                miss_html = r_miss.get_data(as_text=True)
+                if "I have this" not in miss_html and "Add to my bar" not in miss_html:
+                    failures.append(("recipe missing action", f"missing one-tap action on /recipe/{miss_rid}"))
+                    print(f"  FAIL  missing one-tap action on /recipe/{miss_rid}")
+
+        # Warm catalog cache once, then assert GET / opens at most 1 raw DB connection.
+        c.get("/")
+        orig_open = database._open_raw_db
+        open_calls = []
+
+        def _counting_open():
+            open_calls.append(1)
+            return orig_open()
+
+        database._open_raw_db = _counting_open
+        try:
+            r_warm = visit(c, "GET", "/", label="GET / (warm cache, <=1 DB connection)")
+            if r_warm and len(open_calls) > 1:
+                failures.append(("request DB connection reuse", f"opened {len(open_calls)} connections on GET /"))
+                print(f"  FAIL  GET / opened {len(open_calls)} connections (expected <= 1)")
+            else:
+                print(f"  ok    GET / warm DB connections opened = {len(open_calls)}")
+        finally:
+            database._open_raw_db = orig_open
+
         print(f"\n  Rendering all {len(recipe_ids)} recipe pages:")
         bad = 0
         for rid in recipe_ids:
@@ -332,6 +394,21 @@ def main():
         visit(c, "POST", "/checklist", data={"ingredient": []}, follow_redirects=True)
         visit(c, "POST", "/stock-add", data={"ingredient": []}, follow_redirects=True)
 
+        r_sa_oa = c.post("/stock-add", data={"ingredient": [], "next": "/one-away"}, follow_redirects=False)
+        if not (r_sa_oa.status_code == 302 and r_sa_oa.headers.get("Location", "").endswith("/one-away")):
+            failures.append(("stock-add next=/one-away", f"got {r_sa_oa.status_code} -> {r_sa_oa.headers.get('Location')}"))
+            print("  FAIL  POST /stock-add next=/one-away")
+        else:
+            print("  ok    POST /stock-add (next=/one-away) -> /one-away")
+
+        r_sa_evil = c.post("/stock-add", data={"ingredient": [], "next": "https://evil.com"}, follow_redirects=False)
+        loc_evil = r_sa_evil.headers.get("Location", "")
+        if not (r_sa_evil.status_code == 302 and "evil.com" not in loc_evil and loc_evil.endswith("/")):
+            failures.append(("stock-add open redirect", f"got {r_sa_evil.status_code} -> {loc_evil}"))
+            print("  FAIL  POST /stock-add open redirect guard")
+        else:
+            print("  ok    POST /stock-add blocks external next URL")
+
         # A bottle type that is not in BOTTLE_TYPE_CHOICES must be coerced to
         # 'other' rather than accepted. This is the confirm_bulk failure that
         # silently tagged unknown bottles as Gin.
@@ -360,6 +437,31 @@ def main():
             print("\n  FAIL  recipe_image_url(sqlite3.Row) returned None")
         else:
             print("\n  ok    recipe_image_url(sqlite3.Row) works")
+
+        # Verify daily-rotating Featured Pour picks multiple drinks across days and avoids consecutive repeats.
+        import matching as _m
+        makeable_list = _m.get_recommendations(uid, max_makeable=200)["makeable"]
+        ratings_map = _m.get_recommendations(uid, max_makeable=200)["ratings"]
+        picks = [
+            app_module.pick_featured_pour(makeable_list, ratings_map, uid, day_seed=739000 + d)["recipe"]["id"]
+            for d in range(14)
+        ]
+        consecutive = any(picks[i] == picks[i + 1] for i in range(len(picks) - 1))
+        if len(set(picks)) < 2 or consecutive:
+            failures.append(("pick_featured_pour rotation", f"picks={picks}"))
+            print("  FAIL  pick_featured_pour did not rotate cleanly")
+        else:
+            print(f"  ok    pick_featured_pour rotated ({len(set(picks))} distinct over 14 days)")
+
+    # Verify catalog cache isolation against caller dict mutation.
+    cached_1 = database.get_all_recipes()
+    cached_1[0]["your_bottles"] = ["LEAK_TEST"]
+    cached_2 = database.get_all_recipes()
+    if "your_bottles" in cached_2[0]:
+        failures.append(("catalog cache mutation isolation", "your_bottles leaked across calls"))
+        print("  FAIL  catalog cache leaked mutation")
+    else:
+        print("  ok    catalog cache isolates outer dict mutations")
     junk = conn.execute(
         "SELECT type FROM bottles WHERE name = 'Verify Junk Bottle'").fetchone()
     spam = conn.execute(

@@ -1,9 +1,11 @@
 import os
 import re
 import base64
+import hashlib
 import json
 import random
 import tempfile
+import time
 import uuid
 from datetime import date
 from functools import wraps
@@ -15,7 +17,7 @@ from dotenv import load_dotenv
 import anthropic
 from PIL import Image
 from database import (
-    init_db, get_all_bottles, get_bottle, add_bottle, update_bottle,
+    init_db, close_request_db, get_all_bottles, get_bottle, add_bottle, update_bottle,
     delete_bottle, get_all_ingredients, set_all_ingredients_stock,
     add_ingredients_to_stock,
     get_recipe, get_all_recipes, set_rating, get_rating, get_all_ratings, get_favorites,
@@ -27,17 +29,22 @@ from matching import (
     get_recommendations, get_recommendations_grouped, get_one_away_grouped,
     matching_user_bottles, missing_ingredient_ids,
     classify_base_spirit, match_recipe, used_user_bottles,
-    ONBOARD_BOTTLES, build_onboarding_data,
+    ONBOARD_BOTTLES, build_onboarding_data, is_name_matched,
 )
 from suggestions import get_suggestions
 
 load_dotenv()
 
 app = Flask(__name__)
-# Secret key signs the session cookie (flash messages, and later: logins).
-# On a public host this MUST be a real secret from an env var; the fallback
-# is only for local dev on the laptop.
-app.secret_key = os.environ.get("SECRET_KEY", "bomu-dev-key")
+# Secret key signs the session cookie (flash messages and logins).
+# On Vercel this MUST be set explicitly; the fallback is only for local dev.
+_secret = os.environ.get("SECRET_KEY")
+if os.environ.get("VERCEL") and not _secret:
+    raise RuntimeError("SECRET_KEY environment variable must be set on Vercel")
+app.secret_key = _secret or "bomu-dev-key"
+
+# Cap photo uploads at 10 MB so oversized uploads fail fast cleanly.
+app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024
 
 # Cookie hardening. SameSite=Lax means the login cookie isn't sent on
 # cross-site form posts (a decent chunk of CSRF protection for free).
@@ -60,6 +67,44 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 init_db()
+
+
+@app.teardown_appcontext
+def _teardown_db(exc):
+    close_request_db(exc)
+
+
+@app.errorhandler(413)
+def _file_too_large(_err):
+    flash("That photo is too large (max 10 MB). Try a smaller photo.")
+    target = request.path if request.path in ("/scan", "/scan-bulk") else url_for("bar")
+    return redirect(target)
+
+
+_auth_attempts = {}
+
+
+def _client_ip():
+    fwd = request.headers.get("X-Forwarded-For", "")
+    if fwd:
+        return fwd.split(",")[0].strip()
+    return request.remote_addr or "unknown"
+
+
+def _check_rate_limit(bucket, limit, window_seconds=600):
+    """Simple per-worker sliding-window IP rate limit for login/signup POSTs."""
+    if app.config.get("TESTING"):
+        return True
+    now = time.monotonic()
+    key = (bucket, _client_ip())
+    recent = [t for t in _auth_attempts.get(key, ()) if now - t < window_seconds]
+    if len(recent) >= limit:
+        _auth_attempts[key] = recent
+        return False
+    recent.append(now)
+    _auth_attempts[key] = recent
+    return True
+
 
 client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY") or "missing-key")
 
@@ -107,6 +152,9 @@ def signup():
     if session.get("user_id"):
         return redirect(url_for("home"))
     if request.method == "POST":
+        if not _check_rate_limit("signup", limit=8, window_seconds=600):
+            flash("Too many signup attempts. Try again in a few minutes.")
+            return render_template("signup.html", username=request.form.get("username", "").strip()), 429
         if request.form.get("website", "").strip():
             return redirect(url_for("login"))
 
@@ -143,6 +191,9 @@ def login():
         return redirect(url_for("home"))
     if request.method == "POST":
         username = request.form.get("username", "").strip()
+        if not _check_rate_limit("login", limit=15, window_seconds=600):
+            flash("Too many login attempts. Try again in a few minutes.")
+            return render_template("login.html", username=username), 429
         password = request.form.get("password", "")
         user = get_user_by_username(username)
         if user is None or not check_password_hash(user["password_hash"], password):
@@ -376,17 +427,42 @@ def recipe_slug(name):
     return re.sub(r"[^a-z0-9]+", "_", s).strip("_")
 
 
+_RECIPE_IMAGE_MAP = None
+
+
+def _recipe_image_map():
+    """Cache local recipe image paths once per process so template rendering
+    doesn't stat the filesystem four times per cocktail."""
+    global _RECIPE_IMAGE_MAP
+    if _RECIPE_IMAGE_MAP is not None:
+        return _RECIPE_IMAGE_MAP
+    recipes_dir = os.path.join(app.static_folder, "recipes")
+    mapping = {}
+    if os.path.isdir(recipes_dir):
+        ext_rank = {".webp": 0, ".jpg": 1, ".jpeg": 2, ".png": 3}
+        best = {}
+        for fname in os.listdir(recipes_dir):
+            stem, ext = os.path.splitext(fname)
+            ext_lower = ext.lower()
+            if ext_lower not in ext_rank:
+                continue
+            rank = ext_rank[ext_lower]
+            if stem not in best or rank < best[stem][0]:
+                best[stem] = (rank, f"recipes/{fname}")
+        mapping = {stem: rel for stem, (_rank, rel) in best.items()}
+    _RECIPE_IMAGE_MAP = mapping
+    return mapping
+
+
 def recipe_image_url(recipe):
     """Prefer curated studio recipe assets in static/recipes/ when present,
     falling back to recipe.image_url, then None."""
     keys = recipe.keys() if recipe and hasattr(recipe, "keys") else ()
     name = recipe["name"] if "name" in keys else ""
     slug = recipe_slug(name)
-    recipes_dir = os.path.join(app.static_folder, "recipes")
-    if slug and os.path.isdir(recipes_dir):
-        for ext in (".webp", ".jpg", ".jpeg", ".png"):
-            if os.path.isfile(os.path.join(recipes_dir, f"{slug}{ext}")):
-                return url_for("static", filename=f"recipes/{slug}{ext}")
+    rel = _recipe_image_map().get(slug) if slug else None
+    if rel:
+        return url_for("static", filename=rel)
     img_url = recipe["image_url"] if "image_url" in keys else None
     return img_url or None
 
@@ -605,28 +681,7 @@ def prepare_image(image_path, max_dim=1568, max_bytes=4_500_000):
     return base64.b64encode(data).decode("utf-8"), "image/jpeg"
 
 
-def scan_bottle_image(image_path):
-    """Send a bottle image to Claude vision and get back bottle details."""
-    image_data, media_type = prepare_image(image_path)
-
-    message = client.messages.create(
-        model="claude-sonnet-4-6",
-        max_tokens=1000,
-        messages=[{
-            "role": "user",
-            "content": [
-                {
-                    "type": "image",
-                    "source": {"type": "base64", "media_type": media_type, "data": image_data}
-                },
-                {
-                    "type": "text",
-                    "text": """Look at this image of a bottle. Identify the bottle and return ONLY a JSON object with these fields:
-- "name": the full product name (e.g. "Hendrick's Gin")
-- "type": one of: gin, vodka, rum, tequila, mezcal, whiskey, bourbon, scotch, rye, irish, brandy, cognac, vermouth_sweet, vermouth_dry, vermouth, amaro, liqueur, other
-- "brand": the brand name (e.g. "Hendrick's")
-
-IMPORTANT - only use a base spirit type (gin, vodka, rum, tequila, mezcal,
+SCANNER_CLASSIFICATION_RULES = """IMPORTANT - only use a base spirit type (gin, vodka, rum, tequila, mezcal,
 whiskey, bourbon, scotch, brandy, cognac) for a full-strength bottle of that
 spirit, typically 30% alcohol or higher.
 
@@ -652,9 +707,33 @@ VERMOUTH - sweet and dry are different products, not a spectrum:
 - "vermouth_sweet" for rosso, rossa, rojo, rouge, red or sweet, and for
   Carpano Antica and Punt e Mes
 - "vermouth_dry" for dry or extra dry
-- "vermouth" only if you genuinely cannot tell from the label
+- "vermouth" only if you genuinely cannot tell from the label"""
 
-If you cannot identify the bottle, return: {"name": "", "type": "", "brand": "", "error": "Could not identify this bottle"}
+
+def scan_bottle_image(image_path):
+    """Send a bottle image to Claude vision and get back bottle details."""
+    image_data, media_type = prepare_image(image_path)
+
+    message = client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=1000,
+        messages=[{
+            "role": "user",
+            "content": [
+                {
+                    "type": "image",
+                    "source": {"type": "base64", "media_type": media_type, "data": image_data}
+                },
+                {
+                    "type": "text",
+                    "text": f"""Look at this image of a bottle. Identify the bottle and return ONLY a JSON object with these fields:
+- "name": the full product name (e.g. "Hendrick's Gin")
+- "type": one of: gin, vodka, rum, tequila, mezcal, whiskey, bourbon, scotch, rye, irish, brandy, cognac, vermouth_sweet, vermouth_dry, vermouth, amaro, liqueur, other
+- "brand": the brand name (e.g. "Hendrick's")
+
+{SCANNER_CLASSIFICATION_RULES}
+
+If you cannot identify the bottle, return: {{"name": "", "type": "", "brand": "", "error": "Could not identify this bottle"}}
 
 Return ONLY the JSON, no other text."""
                 }
@@ -691,41 +770,15 @@ def scan_shelf_image(image_path):
                 },
                 {
                     "type": "text",
-                    "text": """Look at this image showing multiple bottles. Identify as many bottles as you can and return ONLY a JSON array of objects, each with:
+                    "text": f"""Look at this image showing multiple bottles. Identify as many bottles as you can and return ONLY a JSON array of objects, each with:
 - "name": the full product name
 - "type": one of: gin, vodka, rum, tequila, mezcal, whiskey, bourbon, scotch, rye, irish, brandy, cognac, vermouth_sweet, vermouth_dry, vermouth, amaro, liqueur, other
 - "brand": the brand name
 - "confidence": "high" if you can clearly read the label, "low" if you're guessing
 
-IMPORTANT - only use a base spirit type (gin, vodka, rum, tequila, mezcal,
-whiskey, bourbon, scotch, brandy, cognac) for a full-strength bottle of that
-spirit, typically 30% alcohol or higher.
+{SCANNER_CLASSIFICATION_RULES}
 
-Use "other" for anything that merely contains or is flavoured with a spirit:
-- Ready-to-drink (RTD) products, premixed cans, hard seltzers, alcopops and
-  coolers (e.g. "Vodka Cruiser", "Smirnoff Ice", "Jack Daniel's & Cola")
-- Beer, cider, wine, prosecco, champagne, sake, mead
-- Cream liqueurs and low-alcohol flavoured products
-
-A pineapple vodka cooler is NOT vodka. Tagging it as vodka makes the app tell
-someone they can make a Martini out of an alcopop.
-
-WHISKEY SUB-TYPES - be specific when the label is clear:
-- "rye" if the label says rye
-- "irish" if the label says Irish, or it is a known Irish brand (Jameson,
-  Redbreast, Bushmills, Tullamore, Powers, Green Spot)
-- "bourbon" if the label says bourbon
-- "scotch" if it is Scotch whisky
-- "whiskey" for anything else, including Japanese, Canadian and blends you
-  cannot place. Do not guess: "whiskey" is the safe answer.
-
-VERMOUTH - sweet and dry are different products, not a spectrum:
-- "vermouth_sweet" for rosso, rossa, rojo, rouge, red or sweet, and for
-  Carpano Antica and Punt e Mes
-- "vermouth_dry" for dry or extra dry
-- "vermouth" only if you genuinely cannot tell from the label
-
-If you cannot identify any bottles, return: [{"name": "", "type": "", "brand": "", "confidence": "low", "error": "Could not identify bottles"}]
+If you cannot identify any bottles, return: [{{"name": "", "type": "", "brand": "", "confidence": "low", "error": "Could not identify bottles"}}]
 
 Return ONLY the JSON array, no other text."""
                 }
@@ -755,6 +808,38 @@ def service_worker():
     return send_from_directory(app.static_folder, "sw.js", mimetype="application/javascript")
 
 
+def pick_featured_pour(makeable, ratings, user_id, day_seed=None):
+    """Pick a daily-rotating Featured Pour from makeable drinks, skipping
+    disliked drinks when alternatives exist and avoiding consecutive-day repeats."""
+    pool = [r for r in makeable if ratings.get(r["recipe"]["id"], 0) != -1] or list(makeable)
+    if not pool:
+        return None
+    img_pool = [r for r in pool if recipe_image_url(r["recipe"])] or pool
+    n = len(img_pool)
+    if n == 1:
+        return img_pool[0]
+    if day_seed is None:
+        day_seed = date.today().toordinal()
+    if n == 2:
+        pair = sorted(img_pool, key=lambda r: r["recipe"]["id"])
+        return pair[day_seed % 2]
+
+    cycle = day_seed // n
+    pos = day_seed % n
+
+    def raw_order(c):
+        return sorted(
+            img_pool,
+            key=lambda r: hashlib.md5(f"{c}:{user_id}:{r['recipe']['id']}".encode()).hexdigest(),
+        )
+
+    order = raw_order(cycle)
+    prev_last = raw_order(cycle - 1)[-1]
+    if order[0]["recipe"]["id"] == prev_last["recipe"]["id"]:
+        order[0], order[1] = order[1], order[0]
+    return order[pos]
+
+
 @app.route("/")
 @login_required
 def home():
@@ -764,8 +849,8 @@ def home():
         recs = get_recommendations_grouped(user_id, max_per_group=50)
     else:
         recs = get_recommendations(user_id, max_makeable=200, max_one_away=12)
-    bottles = get_all_bottles(user_id)
-    all_ingredients = get_all_ingredients(user_id)
+    bottles = recs["bottles"]
+    all_ingredients = recs["ingredients"]
     stocked_count = sum(1 for i in all_ingredients if i["in_stock"])
     onboard_data = (
         build_onboarding_data(all_ingredients, get_all_recipes())
@@ -773,15 +858,7 @@ def home():
         else None
     )
 
-    rated = recs["ratings"]
-    pool = [r for r in recs["makeable"] if rated.get(r["recipe"]["id"], 0) != -1] or recs["makeable"]
-    featured = None
-    for r in pool:
-        if recipe_image_url(r["recipe"]):
-            featured = r
-            break
-    if not featured and pool:
-        featured = pool[0]
+    featured = pick_featured_pour(recs["makeable"], recs["ratings"], user_id)
 
     spot = recs.get("spotlight")
     spot_view = None
@@ -1033,7 +1110,7 @@ def bar():
 
     ingredients = get_all_ingredients(user_id)
     stocked = [i for i in ingredients if i["in_stock"]]
-    new_ingredients = get_auto_added_ingredients(user_id, only_unstocked=True)
+    new_ingredients = get_auto_added_ingredients(user_id, only_unstocked=True, ingredients=ingredients)
 
     return render_template(
         "my_bar.html",
@@ -1065,12 +1142,17 @@ def recommend():
 
 
 @app.route("/explore")
-@login_required
 def explore():
-    user_id = uid()
-    bottles = get_all_bottles(user_id)
-    stocked = {i["name"].lower() for i in get_all_ingredients(user_id) if i["in_stock"]}
-    ratings = get_all_ratings(user_id)
+    user_id = session.get("user_id")
+    logged_in = bool(user_id)
+    if logged_in:
+        bottles = get_all_bottles(user_id)
+        stocked = {i["name"].lower() for i in get_all_ingredients(user_id) if i["in_stock"]}
+        ratings = get_all_ratings(user_id)
+    else:
+        bottles = []
+        stocked = set()
+        ratings = {}
     all_recipes = get_all_recipes()
 
     entries = []
@@ -1080,14 +1162,17 @@ def explore():
     one_away_total = 0
 
     for r in all_recipes:
-        status, missing = match_recipe(r, bottles, stocked)
-        if status == "makeable":
-            makeable_total += 1
-            your_bottles = [short_bottle_name(b) for b in used_user_bottles(r, bottles)]
+        if logged_in:
+            status, missing = match_recipe(r, bottles, stocked)
+            if status == "makeable":
+                makeable_total += 1
+                your_bottles = [short_bottle_name(b) for b in used_user_bottles(r, bottles)]
+            else:
+                if status == "one_away":
+                    one_away_total += 1
+                your_bottles = []
         else:
-            if status == "one_away":
-                one_away_total += 1
-            your_bottles = []
+            status, missing, your_bottles = "public", [], []
         spirit_group = explore_base_spirit(r)
         style_group = classify_drink_style(r)
         spirits_seen.add(spirit_group)
@@ -1107,8 +1192,11 @@ def explore():
             "search_text": f"{r['recipe']['name'].lower()} {ing_text} {spirit_group.lower()} {style_group.lower()}",
         })
 
-    order_map = {"makeable": 0, "one_away": 1, "not_close": 2}
-    entries.sort(key=lambda e: (order_map.get(e["status"], 9), e["recipe"]["name"].lower()))
+    if logged_in:
+        order_map = {"makeable": 0, "one_away": 1, "not_close": 2}
+        entries.sort(key=lambda e: (order_map.get(e["status"], 9), e["recipe"]["name"].lower()))
+    else:
+        entries.sort(key=lambda e: e["recipe"]["name"].lower())
 
     preferred_spirits = [
         "Gin", "Whiskey", "Rum", "Tequila & Mezcal", "Vodka",
@@ -1123,6 +1211,7 @@ def explore():
 
     return render_template(
         "explore.html",
+        logged_in=logged_in,
         entries=entries,
         total_count=len(entries),
         makeable_total=makeable_total,
@@ -1135,23 +1224,35 @@ def explore():
 @app.route("/stock-add", methods=["POST"])
 @login_required
 def stock_add():
-    """Quick-add for the mixer nudge on Tonight. Adds only, never clears,
-    so it can't undo whatever the user already ticked on the Mixers tab."""
+    """Quick-add for the mixer nudge and one-tap stocking. Adds only, never
+    clears, so it can't undo whatever the user already ticked on Mixers."""
+    next_url = _safe_next(request.form.get("next"))
     try:
         ids = [int(x) for x in request.form.getlist("ingredient")]
     except ValueError:
         ids = []
     if ids:
-        add_ingredients_to_stock(uid(), ids)
-        names = [i["name"] for i in get_all_ingredients(uid()) if i["id"] in ids]
-        flash("Added to your bar: " + ", ".join(names))
-    return redirect(url_for("home"))
+        user_id = uid()
+        by_id = {i["id"]: i["name"] for i in get_all_ingredients(user_id)}
+        valid_ids = [i for i in dict.fromkeys(ids) if i in by_id]
+        if valid_ids:
+            add_ingredients_to_stock(user_id, valid_ids)
+            flash("Added to your bar: " + ", ".join(by_id[i] for i in valid_ids))
+    return redirect(next_url or url_for("home"))
 
 
 @app.route("/one-away")
 @login_required
 def one_away():
     groups = get_one_away_grouped(uid())
+    for g in groups:
+        if g["missing"].get("type") == "bottle_type" and g.get("bottle_type"):
+            args = {"sheet": "add", "type": safe_bottle_type(g["bottle_type"])}
+            if g.get("name_matched"):
+                args["name"] = g["missing"]["name"]
+            g["add_url"] = url_for("bar", **args)
+        else:
+            g["add_url"] = None
     return render_template("one_away.html", groups=groups)
 
 
@@ -1226,47 +1327,70 @@ def surprise():
 
 
 @app.route("/recipe/<int:recipe_id>")
-@login_required
 def recipe(recipe_id):
+    user_id = session.get("user_id")
+    logged_in = bool(user_id)
     r = get_recipe(recipe_id)
     if not r:
         flash("Recipe not found.")
-        return redirect(url_for("home"))
-    bottles = get_all_bottles(uid())
-    ingredients_db = get_all_ingredients(uid())
-    stocked = {i["name"].lower() for i in ingredients_db if i["in_stock"]}
+        return redirect(url_for("home") if logged_in else url_for("explore"))
 
-    # For each ingredient, figure out which (if any) of the user's bottles satisfies it
-    bottle_hints = {}
-    for ing in r["ingredients"]:
-        matches = matching_user_bottles(ing, bottles)
-        if matches:
-            bottle_hints[ing["id"]] = matches
+    if logged_in:
+        bottles = get_all_bottles(user_id)
+        ingredients_db = get_all_ingredients(user_id)
+        stocked = {i["name"].lower() for i in ingredients_db if i["in_stock"]}
+        ids_by_name = {i["name"].lower(): i["id"] for i in ingredients_db}
 
-    # Which ingredients can't be fulfilled by the user's current bar?
-    missing_ids = missing_ingredient_ids(r, bottles, stocked)
+        # For each ingredient, figure out which (if any) of the user's bottles satisfies it
+        bottle_hints = {}
+        for ing in r["ingredients"]:
+            matches = matching_user_bottles(ing, bottles)
+            if matches:
+                bottle_hints[ing["id"]] = matches
 
-    # "Make it your own" suggestions. These never affect makeability -- the
-    # matcher does not read this table -- so the only per-user state here is
-    # cosmetic: whether the user already has the thing on their Mixers list.
-    # .get() rather than [] because an older database with no enhancements
-    # table returns a recipe dict without the key.
-    enhancements = r.get("enhancements", [])
-    enhancement_have = {
-        e["id"]
-        for e in enhancements
-        if e["ingredient_name"] and e["ingredient_name"].lower() in stocked
-    }
+        # Which ingredients can't be fulfilled by the user's current bar?
+        missing_ids = missing_ingredient_ids(r, bottles, stocked)
+
+        missing_actions = {}
+        for ing in r["ingredients"]:
+            if ing["id"] not in missing_ids:
+                continue
+            if ing["requirement_type"] == "ingredient" and ing["ingredient_name"]:
+                iid = ids_by_name.get(ing["ingredient_name"].lower())
+                if iid is not None:
+                    missing_actions[ing["id"]] = {"kind": "ingredient", "ingredient_id": iid}
+            elif ing["requirement_type"] == "bottle_type" and ing["bottle_type"]:
+                args = {"sheet": "add", "type": safe_bottle_type(ing["bottle_type"])}
+                if is_name_matched(ing) and ing.get("raw_name"):
+                    args["name"] = ing["raw_name"]
+                missing_actions[ing["id"]] = {"kind": "bottle", "add_url": url_for("bar", **args)}
+
+        enhancements = r.get("enhancements", [])
+        enhancement_have = {
+            e["id"]
+            for e in enhancements
+            if e["ingredient_name"] and e["ingredient_name"].lower() in stocked
+        }
+        rating = get_rating(user_id, recipe_id)
+    else:
+        bottle_hints = {}
+        missing_ids = set()
+        missing_actions = {}
+        enhancements = r.get("enhancements", [])
+        enhancement_have = set()
+        rating = 0
 
     return render_template(
         "recipe.html",
+        logged_in=logged_in,
         recipe=r["recipe"],
         ingredients=r["ingredients"],
         bottle_hints=bottle_hints,
         missing_ids=missing_ids,
+        missing_actions=missing_actions,
         enhancements=enhancements,
         enhancement_have=enhancement_have,
-        rating=get_rating(uid(), recipe_id),
+        rating=rating,
     )
 
 

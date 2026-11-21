@@ -5,6 +5,18 @@
 
 {% block title %}{{ recipe.name }} &middot; Bomu{% endblock %}
 
+{% block meta %}
+{% set meta_img = recipe|recipe_image %}
+<meta property="og:type" content="website">
+<meta property="og:title" content="{{ recipe.name }} &middot; Bomu">
+<meta property="og:description" content="{{ recipe.about or 'Cocktail recipe with oz & ml specs on Bomu.' }}">
+<meta property="og:url" content="{{ request.url }}">
+{% if meta_img %}
+{% set og_img = (request.url_root.rstrip('/') ~ meta_img) if meta_img.startswith('/') else meta_img %}
+<meta property="og:image" content="{{ og_img }}">
+{% endif %}
+{% endblock %}
+
 {% block extra_css %}
 <style>
     .recipe-hero {
@@ -167,6 +179,18 @@
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+    }
+
+    .pour-missing-bar {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+        margin: 0.3rem 0.4rem 0.25rem;
+    }
+
+    .pour-missing-bar form {
+        margin: 0;
     }
 
     .pour-measure {
@@ -467,11 +491,25 @@
                     {% endif %}
                 </span>
             </button>
-            {% if is_missing %}
+            {% if logged_in and is_missing %}
                 {% set sugs = i.raw_name|suggestions %}
                 {% if sugs %}
                     <div style="margin: 0.25rem 0.4rem 0.15rem; padding: 0.4rem 0.75rem; border-radius: 12px; background: var(--zest-soft); font-size: 0.78rem; color: var(--zest);">
                         <span style="color: var(--ink-dim);">Try:</span> {{ sugs | join(' · ') }}
+                    </div>
+                {% endif %}
+                {% set act = missing_actions.get(i.id) %}
+                {% if act %}
+                    <div class="pour-missing-bar">
+                        {% if act.kind == 'ingredient' %}
+                            <form method="POST" action="/stock-add">
+                                <input type="hidden" name="ingredient" value="{{ act.ingredient_id }}">
+                                <input type="hidden" name="next" value="/recipe/{{ recipe.id }}">
+                                <button type="submit" class="btn btn-secondary btn-sm">I have this</button>
+                            </form>
+                        {% elif act.kind == 'bottle' %}
+                            <a href="{{ act.add_url }}" class="btn btn-secondary btn-sm">Add to my bar</a>
+                        {% endif %}
                     </div>
                 {% endif %}
             {% endif %}
@@ -532,8 +570,10 @@
                 <div style="font-size: 0.76rem; color: var(--ink-faint); margin-top: 0.25rem;"
                      {% if e.source %}title="{{ e.source }}"{% endif %}>
                     {%- if e.source and 'Common bar practice' in e.source %}Bartender's habit{% else %}By the book{% endif -%}
-                    {%- if e.id in enhancement_have %} &middot; <span style="color: var(--sage);">In your bar</span>
-                    {%- elif e.ingredient_name %} &middot; Needs {{ e.ingredient_name }}{% endif -%}
+                    {%- if logged_in -%}
+                        {%- if e.id in enhancement_have %} &middot; <span style="color: var(--sage);">In your bar</span>
+                        {%- elif e.ingredient_name %} &middot; Needs {{ e.ingredient_name }}{% endif -%}
+                    {%- endif -%}
                 </div>
             </div>
         {% endfor %}
@@ -544,11 +584,12 @@
 
 <div class="tabbar-scrim" aria-hidden="true"></div>
 <nav class="bartender-dock" aria-label="Cocktail actions">
-    <a href="/" class="dock-back"
+    <a href="{{ '/' if logged_in else '/explore' }}" class="dock-back"
        onclick="if (document.referrer && document.referrer.indexOf(window.location.host) !== -1) { history.back(); return false; }">
         {{ ui_icon("back", "btn-icon") }}
         <span>Back</span>
     </a>
+    {% if logged_in %}
     <div class="dock-rate-group">
         <form method="POST" action="/rate/{{ recipe.id }}" style="margin: 0;">
             <input type="hidden" name="thumb" value="1">
@@ -567,6 +608,12 @@
             </button>
         </form>
     </div>
+    {% else %}
+    <div class="dock-rate-group">
+        <a href="/login" class="btn btn-ghost btn-sm">Log in</a>
+        <a href="/signup" class="btn btn-sm">Match my bar</a>
+    </div>
+    {% endif %}
 </nav>
 {% endblock %}
 

@@ -4,6 +4,7 @@
 <head>
     <meta charset="utf-8">
     <title>{% block title %}Bomu{% endblock %}</title>
+    {% block meta %}{% endblock %}
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <link rel="manifest" href="/static/manifest.json">
     <meta name="theme-color" content="#140e0a">
@@ -955,7 +956,7 @@
 <body>
     {% if not hide_topbar %}
     <header class="topbar">
-        <a href="/" class="wordmark" aria-label="Bomu home">
+        <a href="{{ '/' if current_username else '/explore' }}" class="wordmark" aria-label="Bomu home">
             {{ glass_icon("Coupe glass") }}
             <span>Bomu</span>
         </a>
@@ -964,6 +965,12 @@
                 <span class="account-user" title="Signed in as {{ current_username }}">{{ current_username }}</span>
                 <span class="account-sep" aria-hidden="true">&middot;</span>
                 <button type="button" class="account-out" id="signout-open" aria-haspopup="dialog" aria-label="Sign out">out</button>
+            </div>
+        {% elif not current_username and not hide_account and request.path not in ('/login', '/signup') %}
+            <div class="account-line">
+                <a href="/login" class="account-out" style="display: inline-flex; align-items: center;">Log in</a>
+                <span class="account-sep" aria-hidden="true">&middot;</span>
+                <a href="/signup" class="account-out" style="display: inline-flex; align-items: center; color: var(--zest); font-weight: 600;">Sign up</a>
             </div>
         {% endif %}
     </header>

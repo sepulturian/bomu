@@ -87,17 +87,31 @@
     <h1>Explore</h1>
 </div>
 
+{% if not logged_in %}
+<div class="card" style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem 1rem; border: 1px solid var(--zest-border); margin-bottom: 0.85rem;">
+    <p style="font-size: 0.9rem; color: var(--ink); line-height: 1.4; flex: 1 1 240px;">
+        Browse all {{ total_count }} cocktails. Sign up to see which ones you can pour from your bar.
+    </p>
+    <div style="display: flex; align-items: center; gap: 0.45rem;">
+        <a href="/signup" class="btn btn-sm">Match my bar <span class="arrow" aria-hidden="true">&rarr;</span></a>
+        <a href="/login" class="btn btn-ghost btn-sm">Log in</a>
+    </div>
+</div>
+{% endif %}
+
 <div class="search-wrap">
     {{ ui_icon("search", "search-icon") }}
     <input type="search" id="explore-search" placeholder="Search cocktails or ingredients..." autocomplete="off">
 </div>
 
 <div class="filter-block">
+    {% if logged_in %}
     <div class="chip-strip" data-filter-group="status">
         <button type="button" class="chip active" data-val="all">All</button>
         <button type="button" class="chip" data-val="makeable">Ready ({{ makeable_total }})</button>
         <button type="button" class="chip" data-val="one_away">One away ({{ one_away_total }})</button>
     </div>
+    {% endif %}
 
     <div class="filter-dropdowns">
         <select id="explore-spirit-select" aria-label="Filter by base spirit">
@@ -150,23 +164,31 @@
                         </span>
                     {% endif %}
                 </div>
-                {% if e.status == 'makeable' %}
-                    <div class="drink-sub">
-                        {% if e.your_bottles %}
-                            Ready &middot; {{ e.your_bottles | join(' · ') }}
-                        {% else %}
-                            Ready
-                        {% endif %}
-                    </div>
-                {% elif e.status == 'one_away' %}
-                    <div class="drink-sub is-missing">One away &middot; Need {{ e.missing[0] }}</div>
-                {% else %}
-                    <div class="drink-sub is-dim">Missing {{ e.missing|length }} items</div>
+                {% if logged_in %}
+                    {% if e.status == 'makeable' %}
+                        <div class="drink-sub">
+                            {% if e.your_bottles %}
+                                Ready &middot; {{ e.your_bottles | join(' · ') }}
+                            {% else %}
+                                Ready
+                            {% endif %}
+                        </div>
+                    {% elif e.status == 'one_away' %}
+                        <div class="drink-sub is-missing">One away &middot; Need {{ e.missing[0] }}</div>
+                    {% else %}
+                        <div class="drink-sub is-dim">Missing {{ e.missing|length }} items</div>
+                    {% endif %}
                 {% endif %}
                 <div class="drink-style-line">
                     <span class="style-dot"></span>
                     <span>{{ e.style_group }} &middot; {{ e.spirit_group }}</span>
                 </div>
+                {% if not logged_in %}
+                <div class="drink-glass-line">
+                    {{ glass_icon(e.recipe.glass) }}
+                    <span>{{ e.recipe.glass|glass_label }}</span>
+                </div>
+                {% endif %}
             </div>
             {{ ui_icon("chevron", "row-chevron") }}
         </a>

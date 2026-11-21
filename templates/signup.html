@@ -170,6 +170,24 @@
         text-decoration: underline;
     }
 
+    .auth-browse {
+        text-align: center;
+        margin-top: 0.42rem;
+        color: var(--ink-dim);
+        font-size: 0.84rem;
+    }
+
+    .auth-browse a {
+        color: var(--ink);
+        font-weight: 600;
+        text-underline-offset: 3px;
+    }
+
+    .auth-browse a:hover {
+        color: var(--zest);
+        text-decoration: underline;
+    }
+
     @media (min-width: 768px) {
         .container {
             min-height: calc(100vh - 76px);
@@ -229,6 +247,11 @@
             text-align: left;
             padding-left: 0.15rem;
         }
+
+        .auth-browse {
+            text-align: left;
+            padding-left: 0.15rem;
+        }
     }
 </style>
 {% endblock %}
@@ -277,6 +300,9 @@
 
         <p class="auth-switch">
             Already have an account? <a href="{{ url_for('login') }}">Log in</a>
+        </p>
+        <p class="auth-browse">
+            or <a href="{{ url_for('explore') }}">browse all 171 cocktails</a>
         </p>
     </div>
 </div>

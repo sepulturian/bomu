@@ -31,28 +31,30 @@ see the other's chat history, so anything not written here is lost.
 
 ## Where things stand
 
-Live and healthy. 171 recipes, 49 ingredients, 5 users, 35 bottles logged.
-Open signup is enabled (`INVITE_CODE` removed; guarded by an offscreen honeypot
-and a shared `SCAN_GLOBAL_DAILY_LIMIT = 60` cap alongside the `15`/user/day cap).
+Live and healthy. 171 recipes, 49 ingredients, 5 users, 34 bottles logged.
+Open signup is enabled (`INVITE_CODE` removed; guarded by an offscreen honeypot,
+sliding-window auth rate limiting, and a shared `SCAN_GLOBAL_DAILY_LIMIT = 60`
+cap alongside the `15`/user/day cap). Public read-only browsing is enabled on
+`/explore` and `/recipe/<id>`.
 Catalog & DB hygiene are clean: `check_specs.py` reports 0 flags across 171
 recipes, `sweep_namematch.py` reports 0 BROKEN rows, and Neon `recipe_enhancements`
 matches the SQLite constraint/index schema.
 
-**Counts below were read off live Neon on 2026-11-20** via
+**Counts below were read off live Neon on 2026-11-21** via
 `matching.get_recommendations()`, not simulated.
 
 | id | user | bottles | mixers ticked | makeable | one-away |
 |---|---|---|---|---|---|
-| 1 | aaron | 18 | 18 / 49 | 35 | 69 |
+| 1 | aaron | 17 | 19 / 49 | 25 | 77 |
 | 2 | Avishka | 0 | 0 | 0 | 0 |
 | 3 | Rajapaksha | 0 | 0 | 0 | 0 |
 | 4 | lenasheh (Shehan) | 16 | 3 | 0 | 13 |
 | 5 | Maho | 1 | 12 | 1 | 13 |
 
 Aaron went 22 → 34 between 2026-07-26 and 2026-11-15 by ticking 3 more mixers on
-the live site, then 34 → 35 on 2026-11-20 when `Moscow Mule` moved from `Ginger ale`
-to `Ginger beer` (ticked mix dropped 19 → 18 and Shehan 4 → 3 after removing
-unused `Water`). Avishka, Rajapaksha, and Shehan still have 0 makeable in the DB
+the live site, 34 → 35 on 2026-11-20 when `Moscow Mule` moved from `Ginger ale`
+to `Ginger beer`, and adjusted his live bar to 17 bottles / 19 mixers (`25 / 77`)
+by 2026-11-21. Avishka, Rajapaksha, and Shehan still have 0 makeable in the DB
 until they next open Tonight, where 2-step empty-bar onboarding (`POST /quick-setup`)
 and the 0-ready Quick Kitchen Check card now guide them directly to their first pour.
 
@@ -87,12 +89,13 @@ Neon, never from the snapshot.
   PythonAnywhere to **Vercel** (`sepulturian/bomu`) at **https://www.bomu.lol**,
   backed by **Neon Postgres** (`broad-water-80207736`) migrated 1:1 from `bomu_live.db`.
 
-### Uncommitted image changes of unknown origin
+### Untracked local working directories
 
-As of 2026-11-14, ~40 older files in `static/` (`static/*.jpg` and `static/ingredients/*.jpg`)
-and untracked `.claude/` and `redesign/` working files sit dirty in the local working tree. Leave
-them unstaged when committing unless intentionally updating them; don't sweep blindly
-with `git add -A`. (`static/icon-*.png` were intentionally replaced with Espresso & Zest icons and committed on 2026-11-20.)
+On 2026-11-21, all `44` unused legacy static files (`static/ingredients/*`,
+`static/*.jpg`, `static/beach-bar-diorama.webp`, `static/beach-bar-sunset.webp`)
+were removed from git tracking (`static/` dropped from `7.90 MB` to `2.27 MB`).
+Only untracked `.claude/` and `redesign/` working directories remain in the local
+tree; keep them unstaged and don't sweep blindly with `git add -A`.
 
 ---
 
@@ -1453,6 +1456,34 @@ Completed the remaining 2/13 recipe studio WebP regenerations for Backlog `#20` 
 **Open / next:**
 1. Security chore (`#17`): Aaron to delete `step_88.json` log and rotate Neon password.
 2. Remaining backlog (`#5` rum and sherry sub-types).
+
+### 2026-11-21 — Performance/serverless DB caching, rotating Featured Pour + one-tap stocking, public Explore/Recipes & hardening (Antigravity)
+
+Reviewed the full app objectively (`B+`, `85/100`) and implemented all three recommended improvements in one pass:
+
+**1. Serverless DB connection reuse, catalog caching & dead asset cleanup (`database.py`, `matching.py`, `app.py`, `static/`):**
+- Added request-scoped DB connection pooling (`_RequestConnProxy` on `flask.g`, closed via `@app.teardown_appcontext` -> `close_request_db()`) in `database.py`, dropping warm `GET /` on Neon from 6–7 remote Postgres handshakes down to `1` connection.
+- Added a 300-second TTL + SQLite mtime-aware catalog cache (`_get_ingredient_catalog()`, `_get_recipe_catalog()`, `invalidate_catalog_cache()`) for read-only `recipes`, `recipe_ingredients`, `recipe_enhancements`, and `ingredients`, returning fresh outer wrapper dicts on `get_all_recipes()` / `get_recipe()` so per-user `your_bottles` annotations never leak across requests.
+- Eliminated duplicate user queries in `home()` (reusing `recs["bottles"]` and `recs["ingredients"]`) and `bar()` (passing `ingredients=` to `get_auto_added_ingredients()`), and replaced per-call `os.path.isfile()` probing in `recipe_image_url()` with a process-cached `_recipe_image_map()`.
+- Removed `44` unused tracked legacy static files (`39` in `static/ingredients/` + `static/auth-login.jpg`, `static/auth-signup.jpg`, `static/hero-cocktail.jpg`, `static/beach-bar-diorama.webp`, `static/beach-bar-sunset.webp`), cutting `static/` from `7.90 MB` (`153` files) to `2.27 MB` (`109` files).
+
+**2. Daily-rotating Featured Pour & one-tap stocking (`app.py`, `matching.py`, `templates/one_away.html`, `templates/recipe.html`):**
+- Replaced Tonight's frozen `pool[0]` hero selection with `pick_featured_pour()` using deterministic per-user cycle permutations with boundary collision swapping so Tonight cycles cleanly through eligible makeable pours daily with zero consecutive repeats.
+- Extended `POST /stock-add` with `_safe_next()` `next` redirect support and ingredient-ID validation, extended `matching.get_one_away_grouped()` with `ingredient_id` / `bottle_type` / `name_matched`, and wired `"I have this"` / `"Add to my bar"` buttons directly onto `/one-away` cards/accordions and missing rows in `/recipe/<id>`.
+
+**3. Public read-only `/explore` & `/recipe/<id>` + hardening (`app.py`, `templates/base.html`, `explore.html`, `recipe.html`, `login.html`, `signup.html`, `static/sw.js`):**
+- Opened `GET /explore` and `GET /recipe/<id>` to logged-out visitors (`0` user queries, no personal bar state leaked, topbar `Log in · Sign up`, recipe `og:title` / `og:description` / `og:image` / `og:url` metadata, `"Match my bar"` dock CTAs, and `"browse all 171 cocktails"` link on `/login` and `/signup`).
+- Added fail-fast `SECRET_KEY` check when `VERCEL` is set, `MAX_CONTENT_LENGTH = 10 MB` + friendly `413` redirect handler, sliding-window per-IP rate limiting on `POST /login` (`15 / 10 min`) and `POST /signup` (`8 / 10 min`), deduplicated `SCANNER_CLASSIFICATION_RULES` across single/shelf vision prompts, and bumped `static/sw.js` `CACHE_VERSION` to `"bomu-v11"`.
+
+**Verified:**
+- Extended `verify_routes.py` (testing public `/explore` + `/recipe/<id>` OG tags, auth redirects, `/one-away` & `/recipe/<id>` one-tap actions, `POST /stock-add` `next=` & open-redirect guard, `<= 1` DB connection on warm `GET /`, catalog cache mutation isolation, and 14-day `pick_featured_pour()` rotation); passes cleanly on both `bomu.db` and `--db bomu_live.db` (`171 ok, 0 failed`).
+- `check_specs.py` (`171` checked / `0` flags) and `sweep_namematch.py` (`0 BROKEN, 6 REVIEW`).
+- Live Neon Postgres read (`backend: postgres`): verified all 5 accounts (`aaron 25/77`, `Avishka 0/0`, `Rajapaksha 0/0`, `lenasheh 0/13`, `Maho 1/13`).
+
+**Open / next:**
+1. Security chore (`#17`): Aaron to delete `step_88.json` log and rotate Neon password.
+2. Remaining backlog (`#5` rum and sherry sub-types).
+
 
 
 

@@ -1,9 +1,13 @@
 import sqlite3
 import os
 import re
+import time
 
 DEFAULT_DB_PATH = os.path.join(os.path.dirname(__file__), "bomu.db")
 DB_PATH = DEFAULT_DB_PATH
+
+_CATALOG_TTL_SECONDS = 300
+_catalog_cache = {}
 
 
 def _pg_url():
@@ -113,8 +117,49 @@ class _PgConn:
         self._conn.close()
 
 
-def get_db():
-    """Open a connection to the database (Neon Postgres when configured, else SQLite)."""
+class _RequestConnProxy:
+    """Proxy for a request-scoped connection where .close() is a no-op until
+    Flask tears down the app context."""
+
+    def __init__(self, conn):
+        self._conn = conn
+
+    def cursor(self):
+        return self._conn.cursor()
+
+    def execute(self, sql, *args):
+        return self._conn.execute(sql, *args)
+
+    def executemany(self, sql, *args):
+        return self._conn.executemany(sql, *args)
+
+    def commit(self):
+        return self._conn.commit()
+
+    def rollback(self):
+        return self._conn.rollback()
+
+    def close(self):
+        pass
+
+    def __getattr__(self, name):
+        return getattr(self._conn, name)
+
+
+def _in_flask_app_context():
+    try:
+        from flask import has_app_context
+        return has_app_context()
+    except ImportError:
+        return False
+
+
+def _db_target_key():
+    return _pg_url() or os.path.abspath(DB_PATH)
+
+
+def _open_raw_db():
+    """Open a fresh connection to Neon Postgres (when configured) or SQLite."""
     pg_url = _pg_url()
     if pg_url:
         import psycopg2
@@ -124,6 +169,63 @@ def get_db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row  # lets us access columns by name
     return conn
+
+
+def get_db():
+    """Return a request-scoped DB connection inside Flask app contexts, or a
+    standalone connection for CLI scripts and migrations."""
+    if _in_flask_app_context():
+        from flask import g
+        target = _db_target_key()
+        entry = getattr(g, "_bomu_db", None)
+        if entry is not None:
+            cached_target, cached_conn = entry
+            if cached_target == target:
+                return _RequestConnProxy(cached_conn)
+            try:
+                cached_conn.close()
+            except Exception:
+                pass
+        conn = _open_raw_db()
+        g._bomu_db = (target, conn)
+        return _RequestConnProxy(conn)
+    return _open_raw_db()
+
+
+def close_request_db(exc=None):
+    """Close any request-scoped DB connection at the end of a Flask request."""
+    if not _in_flask_app_context():
+        return
+    from flask import g
+    entry = g.pop("_bomu_db", None)
+    if entry is None:
+        return
+    _target, conn = entry
+    try:
+        if exc is not None:
+            try:
+                conn.rollback()
+            except Exception:
+                pass
+    finally:
+        conn.close()
+
+
+def _cache_scope_key():
+    pg_url = _pg_url()
+    if pg_url:
+        return ("pg", pg_url)
+    path = os.path.abspath(DB_PATH)
+    try:
+        mtime = os.path.getmtime(path)
+    except OSError:
+        mtime = 0
+    return ("sqlite", path, mtime)
+
+
+def invalidate_catalog_cache():
+    """Clear the read-only recipe/ingredient catalog cache."""
+    _catalog_cache.clear()
 
 
 def init_db(force=False, seed=True):
@@ -216,6 +318,7 @@ def init_db(force=False, seed=True):
                 seed_ingredients(c)
         conn.commit()
         conn.close()
+        invalidate_catalog_cache()
         return
 
     conn = get_db()
@@ -336,6 +439,7 @@ def init_db(force=False, seed=True):
 
     conn.commit()
     conn.close()
+    invalidate_catalog_cache()
 
 
 SEED_INGREDIENTS = [
@@ -528,17 +632,29 @@ def delete_bottle(bottle_id, user_id):
 
 # --- Ingredient / checklist helpers ---
 
+def _get_ingredient_catalog():
+    """Return cached shared ingredient catalog rows as plain dicts."""
+    scope = _cache_scope_key()
+    now = time.monotonic()
+    entry = _catalog_cache.get("ingredients")
+    if entry and entry["scope"] == scope and (now - entry["ts"]) < _CATALOG_TTL_SECONDS:
+        return entry["data"]
+    conn = get_db()
+    rows = conn.execute("SELECT * FROM ingredients ORDER BY category, name").fetchall()
+    conn.close()
+    data = [dict(r) for r in rows]
+    _catalog_cache["ingredients"] = {"scope": scope, "ts": now, "data": data}
+    return data
+
+
 def get_all_ingredients(user_id=None):
     """Return the shared ingredient catalog. If user_id is given, each row is
     a dict whose in_stock reflects THAT user's checklist (from user_stock),
     so templates keep working exactly as before multi-user."""
-    conn = get_db()
-    ingredients = conn.execute(
-        "SELECT * FROM ingredients ORDER BY category, name"
-    ).fetchall()
+    base = _get_ingredient_catalog()
     if user_id is None:
-        conn.close()
-        return ingredients
+        return [dict(ing) for ing in base]
+    conn = get_db()
     stocked = {
         r["ingredient_id"] for r in conn.execute(
             "SELECT ingredient_id FROM user_stock WHERE user_id = ?", (user_id,)
@@ -546,19 +662,19 @@ def get_all_ingredients(user_id=None):
     }
     conn.close()
     out = []
-    for ing in ingredients:
+    for ing in base:
         d = dict(ing)
         d["in_stock"] = 1 if ing["id"] in stocked else 0
         out.append(d)
     return out
 
 
-def get_auto_added_ingredients(user_id, only_unstocked=True):
+def get_auto_added_ingredients(user_id, only_unstocked=True, ingredients=None):
     """Return ingredients that were NOT in the original seed list -- i.e. they
     were inserted later by an import script (Coffee liqueur, Champagne, etc.).
     Defaults to only those this user hasn't ticked yet so the checklist can
     highlight items they haven't reviewed."""
-    all_ings = get_all_ingredients(user_id)
+    all_ings = ingredients if ingredients is not None else get_all_ingredients(user_id)
     out = []
     for ing in all_ings:
         if ing["name"] in SEED_INGREDIENT_NAMES:
@@ -646,6 +762,7 @@ def add_recipe(name, glass, instructions, image_url, cocktaildb_id, ingredients)
                 ),
             )
         conn.commit()
+        invalidate_catalog_cache()
         return recipe_id
     except _integrity_errors():
         # Recipe name already exists
@@ -655,40 +772,74 @@ def add_recipe(name, glass, instructions, image_url, cocktaildb_id, ingredients)
         conn.close()
 
 
-def get_all_recipes():
-    """Return every recipe with its ingredients, used by the matcher."""
+def _get_recipe_catalog():
+    """Return cached (ordered_recipes, recipes_by_id) with ingredients and
+    optional recipe_enhancements preloaded."""
+    scope = _cache_scope_key()
+    now = time.monotonic()
+    entry = _catalog_cache.get("recipes")
+    if entry and entry["scope"] == scope and (now - entry["ts"]) < _CATALOG_TTL_SECONDS:
+        return entry["data"]
+
     conn = get_db()
     recipes = conn.execute("SELECT * FROM recipes ORDER BY name").fetchall()
     all_ings = conn.execute(
         "SELECT * FROM recipe_ingredients ORDER BY recipe_id, sort_order"
     ).fetchall()
+    enh_by_recipe = {}
+    try:
+        all_enhs = conn.execute(
+            "SELECT * FROM recipe_enhancements ORDER BY recipe_id, sort_order"
+        ).fetchall()
+        for enh in all_enhs:
+            enh_by_recipe.setdefault(enh["recipe_id"], []).append(dict(enh))
+    except _operational_errors():
+        conn.rollback()
     conn.close()
+
     ings_by_recipe = {}
     for ing in all_ings:
         ings_by_recipe.setdefault(ing["recipe_id"], []).append(dict(ing))
+
+    ordered = []
+    by_id = {}
+    for r in recipes:
+        r_dict = dict(r)
+        rid = r_dict["id"]
+        item = {
+            "recipe": r_dict,
+            "ingredients": ings_by_recipe.get(rid, []),
+            "enhancements": enh_by_recipe.get(rid, []),
+        }
+        ordered.append(item)
+        by_id[rid] = item
+
+    data = (ordered, by_id)
+    _catalog_cache["recipes"] = {"scope": scope, "ts": now, "data": data}
+    return data
+
+
+def get_all_recipes():
+    """Return every recipe with its ingredients, used by the matcher.
+    Returns fresh outer dicts so callers can attach per-user fields like
+    'your_bottles' without polluting the shared catalog cache."""
+    ordered, _by_id = _get_recipe_catalog()
     return [
-        {"recipe": dict(r), "ingredients": ings_by_recipe.get(r["id"], [])}
-        for r in recipes
+        {"recipe": item["recipe"], "ingredients": item["ingredients"]}
+        for item in ordered
     ]
 
 
 def get_recipe(recipe_id):
-    """Return a single recipe with ingredients, for the detail view."""
-    conn = get_db()
-    recipe = conn.execute("SELECT * FROM recipes WHERE id = ?", (recipe_id,)).fetchone()
-    if not recipe:
-        conn.close()
+    """Return a single recipe with ingredients and enhancements, for detail view."""
+    _ordered, by_id = _get_recipe_catalog()
+    item = by_id.get(recipe_id)
+    if not item:
         return None
-    ings = conn.execute(
-        "SELECT * FROM recipe_ingredients WHERE recipe_id = ? ORDER BY sort_order",
-        (recipe_id,),
-    ).fetchall()
-    enh = get_recipe_enhancements(conn, recipe_id)
-    conn.close()
     return {
-        "recipe": dict(recipe),
-        "ingredients": [dict(i) for i in ings],
-        "enhancements": enh,
+        "recipe": item["recipe"],
+        "ingredients": item["ingredients"],
+        "enhancements": item["enhancements"],
     }
 
 

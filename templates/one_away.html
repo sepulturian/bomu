@@ -64,6 +64,17 @@
         color: var(--zest);
         flex-shrink: 0;
     }
+
+    .oa-card-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        margin-top: 0.7rem;
+    }
+
+    .oa-card-actions form {
+        margin: 0;
+    }
 </style>
 {% endblock %}
 
@@ -136,6 +147,19 @@
                 {{ oa_drink(r.recipe) }}
             {% endfor %}
         </div>
+        {% if g.missing.type == 'ingredient' and g.ingredient_id %}
+            <div class="oa-card-actions">
+                <form method="POST" action="/stock-add">
+                    <input type="hidden" name="ingredient" value="{{ g.ingredient_id }}">
+                    <input type="hidden" name="next" value="/one-away">
+                    <button type="submit" class="btn btn-sm btn-glass" data-label="I have this">I have this</button>
+                </form>
+            </div>
+        {% elif g.add_url %}
+            <div class="oa-card-actions">
+                <a href="{{ g.add_url }}" class="btn btn-sm btn-glass" data-label="Add to my bar">Add to my bar</a>
+            </div>
+        {% endif %}
     </div>
 {% endfor %}
 </div>
@@ -163,6 +187,19 @@
                     </div>
                 {% endif %}
                 {{ oa_drink(g.recipes[0].recipe) }}
+                {% if g.missing.type == 'ingredient' and g.ingredient_id %}
+                    <div class="oa-card-actions">
+                        <form method="POST" action="/stock-add">
+                            <input type="hidden" name="ingredient" value="{{ g.ingredient_id }}">
+                            <input type="hidden" name="next" value="/one-away">
+                            <button type="submit" class="btn btn-sm btn-glass" data-label="I have this">I have this</button>
+                        </form>
+                    </div>
+                {% elif g.add_url %}
+                    <div class="oa-card-actions">
+                        <a href="{{ g.add_url }}" class="btn btn-sm btn-glass" data-label="Add to my bar">Add to my bar</a>
+                    </div>
+                {% endif %}
             </div>
         </details>
     {% endfor %}

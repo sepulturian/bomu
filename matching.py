@@ -157,6 +157,11 @@ def _use_name_match(ingredient):
     return False
 
 
+def is_name_matched(ingredient):
+    """Public helper indicating whether an ingredient matches by bottle name."""
+    return _use_name_match(ingredient)
+
+
 def _assign_distinct_bottles(slots, user_bottles):
     """Work out which category slots can be filled using a DIFFERENT bottle each.
 
@@ -369,8 +374,9 @@ def get_one_away_grouped(user_id):
     bottles = get_all_bottles(user_id)
     ingredients = get_all_ingredients(user_id)
     stocked = {i["name"].lower() for i in ingredients if i["in_stock"]}
+    ids_by_name = {i["name"].lower(): i["id"] for i in ingredients}
 
-    groups = {}  # missing.name (lowercased) -> {missing: dict, recipes: [recipe_data]}
+    groups = {}  # missing.name (lowercased) -> {missing: dict, recipes: [recipe_data], ...}
     for r in get_all_recipes():
         status, missing = match_recipe(r, bottles, stocked)
         if status != "one_away":
@@ -380,7 +386,19 @@ def get_one_away_grouped(user_id):
         # one group instead of splitting (which also broke the ranking).
         key = m["name"].lower()
         if key not in groups:
-            groups[key] = {"missing": dict(m), "recipes": []}
+            ing_id = ids_by_name.get(key) if m.get("type") == "ingredient" else None
+            bottle_type, name_matched = (
+                _bottle_requirement({"missing": m, "recipe": r})
+                if m.get("type") == "bottle_type"
+                else (None, False)
+            )
+            groups[key] = {
+                "missing": dict(m),
+                "recipes": [],
+                "ingredient_id": ing_id,
+                "bottle_type": bottle_type,
+                "name_matched": name_matched,
+            }
         elif groups[key]["missing"]["name"].islower() and not m["name"].islower():
             # Prefer the nicer-cased variant for display
             groups[key]["missing"]["name"] = m["name"]
@@ -849,4 +867,6 @@ def get_recommendations(user_id, max_makeable=50, max_one_away=25):
         "ratings": ratings,
         "spotlight": spotlight,
         "kitchen_check": kitchen_check,
+        "bottles": bottles,
+        "ingredients": ingredients,
     }
