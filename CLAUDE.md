@@ -48,7 +48,9 @@ can browse `/explore` and `/recipe/<id>`. `check_specs.py`: 0 flags;
 | 5 | Maho | 1 | 12 | 1 | 13 |
 
 Tonight's empty-bar onboarding and Quick Kitchen Check are aimed at the three
-users on 0. **Read user counts from Neon:** `bomu.db` matches its catalog, not
+users on 0. **Nobody but Aaron has added, scanned or rated anything since
+2026-07-24**, and nobody has signed up since signup opened (2026-11-19).
+Visits aren't recorded (#23). **Read user counts from Neon:** `bomu.db` matches its catalog, not
 its per-user tables, and `bomu_live.db` is the frozen 2026-11-15 snapshot.
 
 **Untracked in the main checkout:** `.claude/` (preview `launch.json`, agent
@@ -165,6 +167,9 @@ positives.
 - **A rotated Neon password** shows as `POST /login` 500 (`password
   authentication failed`) while `GET /login` is still 200. Update
   `DATABASE_URL` in Vercel, redeploy, then update `.env`.
+- **Vercel rejects request bodies over 4.5 MB** with its own bare 413 page,
+  before Flask runs. Any upload path must shrink files in the browser first
+  (see Scanner).
 - **Templates are cached when debug is off** (`FLASK_DEBUG=0` or a preview
   runner): restart after editing one. `python app.py` runs with debug on.
 - **The laptop is Windows PowerShell 5.1:** no `&&`, no `python3` (use
@@ -329,8 +334,18 @@ Claude vision (`claude-sonnet-4-6`); prompts inline in `app.py`
 RTDs, seltzers, beer and wine go to `other` (a Vodka Cruiser tagged `vodka`
 once offered an alcopop Martini), sub-types only when the label is clear. Each
 prompt lists the types itself, so a new type means `BOTTLE_TYPE_CHOICES`, both
-prompts, and `FUNGIBLE_TYPES` if fungible. A scan counts against the caps only
-once it returns a bottle.
+prompts, and `FUNGIBLE_TYPES` if fungible.
+
+Every scan Claude answers counts against the caps (`log_scan()`), identified
+or not, because it was billed; one that raises (unreadable file, API down)
+doesn't. Replies go through `_parse_scan_json()`, which never raises.
+
+**Photos are shrunk in the browser** (`components/photo_upload.html`, 1568 px
+JPEG to match `prepare_image()`, EXIF rotation applied) because Vercel refuses
+uploads over 4.5 MB and phone photos are often bigger. `MAX_CONTENT_LENGTH` is
+4 MB, so anything that skips the shrink (no JavaScript) gets the app's own
+message. `verify_routes.py` `check_scanner()` covers all of this with a fake
+Claude client.
 
 `BOTTLE_TYPE_CHOICES` (`app.py`) feeds every bottle-type `<select>` (five
 templates); add types there. Raw types shown to users go through the
@@ -420,6 +435,20 @@ chips and status pills stay rounded.
     Raised 2026-11-15; only `recipe_enhancements` was checked and fixed to match
     SQLite (2026-11-19). Compare every table's constraints and indexes with
     `database.init_db()`.
+23. **Record when users last open the app.** Only writes are recorded, so
+    there's no telling whether friends use Bomu. `last_seen_at` on `users`,
+    written at most once a day per user by a fail-safe `before_request` hook
+    (code may deploy before the Neon migration), plus a read-only report script.
+24. **Check before deploying.** Every push to `main` goes to production
+    unchecked; `verify_routes.py` takes ~3 s. A tracked pre-push hook
+    (`core.hooksPath`) or a GitHub Action.
+25. **Small findings from the 2026-11-21 review.** Recipe rows repeat the name
+    in the note line ("Campari / Campari"); My Bar's tab reads "Mixers ( 15/49 )"
+    with stray spaces; "Surprise me", "Add to my bar" and "out" are 36-40 px
+    tall; TheCocktailDB images load at 700 px for ~150 px tiles; a scanned
+    Prosecco or wine bottle is an `other` bottle and never satisfies the
+    Prosecco/Champagne/wine checklist rows (affects no one today); login and
+    signup rate limits live in process memory, so they're per Vercel instance.
 
 ---
 
@@ -427,33 +456,6 @@ chips and status pills stay rounded.
 
 Copies of the newest 2 entries; every entry, oldest first, is in
 [`docs/session-log.md`](docs/session-log.md).
-
-### 2026-11-21 — Performance/serverless DB caching, rotating Featured Pour + one-tap stocking, public Explore/Recipes & hardening (Antigravity)
-
-Reviewed the full app objectively (`B+`, `85/100`) and implemented all three recommended improvements in one pass:
-
-**1. Serverless DB connection reuse, catalog caching & dead asset cleanup (`database.py`, `matching.py`, `app.py`, `static/`):**
-- Added request-scoped DB connection pooling (`_RequestConnProxy` on `flask.g`, closed via `@app.teardown_appcontext` -> `close_request_db()`) in `database.py`, dropping warm `GET /` on Neon from 6–7 remote Postgres handshakes down to `1` connection.
-- Added a 300-second TTL + SQLite mtime-aware catalog cache (`_get_ingredient_catalog()`, `_get_recipe_catalog()`, `invalidate_catalog_cache()`) for read-only `recipes`, `recipe_ingredients`, `recipe_enhancements`, and `ingredients`, returning fresh outer wrapper dicts on `get_all_recipes()` / `get_recipe()` so per-user `your_bottles` annotations never leak across requests.
-- Eliminated duplicate user queries in `home()` (reusing `recs["bottles"]` and `recs["ingredients"]`) and `bar()` (passing `ingredients=` to `get_auto_added_ingredients()`), and replaced per-call `os.path.isfile()` probing in `recipe_image_url()` with a process-cached `_recipe_image_map()`.
-- Removed `44` unused tracked legacy static files (`39` in `static/ingredients/` + `static/auth-login.jpg`, `static/auth-signup.jpg`, `static/hero-cocktail.jpg`, `static/beach-bar-diorama.webp`, `static/beach-bar-sunset.webp`), cutting `static/` from `7.90 MB` (`153` files) to `2.27 MB` (`109` files).
-
-**2. Daily-rotating Featured Pour & one-tap stocking (`app.py`, `matching.py`, `templates/one_away.html`, `templates/recipe.html`):**
-- Replaced Tonight's frozen `pool[0]` hero selection with `pick_featured_pour()` using deterministic per-user cycle permutations with boundary collision swapping so Tonight cycles cleanly through eligible makeable pours daily with zero consecutive repeats.
-- Extended `POST /stock-add` with `_safe_next()` `next` redirect support and ingredient-ID validation, extended `matching.get_one_away_grouped()` with `ingredient_id` / `bottle_type` / `name_matched`, and wired `"I have this"` / `"Add to my bar"` buttons directly onto `/one-away` cards/accordions and missing rows in `/recipe/<id>`.
-
-**3. Public read-only `/explore` & `/recipe/<id>` + hardening (`app.py`, `templates/base.html`, `explore.html`, `recipe.html`, `login.html`, `signup.html`, `static/sw.js`):**
-- Opened `GET /explore` and `GET /recipe/<id>` to logged-out visitors (`0` user queries, no personal bar state leaked, topbar `Log in · Sign up`, recipe `og:title` / `og:description` / `og:image` / `og:url` metadata, `"Match my bar"` dock CTAs, and `"browse all 171 cocktails"` link on `/login` and `/signup`).
-- Added fail-fast `SECRET_KEY` check when `VERCEL` is set, `MAX_CONTENT_LENGTH = 10 MB` + friendly `413` redirect handler, sliding-window per-IP rate limiting on `POST /login` (`15 / 10 min`) and `POST /signup` (`8 / 10 min`), deduplicated `SCANNER_CLASSIFICATION_RULES` across single/shelf vision prompts, and bumped `static/sw.js` `CACHE_VERSION` to `"bomu-v11"`.
-
-**Verified:**
-- Extended `verify_routes.py` (testing public `/explore` + `/recipe/<id>` OG tags, auth redirects, `/one-away` & `/recipe/<id>` one-tap actions, `POST /stock-add` `next=` & open-redirect guard, `<= 1` DB connection on warm `GET /`, catalog cache mutation isolation, and 14-day `pick_featured_pour()` rotation); passes cleanly on both `bomu.db` and `--db bomu_live.db` (`171 ok, 0 failed`).
-- `check_specs.py` (`171` checked / `0` flags) and `sweep_namematch.py` (`0 BROKEN, 6 REVIEW`).
-- Live Neon Postgres read (`backend: postgres`): verified all 5 accounts (`aaron 25/77`, `Avishka 0/0`, `Rajapaksha 0/0`, `lenasheh 0/13`, `Maho 1/13`).
-
-**Open / next:**
-1. Security chore (`#17`): Aaron to delete `step_88.json` log and rotate Neon password.
-2. Remaining backlog (`#5` rum and sherry sub-types).
 
 ### 2026-11-21 (second session) — CLAUDE.md split into current state + docs/session-log.md (Claude Code)
 
@@ -509,3 +511,55 @@ Pushed to `main` on Aaron's go-ahead.
 3. Stale code comments left alone in a docs-only session: `verify_routes.py`,
    `migrate_enhancements.py` and `sweep_namematch.py` still call `bomu.db`
    stale, and `app.py`'s `__main__` comment still says production runs gunicorn.
+
+### 2026-11-21 (third session) — App review, then the scanner fixed for phone photos (Claude Code)
+
+Asked for an objective review with a grade and 3 improvements. Graded **B−
+(about 80/100)**: matcher and catalog A, design A−, code B, security and
+reliability B−, "is it working for the friends" D.
+
+**Evidence (live Neon, read only):** nobody but Aaron has added a bottle,
+scanned or rated since 2026-07-24; all 4 ratings are Aaron's, from April; no
+signups since signup opened on 2026-11-19; Avishka and Rajapaksha have never
+added anything. Visits aren't recorded, so whether friends open the app is
+unknowable. Shehan ticking 6 basics (lemon, lime, simple syrup, soda water,
+sugar, Angostura) would take him from 0 to 9 ready.
+
+**Improvements:** (1) scanner with phone photos, done below; (2) get the
+friends back and record visits: last-seen tracking proposed as its own task,
+not started (backlog #23); (3) slim `CLAUDE.md`, done in the second session.
+
+**Bug found:** Vercel rejects request bodies over 4.5 MB before Flask runs. On
+live, a 5.2 MB logged-out POST to `/scan` got Vercel's bare
+`FUNCTION_PAYLOAD_TOO_LARGE` page; 3 MB reached Flask. The scan forms send the
+camera's full-size photo and `MAX_CONTENT_LENGTH` was 10 MB, so the friendly
+413 message could never fire. Broken since the move to Vercel; unnoticed
+because nobody has scanned since July.
+
+**Changed (`842942b`):**
+- `templates/components/photo_upload.html` (used by `scan.html` and
+  `scan_bulk.html`) shrinks the photo in the browser to a 1568 px JPEG, the
+  size `prepare_image()` uses, with EXIF rotation applied. A file over 4 MB it
+  can't shrink gets an inline message instead of an upload.
+- `MAX_CONTENT_LENGTH` 10 MB -> 4 MB.
+- `log_scan()` runs for every scan Claude answers, identified or not; one that
+  raises (nothing billed) doesn't count. An unreadable photo now uses one of a
+  user's 15 daily scans; before, junk photos could run up the API bill under
+  the caps.
+- Replies parsed without raising (`_parse_scan_json()`). A shelf scan that
+  found nothing rendered "Found 1 bottle" above an empty card; it now says
+  nothing was found.
+- `verify_routes.py` `check_scanner()`: both scan routes with a fake Claude
+  client (no API calls). 5 of its checks fail against the old `app.py`.
+
+**Verified:** `verify_routes.py` on `bomu.db` and `--db bomu_live.db`. In the
+in-app browser (Chromium) on a scratch copy with a fake client: an 11.8 MB
+EXIF-rotated photo arrived as 785 KB, 1176x1568 and upright; a 5 MB file the
+browser can't decode showed the inline message and uploaded nothing. Pushed to
+`main` with the `CLAUDE.md` split. **Not verified:** a real phone on live.
+
+**Open / next:**
+1. Scan once from a real phone on www.bomu.lol (iPhone Safari matters most).
+2. `#17` rotate the Neon password, open since 2026-11-15.
+3. `#23` last-seen tracking, then nudge each friend with their own unlock.
+4. `#24` pre-push check; `#25` small findings from the review.
