@@ -1,0 +1,111 @@
+<script>
+// Shrink a scan photo in the browser before it is uploaded.
+//
+// Vercel refuses any request body over 4.5 MB before the app ever sees it,
+// and answers with a bare "FUNCTION_PAYLOAD_TOO_LARGE" page. A photo straight
+// off a modern phone camera is often bigger than that, so without this the
+// scanner failed for exactly the people it exists for.
+//
+// The server shrinks every photo to 1568 px on its longest side anyway
+// (prepare_image() in app.py), so doing it here loses nothing and turns a
+// 4-8 MB upload into a few hundred KB.
+//
+// Drawing through an <img> applies the photo's EXIF rotation in every
+// current browser, so a portrait shot stays portrait.
+function bomuPhotoUpload(formId, inputId, buttonId, busyText) {
+    var MAX_DIM = 1568;                 // keep in step with prepare_image()
+    var QUALITY = 0.85;
+    var MAX_UPLOAD = 4 * 1024 * 1024;   // keep in step with MAX_CONTENT_LENGTH
+
+    var form = document.getElementById(formId);
+    var input = document.getElementById(inputId);
+    var btn = document.getElementById(buttonId);
+    if (!form || !input || !btn) return;
+    var idleHTML = btn.innerHTML;
+
+    function setBusy(on) {
+        btn.disabled = on;
+        btn.style.opacity = on ? "0.7" : "";
+        if (on) { btn.textContent = busyText; } else { btn.innerHTML = idleHTML; }
+    }
+
+    function showError(text) {
+        var old = form.querySelector(".photo-error");
+        if (old) old.remove();
+        var el = document.createElement("div");
+        el.className = "flash photo-error";
+        el.setAttribute("role", "alert");
+        el.textContent = text;
+        form.insertBefore(el, form.firstChild);
+    }
+
+    function loadImage(file) {
+        return new Promise(function (resolve, reject) {
+            var url = URL.createObjectURL(file);
+            var img = new Image();
+            img.onload = function () { URL.revokeObjectURL(url); resolve(img); };
+            img.onerror = function () { URL.revokeObjectURL(url); reject(new Error("decode")); };
+            img.src = url;
+        });
+    }
+
+    function shrink(file) {
+        return loadImage(file).then(function (img) {
+            var w = img.naturalWidth, h = img.naturalHeight;
+            if (!w || !h) throw new Error("empty image");
+            var scale = Math.min(1, MAX_DIM / Math.max(w, h));
+            var canvas = document.createElement("canvas");
+            canvas.width = Math.round(w * scale);
+            canvas.height = Math.round(h * scale);
+            canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+            return new Promise(function (resolve, reject) {
+                canvas.toBlob(function (blob) {
+                    if (blob) { resolve(blob); } else { reject(new Error("encode")); }
+                }, "image/jpeg", QUALITY);
+            });
+        });
+    }
+
+    function replaceFile(blob) {
+        // DataTransfer is the only way to put a new file in an <input>.
+        // Safari has it from 14.1; older browsers fall through to the catch.
+        var dt = new DataTransfer();
+        dt.items.add(new File([blob], "photo.jpg", { type: "image/jpeg" }));
+        input.files = dt.files;
+    }
+
+    form.addEventListener("submit", function (e) {
+        var file = input.files && input.files[0];
+        if (!file) return;  // let the server say "No photo selected."
+        e.preventDefault();
+        setBusy(true);
+
+        shrink(file).then(function (blob) {
+            // A small JPEG/PNG/WebP that is already lighter than the re-encode
+            // goes as is. Anything else (HEIC from Safari, say) is converted,
+            // because the server can't open it.
+            var serverReadable = /^image\/(jpeg|png|webp)$/.test(file.type);
+            var keepOriginal = serverReadable && file.size <= MAX_UPLOAD && file.size <= blob.size;
+            if (!keepOriginal) {
+                if (blob.size > MAX_UPLOAD) throw new Error("still too big");
+                replaceFile(blob);
+            }
+            form.submit();
+        }).catch(function () {
+            if (file.size <= MAX_UPLOAD) {
+                form.submit();  // couldn't shrink it, but it fits: let the server try
+                return;
+            }
+            setBusy(false);
+            showError("That photo is too big to send, and this browser couldn't shrink it. " +
+                      "Try taking the photo again, or use a screenshot of it.");
+        });
+    });
+
+    // Coming back with the Back button can restore the page with the button
+    // still disabled. Reset it so a second scan works.
+    window.addEventListener("pageshow", function (e) {
+        if (e.persisted) setBusy(false);
+    });
+}
+</script>

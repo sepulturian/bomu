@@ -43,8 +43,12 @@ if os.environ.get("VERCEL") and not _secret:
     raise RuntimeError("SECRET_KEY environment variable must be set on Vercel")
 app.secret_key = _secret or "bomu-dev-key"
 
-# Cap photo uploads at 10 MB so oversized uploads fail fast cleanly.
-app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024
+# Cap uploads at 4 MB. Vercel refuses any request body over 4.5 MB with its own
+# bare error page before Flask runs, so a higher cap here was never reachable:
+# the old 10 MB limit meant this app's friendly 413 message could not fire.
+# Scan pages shrink photos in the browser first (components/photo_upload.html);
+# this cap only catches uploads that skipped that, e.g. with JavaScript off.
+app.config["MAX_CONTENT_LENGTH"] = 4 * 1024 * 1024
 
 # Cookie hardening. SameSite=Lax means the login cookie isn't sent on
 # cross-site form posts (a decent chunk of CSRF protection for free).
@@ -76,7 +80,7 @@ def _teardown_db(exc):
 
 @app.errorhandler(413)
 def _file_too_large(_err):
-    flash("That photo is too large (max 10 MB). Try a smaller photo.")
+    flash("That photo is too large (max 4 MB). Try a smaller photo.")
     target = request.path if request.path in ("/scan", "/scan-bulk") else url_for("bar")
     return redirect(target)
 
@@ -710,6 +714,35 @@ VERMOUTH - sweet and dry are different products, not a spectrum:
 - "vermouth" only if you genuinely cannot tell from the label"""
 
 
+def _reply_text(message):
+    """All text blocks of a Claude reply joined; '' if there are none."""
+    return "".join(
+        getattr(block, "text", "") for block in (message.content or [])
+        if getattr(block, "type", "") == "text"
+    )
+
+
+def _parse_scan_json(text, opener, closer):
+    """The JSON value in a scan reply, or None if there isn't a usable one.
+
+    Never raises. By the time this runs the vision call has been paid for, and
+    the route counts it against the daily caps once this returns, so a chatty
+    or truncated reply should end in a friendly "couldn't read that" rather
+    than a crash that skips the count."""
+    try:
+        return json.loads(text)
+    except (json.JSONDecodeError, TypeError):
+        pass
+    start = text.find(opener)
+    end = text.rfind(closer) + 1
+    if start != -1 and end > start:
+        try:
+            return json.loads(text[start:end])
+        except json.JSONDecodeError:
+            return None
+    return None
+
+
 def scan_bottle_image(image_path):
     """Send a bottle image to Claude vision and get back bottle details."""
     image_data, media_type = prepare_image(image_path)
@@ -741,16 +774,10 @@ Return ONLY the JSON, no other text."""
         }]
     )
 
-    try:
-        result = json.loads(message.content[0].text)
-    except json.JSONDecodeError:
-        text = message.content[0].text
-        start = text.find("{")
-        end = text.rfind("}") + 1
-        if start != -1 and end > start:
-            result = json.loads(text[start:end])
-        else:
-            result = {"name": "", "type": "", "brand": "", "error": "Could not parse response"}
+    result = _parse_scan_json(_reply_text(message), "{", "}")
+    if not isinstance(result, dict) or (not result.get("error") and not str(result.get("name") or "").strip()):
+        result = {"name": "", "type": "", "brand": "",
+                  "error": "Couldn't read that label. Try a closer, sharper photo."}
     return result
 
 
@@ -786,17 +813,18 @@ Return ONLY the JSON array, no other text."""
         }]
     )
 
-    try:
-        result = json.loads(message.content[0].text)
-    except json.JSONDecodeError:
-        text = message.content[0].text
-        start = text.find("[")
-        end = text.rfind("]") + 1
-        if start != -1 and end > start:
-            result = json.loads(text[start:end])
-        else:
-            result = []
-    return result
+    result = _parse_scan_json(_reply_text(message), "[", "]")
+    if isinstance(result, dict):
+        result = [result]
+    if not isinstance(result, list):
+        return []
+    # The "nothing found" answer comes back as a one-item list carrying an
+    # "error" key and a blank name. Drop that, and any other unnamed entry, so
+    # the review page never shows "Found 1 bottle" above an empty card.
+    return [
+        b for b in result
+        if isinstance(b, dict) and not b.get("error") and str(b.get("name") or "").strip()
+    ]
 
 
 @app.route("/sw.js")
@@ -986,6 +1014,8 @@ def scan():
         try:
             result = scan_bottle_image(filepath)
         except Exception:
+            # The photo couldn't be opened, or the API call itself failed, so
+            # (as far as we can tell) nothing was billed and nothing is counted.
             # Full details go to the server log; the user gets a clean message
             # (raw exception text can contain internal details like API errors).
             app.logger.exception("Bottle scan failed")
@@ -995,11 +1025,16 @@ def scan():
             if os.path.exists(filepath):
                 os.remove(filepath)
 
+        # Claude answered, so the call was billed whether or not it could read
+        # the label, and it counts toward both daily caps. Counting only
+        # successful scans let a stream of unreadable photos run up the API
+        # bill without ever reaching SCAN_GLOBAL_DAILY_LIMIT.
+        log_scan(uid())
+
         if result.get("error"):
             flash(result["error"])
             return redirect(url_for("scan"))
 
-        log_scan(uid())
         return render_template("confirm_bottle.html", bottle=result)
 
     return render_template("scan.html")
@@ -1026,6 +1061,7 @@ def scan_bulk():
         try:
             results = scan_shelf_image(filepath)
         except Exception:
+            # Not billed as far as we can tell, so not counted (see scan()).
             app.logger.exception("Shelf scan failed")
             flash("Couldn't scan that photo. Give it another try in a minute.")
             return redirect(url_for("scan_bulk"))
@@ -1033,11 +1069,13 @@ def scan_bulk():
             if os.path.exists(filepath):
                 os.remove(filepath)
 
+        # Answered = billed = counted, even when no bottle was found (see scan()).
+        log_scan(uid())
+
         if not results:
             flash("Could not identify any bottles in the photo.")
             return redirect(url_for("scan_bulk"))
 
-        log_scan(uid())
         return render_template("confirm_bulk.html", bottles=results)
 
     return render_template("scan_bulk.html")

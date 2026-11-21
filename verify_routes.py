@@ -56,6 +56,106 @@ def source_db():
     return os.path.join(HERE, "bomu.db")
 
 
+def check_scanner(c, app_module, database, uid, failures):
+    """POST /scan and /scan-bulk with a fake Claude client: no API calls, no cost.
+
+    Pins down three things added on 2026-11-21:
+    - every scan Claude answers counts toward the daily caps, identified or
+      not (only an exception, where nothing was billed, is free);
+    - a reply that isn't usable JSON ends in a friendly flash, never a 500;
+    - an upload over MAX_CONTENT_LENGTH gets this app's message, which only
+      works because the cap sits under Vercel's 4.5 MB request limit.
+    """
+    from io import BytesIO
+    from types import SimpleNamespace
+    from PIL import Image
+
+    def photo(size_bytes=None):
+        buf = BytesIO()
+        Image.new("RGB", (64, 48), (180, 120, 40)).save(buf, format="JPEG")
+        data = buf.getvalue()
+        if size_bytes:
+            data += b"\0" * (size_bytes - len(data))
+        return (BytesIO(data), "label.jpg")
+
+    class FakeMessages:
+        reply = None
+
+        def create(self, **_kwargs):
+            if isinstance(self.reply, Exception):
+                raise self.reply
+            return SimpleNamespace(content=[SimpleNamespace(type="text", text=self.reply)])
+
+    fake = FakeMessages()
+    real_client = app_module.client
+    app_module.client = SimpleNamespace(messages=fake)
+    print("\n  Scanner (fake Claude client):")
+    try:
+        for path in ("/scan", "/scan-bulk"):
+            body = c.get(path).get_data(as_text=True)
+            if "bomuPhotoUpload(" not in body:
+                failures.append((f"GET {path}", "photo shrink script missing"))
+                print(f"  FAIL  GET {path} has no bomuPhotoUpload()")
+
+        cases = [
+            # (label, path, reply, expected status, counted?, text expected on the final page)
+            ("bottle identified", "/scan",
+             '{"name": "Verify Scan Gin", "type": "gin", "brand": "Verify"}', 200, True, "Verify Scan Gin"),
+            ("bottle not identified", "/scan",
+             '{"name": "", "type": "", "brand": "", "error": "Could not identify this bottle"}',
+             302, True, "Could not identify this bottle"),
+            ("reply not JSON", "/scan", "Sorry, I can't read that.", 302, True, "read that label"),
+            ("API error", "/scan", RuntimeError("simulated API outage"), 302, False, "another try"),
+            ("shelf, nothing found", "/scan-bulk",
+             '[{"name": "", "type": "", "brand": "", "confidence": "low", "error": "Could not identify bottles"}]',
+             302, True, "Could not identify any bottles"),
+            ("shelf, blank entry dropped", "/scan-bulk",
+             '[{"name": "Campari", "type": "liqueur", "brand": "Campari", "confidence": "high"},'
+             ' {"name": "", "type": "", "brand": ""}]', 200, True, "Found 1 bottle."),
+        ]
+        for label, path, reply, want_status, counted, want_text in cases:
+            fake.reply = reply
+            before = database.scans_today(uid)
+            r = c.post(path, data={"photo": photo()}, content_type="multipart/form-data")
+            delta = database.scans_today(uid) - before
+            final = r if r.status_code == 200 else c.get(r.headers.get("Location", path))
+            text = final.get_data(as_text=True)
+            problems = []
+            if r.status_code != want_status:
+                problems.append(f"status {r.status_code}, expected {want_status}")
+            if delta != (1 if counted else 0):
+                problems.append(f"scan count moved by {delta}, expected {1 if counted else 0}")
+            if want_text not in text:
+                problems.append(f"{want_text!r} not shown")
+            if "Traceback (most recent call last)" in text:
+                problems.append("traceback in body")
+            if problems:
+                failures.append((f"POST {path} ({label})", "; ".join(problems)))
+                print(f"  FAIL  POST {path} ({label}): {'; '.join(problems)}")
+            else:
+                print(f"  ok    POST {path} ({label})  counted={counted}")
+
+        # Over the 4 MB cap: this app's redirect + message, not a 413 page.
+        fake.reply = RuntimeError("must not be called")
+        before = database.scans_today(uid)
+        cap = app_module.app.config["MAX_CONTENT_LENGTH"]
+        r = c.post("/scan", data={"photo": photo(cap + 200_000)}, content_type="multipart/form-data")
+        final = c.get(r.headers.get("Location", "/scan")) if r.status_code == 302 else r
+        if cap > 4_500_000:
+            failures.append(("MAX_CONTENT_LENGTH", f"{cap} is above Vercel's 4.5 MB request limit"))
+            print(f"  FAIL  MAX_CONTENT_LENGTH {cap} is above Vercel's 4.5 MB limit")
+        elif r.status_code != 302 or "too large" not in final.get_data(as_text=True):
+            failures.append(("POST /scan (over cap)", f"status {r.status_code}, no 'too large' message"))
+            print(f"  FAIL  POST /scan over the cap: status {r.status_code}")
+        elif database.scans_today(uid) != before:
+            failures.append(("POST /scan (over cap)", "oversized upload was counted"))
+            print("  FAIL  oversized upload was counted as a scan")
+        else:
+            print("  ok    POST /scan over the 4 MB cap -> friendly message, not counted")
+    finally:
+        app_module.client = real_client
+
+
 # Bottles chosen to exercise the interesting matcher paths rather than to be a
 # realistic bar: a fungible spirit, a sub-typed one, both vermouths, and two
 # name-matched liqueurs including one that only matches on the notes field.
@@ -418,6 +518,8 @@ def main():
 
         if bottle_ids:
             visit(c, "GET", f"/edit/{bottle_ids[0]}", follow_redirects=True)
+
+        check_scanner(c, app_module, database, uid, failures)
 
         visit(c, "POST", "/logout", follow_redirects=True)
 
