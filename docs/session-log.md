@@ -1495,7 +1495,7 @@ migration" (2026-11-15, seventh session) was never closed; only
 **Verified:** a script checked that all 300 paragraphs of the old `CLAUDE.md`
 exist word for word in the new `CLAUDE.md` or the log, that every dated entry
 appears exactly once and in order, and that no secret-like strings were added.
-Committed on a branch, not pushed (a push to `main` deploys).
+Pushed to `main` on Aaron's go-ahead.
 
 **Open / next:**
 1. Security chore (`#17`): Aaron to delete the `step_88.json` log and rotate the
