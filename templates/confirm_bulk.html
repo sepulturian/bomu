@@ -3,6 +3,7 @@
 {% block title %}Review Bottles &middot; Bomu{% endblock %}
 
 {% block content %}
+<div class="form-page-narrow">
 <h1>Review Bottles</h1>
 <p style="color: var(--ink-dim); font-size: 0.9rem; margin-bottom: 1.15rem;">
     Found {{ bottles|length }} bottle{{ 's' if bottles|length != 1 else '' }}. Confirm any details before saving.
@@ -22,7 +23,7 @@
                     <div class="form-group">
                         <label>Type</label>
                         <select name="type_{{ loop.index0 }}">
-                            <option value="" {% if bottle.type not in BOTTLE_TYPE_CHOICES|map(attribute=0) %}selected{% endif %}>Choose type &mdash;</option>
+                            <option value="" {% if bottle.type not in BOTTLE_TYPE_CHOICES|map(attribute=0) %}selected{% endif %}>Choose type...</option>
                             {% for value, label in BOTTLE_TYPE_CHOICES %}
                                 <option value="{{ value }}" {% if bottle.type == value %}selected{% endif %}>{{ label }}</option>
                             {% endfor %}
@@ -33,7 +34,7 @@
                         <input type="text" name="brand_{{ loop.index0 }}" value="{{ bottle.brand }}">
                     </div>
                     {% if bottle.confidence == "low" %}
-                        <span class="pill pill-terra">Low confidence &mdash; check label</span>
+                        <span class="pill pill-terra">Low confidence &middot; check label</span>
                     {% endif %}
                 </div>
             </div>
@@ -42,4 +43,5 @@
 
     <button type="submit" class="btn" style="width: 100%; margin-top: 0.35rem;">Add selected bottles</button>
 </form>
+</div>
 {% endblock %}

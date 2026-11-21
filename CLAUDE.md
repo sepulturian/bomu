@@ -89,10 +89,10 @@ Neon, never from the snapshot.
 
 ### Uncommitted image changes of unknown origin
 
-As of 2026-11-14, ~40 older files in `static/` (`*.jpg` and `static/icon-*.png`)
-and untracked `redesign/` working files sit dirty in the local working tree. Leave
+As of 2026-11-14, ~40 older files in `static/` (`static/*.jpg` and `static/ingredients/*.jpg`)
+and untracked `.claude/` and `redesign/` working files sit dirty in the local working tree. Leave
 them unstaged when committing unless intentionally updating them; don't sweep blindly
-with `git add -A`.
+with `git add -A`. (`static/icon-*.png` were intentionally replaced with Espresso & Zest icons and committed on 2026-11-20.)
 
 ---
 
@@ -571,15 +571,6 @@ without it keep the triangle deliberately, since it's the only affordance saying
     during recovery. Delete it, then reset the `neondb_owner` password in the
     Neon console and update `DATABASE_URL` in Vercel (redeploy) and in local
     `.env` (`DATABASE_URL`, `DATABASE_URL_UNPOOLED`). Aaron's action.
-20. **Regenerate near-twin recipe studio WebPs (+ check 73 remote URLs).**
-    **11/13 shipped live 2026-11-20; 2 remaining.** All `73/73` TheCocktailDB
-    `image_url` values verified HTTP 200 (`image/*`). Shipped `11/13`
-    regenerated WebPs (`old_pal`, `bamboo`, `harvard`, `vermouth_cocktail`,
-    `greenpoint`, `camerons_kick`, `rob_roy`, `gibson`, `mary_pickford`,
-    `milano_torino`, `brown_derby` at `480x480`, `sw.js` bumped to `bomu-v9`).
-    Remaining `2` (`mamie_taylor.webp` vs `scotch_highball.webp` and
-    `woo_woo.webp` vs `cape_codder.webp`) hit the image-generator 5-hour quota
-    (`429 RESOURCE_EXHAUSTED`, resets `2026-11-20T20:00:45Z`).
 
 ---
 
@@ -1440,6 +1431,29 @@ Reviewed the live copy critique with Aaron and aligned on four decisions:
 1. Regenerate the final 2 `#20` WebPs (`mamie_taylor.webp` & `woo_woo.webp`, quota resets `2026-11-20T20:00:45Z`).
 2. Security chore (`#17`): Aaron to delete `step_88.json` log and rotate Neon password.
 3. Remaining backlog (`#5` rum and sherry sub-types).
+
+### 2026-11-20 (fourth session) — Complete #20 recipe photos & 6-item visual polish bundle (Antigravity)
+
+Completed the remaining 2/13 recipe studio WebP regenerations for Backlog `#20` (`mamie_taylor.webp` & `woo_woo.webp`, closing `#20`), plus a 6-item visual consistency pass across icons, hero framing, `/one-away`, secondary forms, and mixers UI.
+
+**Changes made:**
+- **Regenerated `static/recipes/mamie_taylor.webp` & `static/recipes/woo_woo.webp` (`480x480` RGB WebP):** Replaced the diagonal-wood near-twins of `scotch_highball.webp` and `cape_codder.webp` with distinct studio highball shots on dark slate against matte espresso backdrops (ribbed highball + rim lime wedge for Mamie Taylor; faceted Collins + slate coaster + frothy shaken ruby-coral liquid + dropped-in lime wedge for Woo Woo).
+- **Espresso & Zest app icons (`static/icon-512.png`, `static/icon-192.png`, `static/icon-180.png`, `templates/base.html`):** Replaced the pre-redesign hot-pink/navy martini favicons with supersampled (`2048x2048` LANCZOS) Espresso (`#140e0a`) & Zest (`#f4c430`) coupe emblem icons matching `manifest.json` and `icons.html`, and cache-busted icon links (`?v=2`) in `base.html`.
+- **Hero framing & CocktailDB brightness consistency (`templates/recipe.html`, `templates/tonight.html`, `templates/base.html`):** Raised mobile `.recipe-hero-media` from `140px` to `230px` with `object-position: center 38%` and softened top scrim fade; switched `.recipe-hero` to a square `200px` 2-column layout at `520px+` (`250x220` at `768px+`); added `object-position: center 38%` to Tonight's Featured Pour & One Away tiles; enlarged mobile `.onboard-media` (`136px -> 168px`, `center 58%`, corrected `alt` text); extended `.drink-thumb img[src^="http"]` dark-surface brightness/contrast filter to `.featured-hero-img`, `.oneaway-img-wrap img`, and `.recipe-hero-media img`.
+- **`/one-away` visual parity (`templates/one_away.html`):** Replaced `999px` pill drink links with compact `42x42` photo thumbnail rows (`.oa-drink-row` with glass fallback, condensed uppercase title, and glass label), and converted "Unlocks 1 Drink" `<details>` blocks to `.accordion-bar` with `chevron-down` disclosure icons.
+- **Secondary form pages & Back links (`templates/base.html`, `add_bottle.html`, `edit_bottle.html`, `scan.html`, `scan_bulk.html`, `confirm_bottle.html`, `confirm_bulk.html`, `one_away.html`):** Added `.back-link` text style replacing inline `999px` Back chips, and wrapped all six form pages in `.form-page-narrow` (`max-width: 520px` on desktop).
+- **Mixers button & remaining UI em-dashes (`templates/my_bar.html`, `add_bottle.html`, `edit_bottle.html`, `confirm_bottle.html`, `confirm_bulk.html`, `static/sw.js`):** Moved the redundant `"Save mixers"` submit button inside `<noscript>` (auto-save toast remains active for JS), replaced visible `&mdash;` in select placeholders, low-confidence pills, and `sw.js` offline fallback copy, and bumped `static/sw.js` `CACHE_VERSION` from `"bomu-v9"` to `"bomu-v10"`.
+
+**Verified:**
+- Visual inspection of regenerated `mamie_taylor.webp`, `woo_woo.webp`, `icon-512.png`, `icon-192.png`, and `icon-180.png`.
+- Pairwise `32x32` RGB RMSE checks: `mamie_taylor` vs `scotch_highball` = `48.3`, `woo_woo` vs `cape_codder` = `58.6`, `0` pairs across all `98` local WebPs `< 18.0`, and `171/171` recipes resolve to valid image targets.
+- Zero remaining visible `&mdash;` / `—` across all `templates/**/*.html` and `static/sw.js`.
+- `venv\Scripts\python.exe verify_routes.py` and `verify_routes.py --db bomu_live.db`: all routes + `171/171` recipe pages pass (`171 ok, 0 failed`).
+
+**Open / next:**
+1. Security chore (`#17`): Aaron to delete `step_88.json` log and rotate Neon password.
+2. Remaining backlog (`#5` rum and sherry sub-types).
+
 
 
 

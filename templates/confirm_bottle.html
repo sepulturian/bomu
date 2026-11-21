@@ -3,6 +3,7 @@
 {% block title %}Confirm Bottle &middot; Bomu{% endblock %}
 
 {% block content %}
+<div class="form-page-narrow">
 <h1>Confirm Bottle</h1>
 <p style="color: var(--ink-dim); font-size: 0.9rem; margin-bottom: 1.15rem;">
     Review what the label read, adjust if needed, then save.
@@ -18,7 +19,7 @@
     <div class="form-group">
         <label for="type">Bottle Type</label>
         <select id="type" name="type" required>
-            <option value="">Choose type &mdash;</option>
+            <option value="">Choose type...</option>
             {% for value, label in BOTTLE_TYPE_CHOICES %}
                 <option value="{{ value }}" {% if bottle.type == value %}selected{% endif %}>{{ label }}</option>
             {% endfor %}
@@ -35,4 +36,5 @@
         <a href="/scan" class="btn btn-secondary">Scan again</a>
     </div>
 </form>
+</div>
 {% endblock %}

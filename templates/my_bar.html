@@ -620,9 +620,11 @@
             </details>
         {% endif %}
 
-        <div style="margin-top: 0.9rem;">
-            <button type="submit" class="btn btn-secondary" style="width: 100%;">Save mixers</button>
-        </div>
+        <noscript>
+            <div style="margin-top: 0.9rem;">
+                <button type="submit" class="btn btn-secondary" style="width: 100%;">Save mixers</button>
+            </div>
+        </noscript>
     </form>
 </section>
 
@@ -673,7 +675,7 @@
                 <button type="button" class="more-types-link" id="other-type-chip">More types <span class="caret" aria-hidden="true">&#9662;</span></button>
                 <div class="sheet-type-select-wrap" id="sheet-type-wrap">
                     <select id="sheet-type" name="type" required>
-                        <option value="">Choose type &mdash;</option>
+                        <option value="">Choose type...</option>
                         {% for value, label in BOTTLE_TYPE_CHOICES %}
                             <option value="{{ value }}" {% if value == prefill_type %}selected{% endif %}>{{ label }}</option>
                         {% endfor %}

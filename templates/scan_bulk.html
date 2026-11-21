@@ -6,7 +6,8 @@
 {% block title %}Scan Shelf &middot; Bomu{% endblock %}
 
 {% block content %}
-<a href="/bar" style="display: inline-flex; align-items: center; gap: 0.25rem; min-height: 44px; padding: 0 0.75rem 0 0.4rem; border-radius: var(--radius-pill); background: var(--bg-elevated); border: 1px solid var(--border-subtle); color: var(--ink-dim); font-size: 0.84rem; font-weight: 600; margin-bottom: 0.85rem;">
+<div class="form-page-narrow">
+<a href="/bar" class="back-link">
     {{ ui_icon("back", "btn-icon") }}
     <span>Bar</span>
 </a>
@@ -27,6 +28,7 @@
             <span>Scan shelf</span>
         </button>
     </form>
+</div>
 </div>
 {% endblock %}
 

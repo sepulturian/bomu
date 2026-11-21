@@ -6,7 +6,7 @@
 //   - Static assets (/static/): cache-first, they rarely change.
 // Bump CACHE_VERSION whenever cached behavior needs a hard reset.
 
-const CACHE_VERSION = "bomu-v9";
+const CACHE_VERSION = "bomu-v10";
 
 const PRECACHE = [
     "/static/manifest.json",
@@ -64,8 +64,8 @@ self.addEventListener("fetch", (event) => {
             fetch(request).catch(() => new Response(
                 "<html><body style=\"background:#140e0a;color:#f7f1e8;" +
                 "font-family:sans-serif;text-align:center;padding-top:4rem\">" +
-                "<h1>BOMU</h1><p>You're offline. Reconnect and try again " +
-                "&mdash; the bar's still here.</p></body></html>",
+                "<h1>BOMU</h1><p>You're offline. Reconnect and try again. " +
+                "The bar's still here.</p></body></html>",
                 { headers: { "Content-Type": "text/html" } }
             ))
         );

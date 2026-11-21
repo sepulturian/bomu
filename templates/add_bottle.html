@@ -6,7 +6,8 @@
 {% block title %}Add Bottle &middot; Bomu{% endblock %}
 
 {% block content %}
-<a href="/bar" style="display: inline-flex; align-items: center; gap: 0.25rem; min-height: 44px; padding: 0 0.75rem 0 0.4rem; border-radius: var(--radius-pill); background: var(--bg-elevated); border: 1px solid var(--border-subtle); color: var(--ink-dim); font-size: 0.84rem; font-weight: 600; margin-bottom: 0.85rem;">
+<div class="form-page-narrow">
+<a href="/bar" class="back-link">
     {{ ui_icon("back", "btn-icon") }}
     <span>Bar</span>
 </a>
@@ -22,7 +23,7 @@
     <div class="form-group">
         <label for="type">Bottle Type</label>
         <select id="type" name="type" required>
-            <option value="">Choose type &mdash;</option>
+            <option value="">Choose type...</option>
             {% for value, label in BOTTLE_TYPE_CHOICES %}
                 <option value="{{ value }}">{{ label }}</option>
             {% endfor %}
@@ -36,4 +37,5 @@
 
     <button type="submit" class="btn" style="width: 100%; margin-top: 0.35rem;">Add to my bar</button>
 </form>
+</div>
 {% endblock %}

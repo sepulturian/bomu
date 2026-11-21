@@ -4,8 +4,96 @@
 
 {% block title %}One Away &middot; Bomu{% endblock %}
 
+{% block extra_css %}
+<style>
+    .oa-drink-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.42rem;
+    }
+
+    .oa-drink-row {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        min-height: 54px;
+        padding: 0.35rem 0.75rem 0.35rem 0.38rem;
+        border-radius: var(--radius-control);
+        background: var(--bg-pill);
+        border: 1px solid var(--border-subtle);
+        transition: background var(--dur-snap) var(--ease-snap);
+    }
+
+    .oa-drink-row:hover {
+        background: var(--bg-pill-hover);
+    }
+
+    .oa-thumb {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+    }
+
+    .oa-thumb .drink-thumb-fallback .glass-sig {
+        width: 18px;
+        height: 18px;
+    }
+
+    .oa-drink-title {
+        font-family: var(--font-display);
+        font-weight: 700;
+        font-size: 1.06rem;
+        letter-spacing: 0.015em;
+        text-transform: uppercase;
+        line-height: 1.08;
+        color: var(--ink);
+    }
+
+    .oa-drink-glass {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.28rem;
+        margin-top: 0.12rem;
+        font-size: 0.72rem;
+        color: var(--ink-dim);
+    }
+
+    .oa-drink-glass .glass-sig {
+        width: 13px;
+        height: 13px;
+        color: var(--zest);
+        flex-shrink: 0;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<a href="/" style="display: inline-flex; align-items: center; gap: 0.25rem; min-height: 44px; padding: 0 0.75rem 0 0.4rem; border-radius: var(--radius-pill); background: var(--bg-elevated); border: 1px solid var(--border-subtle); color: var(--ink-dim); font-size: 0.84rem; font-weight: 600; margin-bottom: 0.85rem;">
+{% macro oa_drink(recipe) -%}
+    {% set img_url = recipe|recipe_image %}
+    <a href="/recipe/{{ recipe.id }}" class="oa-drink-row">
+        <div class="drink-thumb oa-thumb">
+            {% if img_url %}
+                <img src="{{ img_url }}" alt="{{ recipe.name }}" loading="lazy"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            {% endif %}
+            <div class="drink-thumb-fallback" {% if img_url %}style="display: none;"{% endif %}>
+                {{ glass_icon(recipe.glass) }}
+            </div>
+        </div>
+        <div class="drink-meta">
+            <div class="oa-drink-title">{{ recipe.name }}</div>
+            {% if recipe.glass %}
+                <div class="oa-drink-glass">
+                    {{ glass_icon(recipe.glass) }}
+                    <span>{{ recipe.glass|glass_label }}</span>
+                </div>
+            {% endif %}
+        </div>
+        {{ ui_icon("chevron", "row-chevron") }}
+    </a>
+{%- endmacro %}
+
+<a href="/" class="back-link">
     {{ ui_icon("back", "btn-icon") }}
     <span>Tonight</span>
 </a>
@@ -43,16 +131,9 @@
             </div>
         {% endif %}
 
-        <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+        <div class="oa-drink-list">
             {% for r in g.recipes %}
-                <a href="/recipe/{{ r.recipe.id }}"
-                   style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; min-height: 46px; padding: 0.5rem 0.9rem; border-radius: var(--radius-pill); background: var(--bg-pill); border: 1px solid var(--border-subtle);">
-                    <span style="display: inline-flex; align-items: center; gap: 0.45rem; font-weight: 600; font-size: 0.92rem;">
-                        <span style="color: var(--zest); display: inline-flex; width: 16px; height: 16px;">{{ glass_icon(r.recipe.glass) }}</span>
-                        <span>{{ r.recipe.name }}</span>
-                    </span>
-                    {{ ui_icon("chevron", "row-chevron") }}
-                </a>
+                {{ oa_drink(r.recipe) }}
             {% endfor %}
         </div>
     </div>
@@ -66,23 +147,22 @@
 {% if singles %}
     <h2 style="margin-top: 1.5rem;">Unlocks 1 Drink</h2>
     {% for g in singles %}
-        <details style="background: var(--bg-elevated); border: 1px solid var(--border-subtle); border-radius: 22px; margin-bottom: 0.5rem;">
-            <summary class="bare" style="cursor: pointer; min-height: 50px; padding: 0.65rem 1rem; display: flex; justify-content: space-between; align-items: center; gap: 0.75rem;">
-                <span style="font-weight: 600; color: var(--zest);">{{ g.missing.name|type_label }}</span>
-                <span style="font-size: 0.82rem; color: var(--ink-dim);">{{ g.recipes[0].recipe.name }}</span>
+        <details class="accordion-bar">
+            <summary class="bare accordion-summary">
+                <span class="accordion-title" style="color: var(--zest);">{{ g.missing.name|type_label }}</span>
+                <span class="accordion-right">
+                    <span style="font-size: 0.82rem; color: var(--ink-dim); max-width: 45vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ g.recipes[0].recipe.name }}</span>
+                    {{ ui_icon("chevron-down", "accordion-chev") }}
+                </span>
             </summary>
-            <div style="padding: 0 0.9rem 0.9rem;">
+            <div style="padding: 0 0.85rem 0.85rem;">
                 {% set sugs = g.missing.name|suggestions %}
                 {% if sugs %}
                     <div style="font-size: 0.82rem; color: var(--ink); margin-bottom: 0.6rem; padding: 0.5rem 0.8rem; background: var(--bg-pill); border-radius: 14px;">
                         <span style="color: var(--ink-dim);">Try:</span> {{ sugs | join(' · ') }}
                     </div>
                 {% endif %}
-                <a href="/recipe/{{ g.recipes[0].recipe.id }}"
-                   style="display: flex; align-items: center; justify-content: space-between; min-height: 46px; padding: 0.5rem 0.9rem; border-radius: var(--radius-pill); background: var(--bg-pill); border: 1px solid var(--border-subtle);">
-                    <span style="font-weight: 600;">{{ g.recipes[0].recipe.name }}</span>
-                    {{ ui_icon("chevron", "row-chevron") }}
-                </a>
+                {{ oa_drink(g.recipes[0].recipe) }}
             </div>
         </details>
     {% endfor %}
