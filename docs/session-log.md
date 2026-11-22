@@ -1637,3 +1637,15 @@ Neon's pooler can outlive the client: use the unpooled URL, never commit.
 2. Make each friend a link and send it with their own unlock.
 3. Open one link on a real phone through the chat app it'll travel in.
 4. `#23` last-seen tracking; this change is self-contained, merge either order.
+
+### 2026-11-22 — Mobile UI redesign via blind design-critic iterations (Antigravity)
+
+Redesigned Bomu's phone UI across 7 views (`Tonight`, `Bar: Bottles`, `Bar: Mixers`, `Add Sheet`, `Explore`, `Recipe`, `Onboarding`) through baseline + 3 blind `design-critic` rounds at `390×844` (`5.5` → `5.8` → `6.4` → `6.3`, plus `8.3` on targeted color/CTA pass), Aaron's review, and final micro-polish.
+
+**Changed:** `base.html`, `components/icons.html` (obsidian/espresso palette, antique brass `#dfb049`, Botanical Sage `#6e9f77` Ready/Stocked states, Dormant Brass Glass disabled `.btn`, SVG tabbar on solid `#120e0b`, backlit `cocktail_specimen` glassware icons, kept `username · out`); `tonight.html` (full-bleed Featured Pour, borderless One Away carousel, `More to pour`, 3×4 onboarding); `my_bar.html`, `app.py` (default spirit-grouped backbar with `group_ready_counts` and spirit markers, 2-col Mixers grid, 3×3 Add Sheet, `martini`/`coupe` split, `classify_drink_style()` fix, cached `_recipe_meta_map()`); `explore.html`, `saved.html`, `one_away.html` (2-band Explore header + filter drawer, unified specimen rows); `recipe.html` (full-bleed hero, deduplicated Pour List, `1× | 2×` scaler, solid `#120e0b` bartender dock). Added 6 chiaroscuro WebPs in `static/recipes/` (`americano`, `boulevardier`, `daiquiri`, `gimlet`, `negroni`, `screwdriver`); bumped `static/sw.js` to `bomu-v12`. **Untouched:** `matching.py`, `database.py`, schema, `bomu.db`, Neon.
+
+**Verified:** `verify_routes.py` (`171 ok, 0 failed`), `app.py` CRLF intact, zero `|safe`, headless Edge `390×844` captures across all 7 screens (`brokenImgs: []`).
+
+**Gotchas:** Duplicate `drink_style` filter on `app.py` line 855 silently overwrote `recipe_drink_style`; `scroll-snap-align: start` needed `scroll-padding-inline` on horizontal carousels; `rgba(..., 0.98)` bottom bars still bled text on OLED black until made solid `#120e0b`.
+
+**Open / next:** Verify on a real phone on `www.bomu.lol` (`bomu-v12` SW); backlog `#17` Neon password, `#23` last-seen, send sign-in links.

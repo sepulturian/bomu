@@ -53,9 +53,8 @@ users on 0. **Nobody but Aaron has added, scanned or rated anything since
 Visits aren't recorded (#23). **Read user counts from Neon:** `bomu.db` matches its catalog, not
 its per-user tables, and `bomu_live.db` is the frozen 2026-11-15 snapshot.
 
-**Account recovery** (single-use sign-in links plus `/account/password`; see
-`### Sign-in links`) is live, and Neon has its `login_links` table
-(2026-11-21). No links have been made yet.
+**Account recovery** (`login_links` on Neon 2026-11-21; see `### Sign-in
+links`) is live; no links have been made yet.
 
 **Untracked in the main checkout:** `.claude/` (preview `launch.json`, agent
 worktrees) and `redesign/` (the 2026-11-14 brief and mockups). Stage files by
@@ -105,19 +104,18 @@ Migrations run from the laptop against Neon (the 2026-11 scripts take
 
 ### Sign-in links
 
-Accounts have no email; a locked-out friend gets a link from Aaron. From the
-main checkout (its `.env` means **live Neon**; the first line says which):
+No email recovery: from the main checkout (`.env` -> **live Neon**, printed on
+line 1):
 
 ```powershell
 venv\Scripts\python.exe make_login_link.py <username>
 ```
 
-It prints `https://www.bomu.lol/signin/<token>`: works once, lasts 7 days, and
-a new link for someone switches off their older unused ones. `login_links`
-holds only the token's SHA-256. Opening the link spends nothing; its button
-POSTs, signs in and lands on `/account/password`, which skips the current
-password for 15 minutes. `migrate_login_links_2026_11.py` made the table
-(Neon, 2026-11-21); without it links show the expired page and nothing breaks.
+Prints a 7-day, single-use `https://www.bomu.lol/signin/<token>` (SHA-256 in
+`login_links`; revokes older unused links). GET spends nothing; its POST
+button signs in to `/account/password` (skips current password for 15 min).
+`migrate_login_links_2026_11.py` created the Neon table (2026-11-21); without it
+links show the expired page.
 
 ### Verification
 
@@ -185,7 +183,7 @@ positives.
   inner objects: never mutate `recipe` or `ingredients`.
 - **The service worker serves `/static/` cache-first**, so a replaced image
   keeps its old copy until `CACHE_VERSION` in `static/sw.js` is bumped
-  (`bomu-v11` now).
+  (`bomu-v12` now).
 - **A rotated Neon password** shows as `POST /login` 500 (`password
   authentication failed`) while `GET /login` is still 200. Update
   `DATABASE_URL` in Vercel, redeploy, then update `.env`.
@@ -227,12 +225,11 @@ Columns `id`, `recipe_id`, `raw_name`, `raw_measure`, `requirement_type`,
 | `ingredient` | matches the user's Mixers checklist by exact `ingredient_name`. Must already exist in `ingredients` (49 rows) or it can never be satisfied. |
 | `optional` | garnishes, rinses, floats. Never blocks makeability. |
 
-**`raw_name` (the product, e.g. `Pimm's No. 1`) and `ingredient_name` (a
-checklist key, NULL on every `bottle_type` row) are different columns.** The
-matcher reads `raw_name` for name matching (`_liqueur_satisfied`,
-`match_recipe`, `missing_ingredient_ids`); `notes` is a second chance, not the
-key. An audit reading `ingredient_name` on bottle rows invents a catastrophe:
-35 "broken" of 84 when the truth was 1 of 87.
+**`raw_name` (e.g. `Pimm's No. 1`) and `ingredient_name` (checklist key, NULL on
+every `bottle_type` row) are different columns.** Name matching reads
+`raw_name` (`_liqueur_satisfied`, `match_recipe`, `missing_ingredient_ids`) with
+`notes` as fallback; querying `ingredient_name` on bottle rows yields false
+broken counts.
 
 A `bottle_type` row with an empty `bottle_type` is silently skipped by both
 functions, so a malformed import row fails open. Validate in the import script.
@@ -244,8 +241,8 @@ functions, so a malformed import row fails open. Validate in the import script.
 numbers every line, so prose there renders as a step (it did, on every recipe,
 for three months). Prose goes in `about` (all 171; origin and flavour) or
 `tip` (125; "Worth knowing"), from `about_text.py` keyed by recipe name.
-`check_specs.py` flags violations under SHAPE. Images: 73 TheCocktailDB
-`image_url`s and 98 studio WebPs at `static/recipes/<slug>.webp`;
+`check_specs.py` flags violations under SHAPE. Images: 67 TheCocktailDB
+`image_url`s and 104 studio WebPs at `static/recipes/<slug>.webp`;
 `recipe_image_url()` prefers the local file. Every recipe has one.
 
 **Copy rules** (also in the `about_text.py` and `enhance_text.py` docstrings):
@@ -333,28 +330,24 @@ blended Scotch and Islay float are one `scotch` slot.
 lists used), `build_onboarding_data()`, and the onboarding JS in
 `tonight.html` (`canFillSlots`).
 
-### The one-ingredient spotlight (replaced the mixer gap, 2026-11-15)
+### The one-ingredient spotlight (replaced mixer gap, 2026-11-15)
 
-`build_one_away_spotlight()` picks the ONE mixer or bottle that unlocks the
-most drinks (an exact count: every one-away recipe has one blocker) for a card
-on Tonight.
+`build_one_away_spotlight()` picks the ONE mixer or bottle unlocking the most
+drinks for Tonight's card.
 
-- Mixers get a one-drink head start (often owned, never ticked); the 2-drink
-  floor applies **before** ranking (after, it hid Shehan's only card). Rotates
-  daily across the top 4. Mixers with no checklist row are skipped.
-- Headline drink: liked first, never disliked if avoidable, then the lowest
-  recipe id (the oldest rows are the classics).
-- "I have this" POSTs to `/stock-add`; "Add to my bar" links to
-  `/bar?sheet=add&type=…` (`&name=…` when name-matched; `/bar` only accepts
-  `VALID_BOTTLE_TYPES`). `/one-away` and recipe pages carry the same buttons.
-- Copy: `SPOTLIGHT_LINES` in `app.py`, rotated by date, built as
-  `(text, is_drink)` segments so no `|safe` is needed.
+- Mixers get a 1-drink head start; the 2-drink floor applies **before** ranking
+  (after, it hid Shehan's card). Rotates daily across top 4; unchecklistable
+  mixers are skipped.
+- Headline drink: liked first, avoids disliked, then lowest recipe id.
+- "I have this" POSTs `/stock-add`; "Add to my bar" links to
+  `/bar?sheet=add&type=…` (`&name=…` if name-matched; `/bar` checks
+  `VALID_BOTTLE_TYPES`). `/one-away` and recipe pages share these buttons.
+- Copy: `SPOTLIGHT_LINES` in `app.py`, `(text, is_drink)` segments (no `|safe`).
 
-Also on Tonight: 0-ready users with bottles get the Quick Kitchen Check
-(`build_kitchen_check()`: up to 10 non-wine mixers by greedy set cover), empty
-bars the 2-step onboarding, and the Featured Pour comes from
-`pick_featured_pour()` (per-user daily rotation, never the same drink two days
-running).
+Also on Tonight: 0-ready users with bottles get Quick Kitchen Check
+(`build_kitchen_check()`: <=10 non-wine mixers), empty bars get 2-step
+onboarding, and `pick_featured_pour()` rotates daily without back-to-back
+repeats.
 
 **Never key a template dict with a dict-method name** (`items`, `keys`,
 `values`, `get`): Jinja resolves `gap.items` to `dict.items()` and the page 500s
@@ -423,19 +416,23 @@ script.
 
 ## Templates
 
-`base.html` holds the design system in one `<style>` block ("Espresso & Zest":
-`--bg-base` #110d0a, `--zest` #f4c430, sage / terracotta for status, Barlow
-Condensed display, Plus Jakarta Sans body). Page styling is inline; anything
-used by two templates belongs in `base.html`.
+`base.html` holds the design system in one `<style>` block ("Nocturnal Speakeasy
+Utility": `--bg-base` `#0b0907`, `--zest` `#dfb049`, `--sage` `#6e9f77` for
+Ready/Stocked, `--terracotta` `#d46b50`, Barlow Condensed display, Plus Jakarta
+Sans UI/tabular numerals). Page styling is inline; shared rules belong in
+`base.html`. Drink lists use `cocktail_specimen` glassware SVGs (tones via
+cached `_recipe_meta_map()`); full-bleed photos sit on Tonight's Featured Pour,
+One Away carousel, Recipe headers, and Onboarding. Bottom bars are solid
+`#120e0b`; Recipe includes a `1× | 2×` scaler.
 
 **Buttons ("the pour")** are documented above `.btn` in `base.html`. `.btn` is
-the ONE main action per view (solid zest, liquid fill on hover and press,
-`.is-pouring` on tap); `.btn-glass` pours full on press and needs `data-label`
-matching its text; `.btn-secondary`, `.btn-ghost` and `.btn-danger` are quiet.
-`.btn` is `white-space: nowrap` (the glass label's dark copy only lines up on
-one line), so long labels overflow. No offset shadows, all-caps, serif
-buttons, gradients, glows or 999px radii on buttons (Aaron: "an AI giveaway");
-chips and status pills stay rounded.
+the ONE main action per view (solid zest, liquid fill on hover/press,
+`.is-pouring` on tap; disabled primary `.btn` uses Dormant Brass Glass until
+valid); `.btn-glass` pours full on press and needs `data-label` matching its
+text; `.btn-secondary`, `.btn-ghost` and `.btn-danger` are quiet. `.btn` is
+`white-space: nowrap`, so long labels overflow. No offset shadows, all-caps,
+serif buttons, gradients, glows or 999px button radii ("an AI giveaway"); chips
+and status pills stay rounded.
 
 - **Words:** "Ready" means makeable, "One away" means one ingredient short.
   Tonight's stat line says "almost there" so no word-number follows a digit.
@@ -477,13 +474,12 @@ chips and status pills stay rounded.
 24. **Check before deploying.** Every push to `main` goes to production
     unchecked; `verify_routes.py` takes ~3 s. A tracked pre-push hook
     (`core.hooksPath`) or a GitHub Action.
-25. **Small findings from the 2026-11-21 review.** Recipe rows repeat the name
-    in the note line ("Campari / Campari"); My Bar's tab reads "Mixers ( 15/49 )"
-    with stray spaces; "Surprise me", "Add to my bar" and "out" are 36-40 px
-    tall; TheCocktailDB images load at 700 px for ~150 px tiles; a scanned
-    Prosecco or wine bottle is an `other` bottle and never satisfies the
-    Prosecco/Champagne/wine checklist rows (affects no one today); login and
-    signup rate limits live in process memory, so they're per Vercel instance.
+25. **Small findings from the 2026-11-21 review.** "Surprise me", "Add to my bar"
+    and "out" are 36-40 px tall; TheCocktailDB images load at 700 px for ~150 px
+    tiles; a scanned Prosecco or wine bottle is an `other` bottle and never
+    satisfies the Prosecco/Champagne/wine checklist rows (affects no one today);
+    login and signup rate limits live in process memory, so they're per Vercel
+    instance.
 
 ---
 
@@ -491,46 +487,6 @@ chips and status pills stay rounded.
 
 Copies of the newest 2 entries; every entry, oldest first, is in
 [`docs/session-log.md`](docs/session-log.md).
-
-### 2026-11-21 (fourth session) — Second review, then Mixers autosave fixed (Claude Code)
-
-Second review: still **B−, about 81/100** (code up to B+; security and
-reliability still B−; "working for the friends" still D, no friend activity
-since 2026-07-24). New improvements: (1) one-tap sign-in links and a password
-change page, since there is no account recovery at all (running as its own
-session on branch `claude/distracted-spence-fcfce8`, not merged); (2) Mixers
-saving, fixed below; (3) error alerts such as Sentry (needs Aaron's account).
-Also noted: no backup of Neon (snapshot with a Neon branch before migrations),
-the `?` to `%s` rewrite in `database.py`, `/robots.txt` 404.
-
-**Bugs found (reproduced on a scratch copy):** the Mixers page autosaved by
-posting its whole checklist to `/checklist`, which replaced the user's ticks.
-A page opened before an "I have this" tap elsewhere unticked that item on its
-next save (Grenadine). Signed out, a tick showed "Saved · 17 stocked" and stored
-nothing, because `fetch()` followed the login redirect to a 200 page; a dropped
-connection failed silently. Enter in the filter box would submit the whole form.
-
-**Changed:**
-- `POST /checklist/item` + `set_ingredient_stock()`: one tick per request,
-  JSON with the real count; unknown ids get a 400.
-- `login_required`: signed-out `X-Requested-With: fetch` requests get a 401
-  JSON answer instead of a redirect.
-- `my_bar.html`: saves queue one at a time; a failed save puts the box back
-  with "Not saved: you've been signed out." or "Not saved. Check your
-  connection."; Enter in the filter no longer submits; Back reloads the page.
-- `/checklist` (no-JS submit) drops junk ids instead of 500ing.
-- `verify_routes.py` `check_mixers_save()`: 9 checks.
-
-**Verified:** `verify_routes.py` on `bomu.db` and `--db bomu_live.db`; both
-repros, a simulated dropped connection and Enter in the filter, in the in-app
-browser at phone width; Neon's `user_stock` has the primary key
-`ON CONFLICT` needs (read-only check). Pushed to `main`.
-
-**Open / next:**
-1. Merge the sign-in links branch when its session finishes (needs a Neon
-   migration first, with Aaron's OK).
-2. Error alerts (needs a Sentry account); `#23` last-seen tracking.
-3. `#17` rotate the Neon password; scan once from a real phone.
 
 ### 2026-11-21 (fifth session) — Account recovery: single-use sign-in links and change password (Claude Code)
 
@@ -572,3 +528,15 @@ Neon's pooler can outlive the client: use the unpooled URL, never commit.
 2. Make each friend a link and send it with their own unlock.
 3. Open one link on a real phone through the chat app it'll travel in.
 4. `#23` last-seen tracking; this change is self-contained, merge either order.
+
+### 2026-11-22 — Mobile UI redesign via blind design-critic iterations (Antigravity)
+
+Redesigned Bomu's phone UI across 7 views (`Tonight`, `Bar: Bottles`, `Bar: Mixers`, `Add Sheet`, `Explore`, `Recipe`, `Onboarding`) through baseline + 3 blind `design-critic` rounds at `390×844` (`5.5` → `5.8` → `6.4` → `6.3`, plus `8.3` on targeted color/CTA pass), Aaron's review, and final micro-polish.
+
+**Changed:** `base.html`, `components/icons.html` (obsidian/espresso palette, antique brass `#dfb049`, Botanical Sage `#6e9f77` Ready/Stocked states, Dormant Brass Glass disabled `.btn`, SVG tabbar on solid `#120e0b`, backlit `cocktail_specimen` glassware icons, kept `username · out`); `tonight.html` (full-bleed Featured Pour, borderless One Away carousel, `More to pour`, 3×4 onboarding); `my_bar.html`, `app.py` (default spirit-grouped backbar with `group_ready_counts` and spirit markers, 2-col Mixers grid, 3×3 Add Sheet, `martini`/`coupe` split, `classify_drink_style()` fix, cached `_recipe_meta_map()`); `explore.html`, `saved.html`, `one_away.html` (2-band Explore header + filter drawer, unified specimen rows); `recipe.html` (full-bleed hero, deduplicated Pour List, `1× | 2×` scaler, solid `#120e0b` bartender dock). Added 6 chiaroscuro WebPs in `static/recipes/` (`americano`, `boulevardier`, `daiquiri`, `gimlet`, `negroni`, `screwdriver`); bumped `static/sw.js` to `bomu-v12`. **Untouched:** `matching.py`, `database.py`, schema, `bomu.db`, Neon.
+
+**Verified:** `verify_routes.py` (`171 ok, 0 failed`), `app.py` CRLF intact, zero `|safe`, headless Edge `390×844` captures across all 7 screens (`brokenImgs: []`).
+
+**Gotchas:** Duplicate `drink_style` filter on `app.py` line 855 silently overwrote `recipe_drink_style`; `scroll-snap-align: start` needed `scroll-padding-inline` on horizontal carousels; `rgba(..., 0.98)` bottom bars still bled text on OLED black until made solid `#120e0b`.
+
+**Open / next:** Verify on a real phone on `www.bomu.lol` (`bomu-v12` SW); backlog `#17` Neon password, `#23` last-seen, send sign-in links.

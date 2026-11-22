@@ -10,55 +10,153 @@
         align-items: center;
         justify-content: space-between;
         gap: 0.75rem;
-        margin-bottom: 0.7rem;
+        height: 40px;
+        min-height: 40px;
+        margin-bottom: 0.75rem;
     }
 
     .bar-head h1 { margin-bottom: 0; }
-    .is-hidden { display: none !important; }
+
+    .bar-add-btn {
+        min-height: 34px;
+        height: 34px;
+        padding: 0 0.85rem;
+        font-size: 0.88rem;
+        border-radius: 8px;
+    }
 
     .pane { display: none; }
     .pane.is-active { display: block; }
 
-    /* Compact Bottle Rows (Tonal elevation, zero outer box borders) */
+    /* Combined Search + View Toggle Row */
+    .bar-tools-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.9rem;
+    }
+
+    .bar-sort-toggle {
+        min-height: 44px;
+        padding: 0 0.85rem;
+        border-radius: var(--radius-control);
+        background: var(--bg-elevated);
+        border: 1px solid rgba(255, 236, 214, 0.12);
+        color: var(--ink-champagne);
+        font-size: 0.78rem;
+        font-weight: 600;
+        white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        transition: color var(--dur-snap) var(--ease-snap), background var(--dur-snap) var(--ease-snap), border-color var(--dur-snap) var(--ease-snap);
+    }
+
+    .bar-sort-toggle:hover {
+        background: var(--bg-surface);
+        border-color: rgba(255, 236, 214, 0.2);
+        color: var(--ink);
+    }
+
+    /* Curated Backbar Groups */
+    .bottle-group {
+        margin-bottom: 0.95rem;
+    }
+
+    .backbar-group-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        padding: 0.2rem 0 0.42rem;
+        border-bottom: 1px solid var(--hairline-strong);
+    }
+
+    .backbar-group-title {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        font-family: var(--font-body);
+        font-weight: 600;
+        font-size: 0.72rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ink-dim);
+    }
+
+    .spirit-mark {
+        display: inline-block;
+        width: 2.5px;
+        height: 11px;
+        border-radius: 2px;
+        flex-shrink: 0;
+    }
+
+    .group-ready-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.36rem;
+        font-family: var(--font-body);
+        font-variant-numeric: tabular-nums;
+        font-size: 0.74rem;
+        font-weight: 600;
+        color: var(--sage-text);
+        white-space: nowrap;
+    }
+
+    /* Editorial Hairline Bottle Rows */
     .bottle-row {
         display: flex;
         align-items: center;
-        gap: 0.65rem;
-        min-height: 52px;
-        padding: 0.58rem 0.9rem;
-        background: var(--bg-elevated);
-        border-radius: var(--radius-control);
-        margin-bottom: 0.42rem;
+        justify-content: space-between;
+        gap: 0.75rem;
+        min-height: 46px;
+        padding: 0.52rem 0;
+        background: transparent;
+        border-radius: 0;
+        margin-bottom: 0;
+        border-bottom: 1px solid var(--hairline);
         transition: background var(--dur-snap) var(--ease-snap);
     }
 
-    .bottle-row:hover {
-        background: var(--bg-pill);
+    .bottle-grid > .bottle-row:last-child {
+        border-bottom: none;
+    }
+
+    .bottle-row:active {
+        background: rgba(242, 232, 216, 0.03);
     }
 
     .bottle-name {
         font-weight: 600;
         font-size: 0.94rem;
+        line-height: 1.25;
         color: var(--ink);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
     }
 
-    .bottle-brand {
-        font-size: 0.74rem;
+    .bottle-meta {
+        font-size: 0.75rem;
         color: var(--ink-dim);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        margin-top: 0.12rem;
+        line-height: 1.25;
     }
 
-    /* Mixer Sections & Rounded Checkboxes */
+    .bottle-ready-count {
+        font-family: var(--font-body);
+        font-variant-numeric: tabular-nums;
+        font-size: 0.74rem;
+        font-weight: 600;
+        color: var(--sage-text);
+        white-space: nowrap;
+    }
+
+    /* Editorial Mixer Sections + Tactile Toggle Chips */
     .mixer-section {
-        margin-bottom: 0.75rem;
-        background: var(--bg-elevated);
-        border-radius: var(--radius-card);
-        padding: 0.75rem 0.85rem;
+        margin-bottom: 1.15rem;
+        background: transparent;
+        border-radius: 0;
+        padding: 0;
     }
 
     .mixer-summary {
@@ -66,23 +164,33 @@
         align-items: center;
         justify-content: space-between;
         gap: 0.5rem;
+        padding: 0.35rem 0 0.5rem;
+        border-bottom: 1px solid var(--hairline-strong);
         cursor: pointer;
         user-select: none;
     }
 
     .mixer-summary-title {
-        font-family: var(--font-display);
-        font-weight: 700;
-        font-size: 1.05rem;
-        letter-spacing: 0.04em;
+        font-family: var(--font-body);
+        font-weight: 600;
+        font-size: 0.72rem;
+        letter-spacing: 0.12em;
         text-transform: uppercase;
-        color: var(--ink);
+        color: var(--ink-dim);
     }
 
     .mixer-summary-right {
         display: inline-flex;
         align-items: center;
-        gap: 0.4rem;
+        gap: 0.45rem;
+    }
+
+    .mixer-count {
+        font-family: var(--font-body);
+        font-variant-numeric: tabular-nums;
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: var(--ink-faint);
     }
 
     .mixer-chevron {
@@ -99,27 +207,26 @@
     .mixer-grid {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 0.45rem;
-        margin-top: 0.65rem;
-    }
-
-    @media (max-width: 340px) {
-        .mixer-grid { grid-template-columns: 1fr; }
+        gap: 0.48rem;
+        padding-top: 0.65rem;
     }
 
     .mixer-pill {
         position: relative;
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        gap: 0.45rem;
-        min-height: 54px;
-        padding: 0.5rem 0.7rem;
-        border-radius: var(--radius-control);
-        background: var(--bg-pill);
-        border: 1px solid transparent;
+        width: 100%;
+        gap: 0.48rem;
+        min-height: 42px;
+        padding: 0.42rem 0.72rem;
+        margin-bottom: 0;
+        border-radius: 10px;
+        background: var(--bg-elevated);
+        border: 1px solid rgba(255, 236, 214, 0.12);
         cursor: pointer;
-        transition: border-color var(--dur-snap) var(--ease-snap), background var(--dur-snap) var(--ease-snap);
+        text-transform: none;
+        letter-spacing: 0;
+        transition: background var(--dur-snap) var(--ease-snap), border-color var(--dur-snap) var(--ease-snap), color var(--dur-snap) var(--ease-snap);
     }
 
     .mixer-pill input {
@@ -130,17 +237,18 @@
 
     .mixer-pill:has(input:checked),
     .mixer-pill.is-checked {
-        background: var(--zest-soft);
-        border-color: var(--zest-border);
+        background: var(--sage-soft);
+        border-color: var(--sage-border);
     }
 
     .mixer-label {
         flex: 1;
         min-width: 0;
-        font-size: 0.84rem;
+        font-size: 0.82rem;
         font-weight: 500;
-        line-height: 1.24;
-        color: #e6ddd0;
+        line-height: 1.22;
+        color: var(--ink-dim);
+        white-space: normal;
         overflow-wrap: break-word;
     }
 
@@ -151,25 +259,27 @@
     }
 
     .mixer-check {
-        width: 19px;
-        height: 19px;
-        border-radius: 5px;
-        border: 1.5px solid #6d5e4d;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        border: 1.5px solid rgba(255, 236, 214, 0.28);
+        background: transparent;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
         color: transparent;
-        transition: background var(--dur-snap) var(--ease-snap), border-color var(--dur-snap) var(--ease-snap);
+        order: -1;
+        transition: background var(--dur-snap) var(--ease-snap), border-color var(--dur-snap) var(--ease-snap), color var(--dur-snap) var(--ease-snap);
     }
 
-    .mixer-check svg { width: 12px; height: 12px; }
+    .mixer-check svg { width: 10px; height: 10px; }
 
     .mixer-pill:has(input:checked) .mixer-check,
     .mixer-pill.is-checked .mixer-check {
-        background: var(--zest);
-        border-color: var(--zest);
-        color: var(--ink-on-zest);
+        background: var(--sage);
+        border-color: var(--sage);
+        color: var(--ink-on-sage);
     }
 
     /* Subtle Auto-Save Toast */
@@ -183,7 +293,7 @@
         border-radius: var(--radius-pill);
         background: var(--bg-elevated);
         border: 1px solid var(--sage-border);
-        color: var(--sage);
+        color: var(--ink-champagne);
         font-size: 0.78rem;
         font-weight: 600;
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
@@ -207,7 +317,7 @@
         position: fixed;
         inset: 0;
         z-index: 260;
-        background: rgba(12, 8, 5, 0.78);
+        background: rgba(8, 6, 4, 0.78);
         backdrop-filter: blur(8px);
         -webkit-backdrop-filter: blur(8px);
         display: none;
@@ -230,9 +340,8 @@
         overflow-y: auto;
         scrollbar-width: none;
         background: var(--bg-elevated);
-        border: 1px solid var(--border-highlight);
-        border-bottom: none;
-        border-radius: 24px 24px 0 0;
+        border-top: 1px solid var(--hairline-strong);
+        border-radius: 20px 20px 0 0;
         padding: 0.7rem 1.15rem calc(1.35rem + env(safe-area-inset-bottom, 0px));
         box-shadow: 0 -18px 50px rgba(0, 0, 0, 0.65);
     }
@@ -240,18 +349,18 @@
     .sheet-panel::-webkit-scrollbar { display: none; }
 
     .sheet-handle {
-        width: 40px;
+        width: 38px;
         height: 4px;
         border-radius: var(--radius-pill);
-        background: var(--border-highlight);
-        margin: 0 auto 0.8rem;
+        background: var(--hairline-strong);
+        margin: 0 auto 0.7rem;
     }
 
     .sheet-head {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin-bottom: 0.85rem;
+        margin-bottom: 0.75rem;
     }
 
     .sheet-title {
@@ -262,55 +371,96 @@
         letter-spacing: 0.02em;
     }
 
-    .scan-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 0.6rem;
-        margin-bottom: 0.9rem;
+    .sheet-close-btn {
+        min-width: 44px;
+        min-height: 44px;
+        border: none;
+        background: transparent;
+        color: var(--ink-dim);
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-end;
+        cursor: pointer;
     }
 
-    /* Scan shortcuts: same tile language as the type picker and buttons
-       (flat face, cream hairline, 10px corners, Barlow in sentence case). */
-    .scan-card {
+    .sheet-close-btn:hover { color: var(--ink); }
+
+    /* Featured Camera Scan Hero + Secondary Single-Bottle Link (matches Tonight onboarding) */
+    .scan-hero-card {
         display: flex;
-        flex-direction: column;
+        align-items: center;
+        gap: 0.75rem;
+        background: var(--bg-surface);
+        border: 1px solid rgba(223, 176, 73, 0.24);
+        border-radius: 12px;
+        padding: 0.78rem 0.9rem;
+        margin: 0 0 0.15rem;
+        transition: background var(--dur-snap) var(--ease-snap), border-color var(--dur-snap) var(--ease-snap);
+    }
+
+    .scan-hero-card:hover { background: var(--bg-active); border-color: rgba(223, 176, 73, 0.4); }
+
+    .scan-badge {
+        width: 38px;
+        height: 38px;
+        border-radius: 9px;
+        background: var(--zest-soft);
+        color: var(--zest);
+        display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 0.4rem;
-        min-height: 78px;
-        padding: 0.65rem;
-        border-radius: 10px;
-        background: #1c1611;
-        border: 1px solid rgba(240, 228, 205, 0.18);
-        text-align: center;
-        font-family: var(--font-display);
-        font-weight: 600;
-        font-size: 1.06rem;
-        letter-spacing: 0.02em;
-        color: #f0e4cd;
-        -webkit-tap-highlight-color: transparent;
-        transition: border-color 200ms var(--ease-snap), background-color 200ms var(--ease-snap);
+        flex-shrink: 0;
     }
 
-    .scan-card:hover { border-color: rgba(244, 196, 48, 0.55); }
-    .scan-card:active { background: #241c15; }
+    .scan-badge svg {
+        width: 20px;
+        height: 20px;
+    }
 
-    .scan-card svg {
-        width: 22px;
-        height: 22px;
-        color: var(--zest);
+    .scan-hero-title {
+        font-size: 0.92rem;
+        font-weight: 600;
+        color: var(--ink);
+        line-height: 1.2;
+    }
+
+    .scan-hero-sub {
+        font-size: 0.75rem;
+        color: var(--ink-dim);
+        margin-top: 0.12rem;
+    }
+
+    .scan-sub-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.38rem;
+        min-height: 36px;
+        font-size: 0.78rem;
+        font-weight: 500;
+        color: var(--ink-dim);
+        margin-bottom: 0.45rem;
+        transition: color var(--dur-snap) var(--ease-snap);
+    }
+
+    .scan-sub-link:hover { color: var(--zest); }
+
+    .scan-sub-link svg {
+        width: 14px;
+        height: 14px;
+        color: var(--ink-dim);
+        flex-shrink: 0;
     }
 
     .sheet-divider {
         display: flex;
         align-items: center;
         gap: 0.65rem;
-        color: var(--ink-dim);
-        font-size: 0.72rem;
-        font-weight: 700;
-        letter-spacing: 0.08em;
+        color: var(--ink-faint);
+        font-size: 0.66rem;
+        font-weight: 600;
+        letter-spacing: 0.12em;
         text-transform: uppercase;
-        margin-bottom: 0.8rem;
+        margin-bottom: 0.7rem;
     }
 
     .sheet-divider::before,
@@ -318,38 +468,52 @@
         content: "";
         flex: 1;
         height: 1px;
-        background: var(--border-subtle);
+        background: var(--hairline);
     }
 
-    /* Bottle type picker: an even 4-across grid of flat tiles in the button
-       language (10px corners, no gradients, glows or pills). The chosen tile
-       pours full of zest, like .btn. "More types" is a quiet text link. */
+    #add-sheet input[type="text"],
+    #add-sheet select {
+        background: #100c09;
+        border: 1px solid rgba(255, 236, 214, 0.14);
+    }
+
+    #add-sheet input[type="text"]:focus,
+    #add-sheet select:focus {
+        border-color: var(--zest-border);
+        background: var(--bg-surface);
+    }
+
+    /* 3x3 Crisp Spirit Grid */
     .quick-type-row {
         display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 0.4rem;
-        margin-bottom: 0.35rem;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.45rem;
+        margin-bottom: 0.4rem;
     }
 
     .quick-type-chip {
         position: relative;
         overflow: hidden;
         isolation: isolate;
-        min-height: 48px;
-        padding: 0.3rem 0.35rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 38px;
+        padding: 0 0.35rem;
         border-radius: 10px;
-        background: #1c1611;
-        border: 1px solid rgba(240, 228, 205, 0.18);
-        color: #f0e4cd;
-        font-family: var(--font-display);
-        font-size: 1rem;
-        font-weight: 600;
-        letter-spacing: 0.02em;
-        line-height: 1.05;
+        background: var(--bg-surface);
+        border: 1px solid rgba(255, 236, 214, 0.12);
+        color: var(--ink);
+        font-family: var(--font-body);
+        font-size: 0.78rem;
+        font-weight: 500;
+        line-height: 1;
+        white-space: nowrap;
         text-align: center;
         cursor: pointer;
         -webkit-tap-highlight-color: transparent;
-        transition: color 200ms var(--ease-snap), border-color 200ms var(--ease-snap);
+        transition: color 200ms var(--ease-snap), background-color 200ms var(--ease-snap), border-color 200ms var(--ease-snap);
     }
 
     .quick-type-chip::before {
@@ -357,37 +521,44 @@
         position: absolute;
         inset: 0;
         z-index: -1;
-        background: #efb92b;
-        border-top: 1.5px solid #fff3c2;
+        background: var(--zest);
+        border-top: 1.5px solid #fff0b8;
         transform: translateY(102%);
         transition: transform 260ms cubic-bezier(0.3, 0.7, 0.2, 1);
     }
 
-    .quick-type-chip:hover { border-color: rgba(244, 196, 48, 0.55); }
+    .quick-type-chip:hover { background: var(--bg-active); border-color: rgba(255, 236, 214, 0.22); }
 
     .quick-type-chip.active {
-        border-color: #efb92b;
-        color: #1a1208;
+        border-color: var(--zest);
+        color: var(--ink-on-zest);
+        font-weight: 600;
     }
 
     .quick-type-chip.active::before { transform: translateY(0); }
+
+    #sheet-submit:disabled {
+        background: rgba(223, 176, 73, 0.09);
+        border-color: rgba(223, 176, 73, 0.24);
+        color: rgba(223, 176, 73, 0.56);
+    }
 
     .more-types-link {
         display: inline-flex;
         align-items: center;
         gap: 0.3rem;
-        min-height: 40px;
+        min-height: 38px;
         padding: 0 0.1rem;
         background: none;
         border: 0;
-        color: #b9ab93;
+        color: var(--ink-dim);
         font-family: var(--font-body);
-        font-size: 0.84rem;
+        font-size: 0.82rem;
         font-weight: 600;
         cursor: pointer;
     }
 
-    .more-types-link:hover { color: #f0e4cd; }
+    .more-types-link:hover { color: var(--ink); }
     .more-types-link.active { color: var(--zest); }
     .more-types-link .caret { transition: transform 200ms var(--ease-snap); }
     .more-types-link.active .caret { transform: rotate(180deg); }
@@ -408,7 +579,6 @@
     @media (min-width: 768px) {
         .mixer-grid {
             grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 0.6rem;
         }
 
         .sheet-backdrop {
@@ -418,81 +588,134 @@
 
         .sheet-panel {
             max-width: 520px;
-            border-radius: 24px;
-            border-bottom: 1px solid var(--border-highlight);
+            border-radius: 20px;
+            border: 1px solid var(--hairline-strong);
         }
     }
 </style>
 {% endblock %}
 
 {% block content %}
+{% set tidy_types = {
+    "Vermouth (sweet / rosso)": "Sweet vermouth",
+    "Vermouth (dry)": "Dry vermouth",
+    "Vermouth (not sure)": "Vermouth",
+    "Whiskey (other / blended)": "Whiskey"
+} %}
+
+{% set spirit_marks = {
+    "Gin": "#7ca69d",
+    "Bourbon": "#c8823b",
+    "Rye": "#c8823b",
+    "Scotch": "#c8823b",
+    "Irish Whiskey": "#c8823b",
+    "Whiskey (other / blended)": "#c8823b",
+    "Rum": "#c9984c",
+    "Cognac": "#c9984c",
+    "Brandy": "#c9984c",
+    "Tequila": "#a9b478",
+    "Mezcal": "#a9b478",
+    "Vodka": "#adb9c0",
+    "Vermouth (sweet / rosso)": "#b8524b",
+    "Vermouth (dry)": "#b8524b",
+    "Vermouth (not sure)": "#b8524b",
+    "Amaro": "#b8524b",
+    "Liqueur": "#b99156",
+    "Other": "#8e8274"
+} %}
+
+{% set mixer_clean_labels = {
+    "lemon juice (fresh)": "Fresh lemon juice",
+    "lime juice (fresh)": "Fresh lime juice",
+    "soda water / club soda": "Club soda",
+    "sugar (white)": "White sugar",
+    "sugar (brown)": "Brown sugar"
+} %}
+
 <div class="bar-head">
     <h1>Your Bar</h1>
-    <button type="button" class="btn btn-sm {% if active_tab != 'bottles' %}is-hidden{% endif %}" id="open-add-sheet">
+    <button type="button" class="btn btn-sm bar-add-btn" id="open-add-sheet">
         {{ ui_icon("plus", "btn-icon") }}
         <span>Add bottle</span>
     </button>
 </div>
 
-<div class="segmented" style="margin-bottom: 0.9rem;" role="tablist">
+<div class="segmented" style="margin-bottom: 0.85rem;" role="tablist">
     <button type="button" class="segmented-item {% if active_tab == 'bottles' %}active{% endif %}"
             data-tab="bottles" role="tab" aria-selected="{{ 'true' if active_tab == 'bottles' else 'false' }}">
-        Bottles ({{ total_count }})
+        <span>Bottles ({{ total_count }})</span>
     </button>
     <button type="button" class="segmented-item {% if active_tab == 'mixers' %}active{% endif %}"
             data-tab="mixers" role="tab" aria-selected="{{ 'true' if active_tab == 'mixers' else 'false' }}" id="tab-btn-mixers">
-        Mixers (<span id="mixer-tab-count">{{ stocked_count }}/{{ total_ingredients }}</span>)
+        <span>Mixers (<span id="mixer-tab-count">{{ stocked_count }}/{{ total_ingredients }}</span>)</span>
     </button>
 </div>
 
-{# Pane 1: Bottles #}
+{# Pane 1: Curated Backbar #}
 <section class="pane {% if active_tab == 'bottles' %}is-active{% endif %}" id="pane-bottles">
-    <form method="GET" action="/bar" style="margin-bottom: 0.6rem;">
-        <input type="hidden" name="tab" value="bottles">
-        {% if grouped %}<input type="hidden" name="group" value="spirit">{% endif %}
-        <div class="search-wrap" style="margin-bottom: 0;">
-            {{ ui_icon("search", "search-icon") }}
-            <input type="search" name="q" id="bottle-search" value="{{ q }}"
-                   placeholder="Search your bottles or spirits..." autocomplete="off">
-        </div>
-    </form>
-
-    <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.75rem;">
-        <div class="chip-strip">
-            <a href="/bar?tab=bottles{% if q %}&q={{ q|urlencode }}{% endif %}"
-               class="chip {% if not grouped %}active{% endif %}">A&ndash;Z ({{ filtered_count }})</a>
-            <a href="/bar?tab=bottles&group=spirit{% if q %}&q={{ q|urlencode }}{% endif %}"
-               class="chip {% if grouped %}active{% endif %}">By type</a>
-        </div>
-        {% if q %}
-            <a href="/bar?tab=bottles{% if grouped %}&group=spirit{% endif %}" class="section-link" style="font-size: 0.8rem;">Clear</a>
-        {% endif %}
+    <div class="bar-tools-row">
+        <form method="GET" action="/bar" style="flex: 1; min-width: 0; margin: 0;">
+            <input type="hidden" name="tab" value="bottles">
+            {% if not grouped %}<input type="hidden" name="group" value="az">{% endif %}
+            <div class="search-wrap" style="margin-bottom: 0;">
+                {{ ui_icon("search", "search-icon") }}
+                <input type="search" name="q" id="bottle-search" value="{{ q }}"
+                       placeholder="Search your bottles or spirits..." autocomplete="off">
+            </div>
+        </form>
+        <a href="/bar?tab=bottles{% if grouped %}&group=az{% else %}&group=spirit{% endif %}{% if q %}&q={{ q|urlencode }}{% endif %}"
+           class="bar-sort-toggle">
+            {% if grouped %}A&ndash;Z{% else %}By spirit{% endif %}
+        </a>
     </div>
+    {% if q %}
+        <div style="margin: -0.45rem 0 0.7rem; font-size: 0.78rem; color: var(--ink-dim);">
+            Filtering by &ldquo;{{ q }}&rdquo; &middot; <a href="/bar?tab=bottles{% if not grouped %}&group=az{% endif %}" style="color: var(--zest); font-weight: 600;">Clear</a>
+        </div>
+    {% endif %}
 
-    {% macro bottle_item(b) -%}
+    {% macro bottle_item(b, show_type=true) -%}
+        {% set raw_type = b.type|type_label %}
+        {% set type_disp = tidy_types.get(raw_type, raw_type) %}
+        {% set show_brand = b.brand and (b.brand|lower not in b.name|lower) %}
+        {% set rc = bottle_ready_counts.get(b.id, 0) %}
         <a href="/edit/{{ b.id }}" class="bottle-row"
-           data-search="{{ b.name|lower }} {{ (b.brand or '')|lower }} {{ (b.type|type_label)|lower }}">
+           data-search="{{ b.name|lower }} {{ (b.brand or '')|lower }} {{ raw_type|lower }} {{ type_disp|lower }}">
             <div style="min-width: 0; flex: 1;">
                 <div class="bottle-name">{{ b.name }}</div>
-                {% if b.brand and b.brand|lower != b.name|lower %}
-                    <div class="bottle-brand">{{ b.brand }}</div>
+                {% if show_type %}
+                    <div class="bottle-meta">
+                        {{ type_disp }}{% if show_brand %} &middot; {{ b.brand }}{% endif %}
+                    </div>
                 {% endif %}
             </div>
-            <span class="pill">{{ b.type|type_label }}</span>
-            {{ ui_icon("chevron", "row-chevron") }}
+            <div class="row-right">
+                {% if show_type and rc %}
+                    <span class="bottle-ready-count">{{ rc }} ready</span>
+                {% endif %}
+                {{ ui_icon("chevron", "row-chevron") }}
+            </div>
         </a>
     {%- endmacro %}
 
     {% if bottles %}
         {% if grouped %}
             {% for label, group in grouped_bottles %}
-                <div class="bottle-group" style="margin-bottom: 0.9rem;">
-                    <div style="font-family: var(--font-display); font-weight: 700; font-size: 0.92rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--zest); margin: 0.55rem 0 0.4rem;">
-                        {{ label }} &middot; {{ group|length }}
+                {% set grc = group_ready_counts.get(label, 0) %}
+                <div class="bottle-group">
+                    <div class="backbar-group-head">
+                        <span class="backbar-group-title">
+                            <span class="spirit-mark" style="background: {{ spirit_marks.get(label, '#8e8274') }};" aria-hidden="true"></span>
+                            <span>{{ tidy_types.get(label, label) }}</span>
+                            <span class="eyebrow-count">{{ group|length }}</span>
+                        </span>
+                        {% if grc %}
+                            <span class="group-ready-badge"><span class="ready-dot" aria-hidden="true"></span><span>{{ grc }} ready</span></span>
+                        {% endif %}
                     </div>
                     <div class="bottle-grid">
                         {% for b in group %}
-                            {{ bottle_item(b) }}
+                            {{ bottle_item(b, show_type=false) }}
                         {% endfor %}
                     </div>
                 </div>
@@ -500,7 +723,7 @@
         {% else %}
             <div class="bottle-grid">
                 {% for b in bottles %}
-                    {{ bottle_item(b) }}
+                    {{ bottle_item(b, show_type=true) }}
                 {% endfor %}
             </div>
         {% endif %}
@@ -508,7 +731,7 @@
         <div class="card empty-state">
             {% if q %}
                 <p style="margin-bottom: 0.9rem;">No bottles match &ldquo;{{ q }}&rdquo;.</p>
-                <a href="/bar?tab=bottles{% if grouped %}&group=spirit{% endif %}" class="btn btn-secondary">Show all bottles</a>
+                <a href="/bar?tab=bottles{% if not grouped %}&group=az{% endif %}" class="btn btn-secondary">Show all bottles</a>
             {% else %}
                 <h2 style="margin-bottom: 0.35rem;">Shelf is empty</h2>
                 <p style="margin-bottom: 1rem;">Add or scan bottles to see what you can pour.</p>
@@ -547,17 +770,18 @@
                 <summary class="bare mixer-summary">
                     <span class="mixer-summary-title">Bar Essentials</span>
                     <span class="mixer-summary-right">
-                        <span class="pill cat-count-pill" data-total="{{ essentials|length }}">{{ in_ess }} / {{ essentials|length }}</span>
+                        <span class="mixer-count cat-count-pill" data-total="{{ essentials|length }}">{{ in_ess }}/{{ essentials|length }}</span>
                         {{ ui_icon("chevron-down", "mixer-chevron") }}
                     </span>
                 </summary>
                 <div class="mixer-grid">
                     {% for item in essentials %}
+                        {% set disp = mixer_clean_labels.get(item.name|lower, item.name) %}
                         <label class="mixer-pill mixer-filter-item {% if item.in_stock %}is-checked{% endif %}"
-                               data-name="{{ item.name|lower }}" for="ess-{{ item.id }}">
+                               data-name="{{ item.name|lower }} {{ disp|lower }}" for="ess-{{ item.id }}">
                             <input type="checkbox" name="ingredient" value="{{ item.id }}" id="ess-{{ item.id }}"
                                    {% if item.in_stock %}checked{% endif %}>
-                            <span class="mixer-label">{{ item.name }}</span>
+                            <span class="mixer-label">{{ disp }}</span>
                             <span class="mixer-check">{{ ui_icon("check") }}</span>
                         </label>
                     {% endfor %}
@@ -581,17 +805,18 @@
                     <summary class="bare mixer-summary">
                         <span class="mixer-summary-title">{{ plural.get(category, category ~ "s") }}</span>
                         <span class="mixer-summary-right">
-                            <span class="pill cat-count-pill" data-total="{{ cat_items|length }}">{{ in_cat }} / {{ cat_items|length }}</span>
+                            <span class="mixer-count cat-count-pill" data-total="{{ cat_items|length }}">{{ in_cat }}/{{ cat_items|length }}</span>
                             {{ ui_icon("chevron-down", "mixer-chevron") }}
                         </span>
                     </summary>
                     <div class="mixer-grid">
                         {% for item in cat_items %}
+                            {% set disp = mixer_clean_labels.get(item.name|lower, item.name) %}
                             <label class="mixer-pill mixer-filter-item {% if item.in_stock %}is-checked{% endif %}"
-                                   data-name="{{ item.name|lower }}" for="ing-{{ item.id }}">
+                                   data-name="{{ item.name|lower }} {{ disp|lower }}" for="ing-{{ item.id }}">
                                 <input type="checkbox" name="ingredient" value="{{ item.id }}" id="ing-{{ item.id }}"
                                        {% if item.in_stock %}checked{% endif %}>
-                                <span class="mixer-label">{{ item.name }}</span>
+                                <span class="mixer-label">{{ disp }}</span>
                                 <span class="mixer-check">{{ ui_icon("check") }}</span>
                             </label>
                         {% endfor %}
@@ -601,26 +826,25 @@
         {% endfor %}
 
         {% if new_ingredients %}
-            <details class="accordion-bar mixer-section" style="padding: 0; border-color: var(--zest-border);">
-                <summary class="bare accordion-summary">
-                    <span class="accordion-title" style="color: var(--zest);">Added from recipes</span>
-                    <span class="accordion-right">
-                        <span class="pill pill-zest">{{ new_ingredients|length }}</span>
-                        {{ ui_icon("chevron-down", "accordion-chev") }}
+            <details class="mixer-section">
+                <summary class="bare mixer-summary">
+                    <span class="mixer-summary-title" style="color: var(--zest);">Added from recipes</span>
+                    <span class="mixer-summary-right">
+                        <span class="mixer-count">{{ new_ingredients|length }}</span>
+                        {{ ui_icon("chevron-down", "mixer-chevron") }}
                     </span>
                 </summary>
-                <div style="padding: 0 0.85rem 0.85rem;">
-                    <div class="mixer-grid" style="margin-top: 0;">
-                        {% for item in new_ingredients %}
-                            <label class="mixer-pill mixer-filter-item {% if item.in_stock %}is-checked{% endif %}"
-                                   data-name="{{ item.name|lower }}" for="new-{{ item.id }}">
-                                <input type="checkbox" name="ingredient" value="{{ item.id }}" id="new-{{ item.id }}"
-                                       {% if item.in_stock %}checked{% endif %}>
-                                <span class="mixer-label">{{ item.name }}</span>
-                                <span class="mixer-check">{{ ui_icon("check") }}</span>
-                            </label>
-                        {% endfor %}
-                    </div>
+                <div class="mixer-grid">
+                    {% for item in new_ingredients %}
+                        {% set disp = mixer_clean_labels.get(item.name|lower, item.name) %}
+                        <label class="mixer-pill mixer-filter-item {% if item.in_stock %}is-checked{% endif %}"
+                               data-name="{{ item.name|lower }} {{ disp|lower }}" for="new-{{ item.id }}">
+                            <input type="checkbox" name="ingredient" value="{{ item.id }}" id="new-{{ item.id }}"
+                                   {% if item.in_stock %}checked{% endif %}>
+                            <span class="mixer-label">{{ disp }}</span>
+                            <span class="mixer-check">{{ ui_icon("check") }}</span>
+                        </label>
+                    {% endfor %}
                 </div>
             </details>
         {% endif %}
@@ -640,25 +864,26 @@
     <div class="sheet-panel">
         <div class="sheet-handle"></div>
         <div class="sheet-head">
-            <div class="sheet-title" id="sheet-title">Add Bottle</div>
-            <button type="button" id="close-add-sheet" aria-label="Close"
-                    style="min-width: 44px; min-height: 44px; border-radius: 50%; border: 1px solid var(--border-subtle); background: var(--bg-pill); color: var(--ink); display: inline-flex; align-items: center; justify-content: center; cursor: pointer;">
+            <div class="sheet-title" id="sheet-title">Add to Your Bar</div>
+            <button type="button" id="close-add-sheet" class="sheet-close-btn" aria-label="Close">
                 {{ ui_icon("close", "btn-icon") }}
             </button>
         </div>
 
-        <div class="scan-grid">
-            <a href="/scan" class="scan-card">
-                {{ ui_icon("camera") }}
-                <span>Scan a bottle</span>
-            </a>
-            <a href="/scan-bulk" class="scan-card">
-                {{ ui_icon("shelf") }}
-                <span>Scan a shelf</span>
-            </a>
-        </div>
+        <a href="/scan-bulk" class="scan-hero-card">
+            <span class="scan-badge">{{ ui_icon("shelf") }}</span>
+            <div style="min-width: 0; flex: 1;">
+                <div class="scan-hero-title">Scan your shelf</div>
+                <div class="scan-hero-sub">Snap a photo to log multiple bottles</div>
+            </div>
+            {{ ui_icon("chevron", "row-chevron") }}
+        </a>
+        <a href="/scan" class="scan-sub-link">
+            {{ ui_icon("camera") }}
+            <span>Scan a single bottle instead &rarr;</span>
+        </a>
 
-        <div class="sheet-divider">or type it in</div>
+        <div class="sheet-divider">manual entry</div>
 
         <form method="POST" action="/add" id="sheet-add-form">
             <div class="form-group">
@@ -676,6 +901,7 @@
                     <button type="button" class="quick-type-chip" data-pick-type="rye">Rye</button>
                     <button type="button" class="quick-type-chip" data-pick-type="scotch">Scotch</button>
                     <button type="button" class="quick-type-chip" data-pick-type="vermouth_sweet">Sweet vermouth</button>
+                    <button type="button" class="quick-type-chip" data-pick-type="liqueur">Liqueur</button>
                 </div>
                 <button type="button" class="more-types-link" id="other-type-chip">More types <span class="caret" aria-hidden="true">&#9662;</span></button>
                 <div class="sheet-type-select-wrap" id="sheet-type-wrap">
@@ -687,7 +913,7 @@
                     </select>
                 </div>
             </div>
-            <button type="submit" class="btn" style="width: 100%; margin-top: 0.65rem;">Add to my bar</button>
+            <button type="submit" class="btn" id="sheet-submit" style="width: 100%; margin-top: 0.65rem;" disabled>Add to my bar</button>
         </form>
     </div>
 </div>
@@ -715,9 +941,6 @@
                 Object.keys(panes).forEach(function (k) {
                     panes[k].classList.toggle("is-active", k === target);
                 });
-                if (openBtn) {
-                    openBtn.classList.toggle("is-hidden", target !== "bottles");
-                }
                 var u = new URL(window.location.href);
                 u.searchParams.set("tab", target);
                 history.replaceState({}, "", u.pathname + u.search);
@@ -726,10 +949,19 @@
 
         // Add Bottle sheet open/close
         var sheet = document.getElementById("add-sheet");
+        var sheetName = document.getElementById("sheet-name");
+        var sheetSelect = document.getElementById("sheet-type");
+        var sheetSubmit = document.getElementById("sheet-submit");
+        function syncSubmitState() {
+            if (!sheetSubmit) return;
+            var hasName = !!(sheetName && sheetName.value.trim());
+            var hasType = !!(sheetSelect && sheetSelect.value);
+            sheetSubmit.disabled = !(hasName && hasType);
+        }
         function openSheet() {
             sheet.classList.add("is-open");
-            var inp = document.getElementById("sheet-name");
-            if (inp) setTimeout(function () { inp.focus(); }, 60);
+            syncSubmitState();
+            if (sheetName) setTimeout(function () { sheetName.focus(); }, 60);
         }
         function closeSheet() {
             sheet.classList.remove("is-open");
@@ -748,12 +980,15 @@
             if (e.target === sheet) closeSheet();
         });
 
-        // Quick spirit-type chips + "Other type..." disclosure wired to mandatory select
-        var sheetSelect = document.getElementById("sheet-type");
+        // Quick spirit-type chips + "More types" disclosure wired to mandatory select
         var selectWrap = document.getElementById("sheet-type-wrap");
         var otherChip = document.getElementById("other-type-chip");
         var quickChips = document.querySelectorAll(".quick-type-chip[data-pick-type]");
         var addForm = document.getElementById("sheet-add-form");
+
+        if (sheetName) {
+            sheetName.addEventListener("input", syncSubmitState);
+        }
 
         if (sheetSelect) {
             quickChips.forEach(function (chip) {
@@ -763,6 +998,7 @@
                     quickChips.forEach(function (c) { c.classList.toggle("active", c === chip); });
                     if (otherChip) otherChip.classList.remove("active");
                     if (selectWrap) selectWrap.classList.remove("is-visible");
+                    syncSubmitState();
                 });
             });
             if (otherChip && selectWrap) {
@@ -771,6 +1007,7 @@
                     otherChip.classList.add("active");
                     selectWrap.classList.add("is-visible");
                     sheetSelect.focus();
+                    syncSubmitState();
                 });
             }
             sheetSelect.addEventListener("change", function () {
@@ -781,6 +1018,7 @@
                     if (match) matchedChip = true;
                 });
                 if (otherChip) otherChip.classList.toggle("active", !matchedChip && !!sheetSelect.value);
+                syncSubmitState();
             });
             // Arrived with a preselected type (e.g. from the Tonight spotlight):
             // light up its chip, or reveal the dropdown if it has no chip.
@@ -802,6 +1040,7 @@
                 });
             }
         }
+        syncSubmitState();
 
         // Live client-side bottle filter
         var bottleSearch = document.getElementById("bottle-search");
@@ -857,7 +1096,7 @@
                 if (!pill) return;
                 var total = pill.getAttribute("data-total");
                 var checkedInCat = det.querySelectorAll('input[name="ingredient"]:checked').length;
-                pill.textContent = checkedInCat + " / " + total;
+                pill.textContent = checkedInCat + "/" + total;
             });
             return stockedNow;
         }

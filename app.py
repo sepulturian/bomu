@@ -575,11 +575,13 @@ def recipe_image_url(recipe):
 
 
 def glass_kind(glass):
-    """Normalize recipe.glass into one of five silhouette keys:
-    coupe, rocks, highball, flute, hurricane."""
+    """Normalize recipe.glass into one of six silhouette keys:
+    coupe, martini, rocks, highball, flute, hurricane."""
     g = (glass or "").lower()
-    if any(k in g for k in ("coupe", "martini", "cocktail", "nick", "margarita")):
+    if any(k in g for k in ("coupe", "nick", "margarita")):
         return "coupe"
+    if any(k in g for k in ("martini", "cocktail")):
+        return "martini"
     if any(k in g for k in ("highball", "collins", "pint", "mason", "copper mug", "mule", "pilsner", "parfait")):
         return "highball"
     if any(k in g for k in ("flute", "champagne", "wine")):
@@ -643,7 +645,7 @@ def explore_base_spirit(recipe_data):
 def classify_drink_style(recipe_data):
     """Derive a drink style bucket dynamically from ingredients and glassware."""
     ing_names = " ".join(
-        (i.get("raw_name") or "").lower()
+        f"{i.get('raw_name') or ''} {i.get('ingredient_name') or ''}".lower()
         for i in recipe_data.get("ingredients", [])
     )
     glass = (recipe_data.get("recipe", {}).get("glass") or "").lower()
@@ -667,6 +669,94 @@ def classify_drink_style(recipe_data):
     return "Spirit-Forward"
 
 
+def _classify_liquid_tone(recipe_data):
+    """Map a cocktail to a calibrated liquid color token for specimen icons."""
+    name = (recipe_data.get("recipe", {}).get("name") or "").lower()
+    ing_names = " ".join(
+        f"{i.get('raw_name') or ''} {i.get('ingredient_name') or ''} {i.get('bottle_type') or ''}".lower()
+        for i in recipe_data.get("ingredients", [])
+    )
+    combined = f"{name} {ing_names}"
+    if any(k in combined for k in (
+        "heavy cream", "light cream", "coconut cream", "cream of coconut",
+        "milk", "half-and-half", "vanilla ice cream", "ice cream",
+        "baileys", "irish cream",
+    )):
+        return "cream"
+    if any(k in combined for k in (
+        "espresso", "coffee", "kahlua", "cola", "coca-cola", "coke",
+        "stout", "guinness", "cold brew", "root beer",
+    )):
+        return "espresso"
+    if any(k in ing_names for k in (
+        "campari", "cranberry", "grenadine", "hibiscus", "pomegranate",
+        "raspberry", "cherry", "red wine", "claret", "tomato",
+        "blood orange", "peychaud", "cassis", "chambord", "strawberry", "watermelon",
+    )) or name in (
+        "negroni", "boulevardier", "americano", "milano-torino", "cardinale",
+        "old pal", "el diablo", "rosita", "jungle bird", "blood and sand",
+        "ward eight", "cosmopolitan", "mary pickford",
+    ):
+        return "ruby"
+    if any(k in combined for k in (
+        "orange juice", "aperol", "tangerine", "passion fruit", "passionfruit",
+        "mango", "peach", "apricot", "papaya", "pineapple",
+        "screwdriver", "paper plane", "hurricane", "painkiller", "mai tai", "mimosa",
+    )):
+        return "orange"
+    if any(k in combined for k in (
+        "honey", "lemon juice", "champagne", "prosecco", "sparkling wine", "cava",
+        "yellow chartreuse", "st-germain", "elderflower", "ginger beer", "ginger ale",
+        "amaretto", "galliano", "drambuie",
+    )):
+        return "honey"
+    if any(k in combined for k in (
+        "lime juice", "green chartreuse", "midori", "mint", "cucumber", "grapefruit",
+    )):
+        return "citrus"
+    if any(k in combined for k in (
+        "bourbon", "rye", "scotch", "whiskey", "whisky", "irish", "cognac",
+        "brandy", "dark rum", "aged rum", "anejo", "sweet vermouth", "vermouth_sweet",
+        "amaro", "fernet", "benedictine", "cynar", "sherry", "port", "calvados",
+        "armagnac", "rum",
+    )):
+        return "amber"
+    return "crystal"
+
+
+_RECIPE_META_MAP = None
+
+
+def _recipe_meta_map():
+    """Cache derived tone and style metadata per recipe id once per process."""
+    global _RECIPE_META_MAP
+    if _RECIPE_META_MAP is not None:
+        return _RECIPE_META_MAP
+    meta = {}
+    for rec in get_all_recipes():
+        rid = rec["recipe"]["id"]
+        meta[rid] = {
+            "tone": _classify_liquid_tone(rec),
+            "style": classify_drink_style(rec),
+        }
+    _RECIPE_META_MAP = meta
+    return meta
+
+
+def recipe_liquid_tone(recipe):
+    keys = recipe.keys() if recipe and hasattr(recipe, "keys") else ()
+    rid = recipe["id"] if "id" in keys else None
+    entry = _recipe_meta_map().get(rid) if rid is not None else None
+    return entry["tone"] if entry else "amber"
+
+
+def recipe_drink_style(recipe):
+    keys = recipe.keys() if recipe and hasattr(recipe, "keys") else ()
+    rid = recipe["id"] if "id" in keys else None
+    entry = _recipe_meta_map().get(rid) if rid is not None else None
+    return entry["style"] if entry else "Spirit-Forward"
+
+
 app.jinja_env.globals["BOTTLE_TYPE_CHOICES"] = BOTTLE_TYPE_CHOICES
 app.jinja_env.filters["type_label"] = bottle_type_label
 app.jinja_env.filters["short_name"] = short_bottle_name
@@ -678,6 +768,8 @@ app.jinja_env.filters["recipe_slug"] = recipe_slug
 app.jinja_env.filters["recipe_image"] = recipe_image_url
 app.jinja_env.filters["glass_kind"] = glass_kind
 app.jinja_env.filters["glass_label"] = format_glass_label
+app.jinja_env.filters["liquid_tone"] = recipe_liquid_tone
+app.jinja_env.filters["drink_style"] = recipe_drink_style
 
 
 # ---------------------------------------------------------------------------
@@ -760,7 +852,6 @@ def spotlight_add_url(spot):
     if spot["name_matched"]:
         args["name"] = spot["name"]
     return url_for("bar", **args)
-app.jinja_env.filters["drink_style"] = classify_drink_style
 app.jinja_env.tests["auto_added"] = is_auto_added
 
 
@@ -1242,6 +1333,16 @@ def checklist_item():
     return {"ok": True, "in_stock": in_stock, "stocked_count": count}
 
 
+_BAR_SPIRIT_ORDER = [
+    "Gin", "Bourbon", "Rye", "Scotch", "Irish Whiskey",
+    "Whiskey (other / blended)", "Rum", "Tequila", "Mezcal",
+    "Vodka", "Cognac", "Brandy",
+    "Vermouth (sweet / rosso)", "Vermouth (dry)", "Vermouth (not sure)",
+    "Amaro", "Liqueur", "Other",
+]
+_BAR_ORDER_INDEX = {lbl: idx for idx, lbl in enumerate(_BAR_SPIRIT_ORDER)}
+
+
 @app.route("/bar")
 @login_required
 def bar():
@@ -1251,7 +1352,7 @@ def bar():
         active_tab = "bottles"
     sheet_open = request.args.get("sheet") == "add"
     q = request.args.get("q", "").strip()
-    grouped = request.args.get("group") == "spirit"
+    grouped = request.args.get("group") != "az"
 
     all_bottles = get_all_bottles(user_id)
     if q:
@@ -1271,10 +1372,36 @@ def bar():
         for b in bottles:
             lbl = bottle_type_label(b["type"]) or "Other"
             buckets.setdefault(lbl, []).append(b)
-        grouped_bottles = sorted(buckets.items(), key=lambda kv: kv[0].lower())
+        grouped_bottles = sorted(
+            buckets.items(),
+            key=lambda kv: (_BAR_ORDER_INDEX.get(kv[0], 999), kv[0].lower()),
+        )
 
     ingredients = get_all_ingredients(user_id)
     stocked = [i for i in ingredients if i["in_stock"]]
+    stocked_names = {i["name"].lower() for i in stocked}
+    bottle_ready_counts = {}
+    bottle_ready_recipes = {}
+    if all_bottles:
+        for r in get_all_recipes():
+            status, _missing = match_recipe(r, all_bottles, stocked_names)
+            if status == "makeable":
+                rid = r["recipe"]["id"]
+                seen_bids = set()
+                for ing in r["ingredients"]:
+                    if ing.get("requirement_type") == "bottle_type":
+                        for b in matching_user_bottles(ing, all_bottles):
+                            seen_bids.add(b["id"])
+                for bid in seen_bids:
+                    bottle_ready_counts[bid] = bottle_ready_counts.get(bid, 0) + 1
+                    bottle_ready_recipes.setdefault(bid, set()).add(rid)
+    group_ready_counts = {}
+    if grouped_bottles:
+        for label, group in grouped_bottles:
+            rids = set()
+            for b in group:
+                rids |= bottle_ready_recipes.get(b["id"], set())
+            group_ready_counts[label] = len(rids)
     new_ingredients = get_auto_added_ingredients(user_id, only_unstocked=True, ingredients=ingredients)
 
     return render_template(
@@ -1289,6 +1416,8 @@ def bar():
         grouped=grouped,
         bottles=bottles,
         grouped_bottles=grouped_bottles,
+        bottle_ready_counts=bottle_ready_counts,
+        group_ready_counts=group_ready_counts,
         total_count=len(all_bottles),
         filtered_count=len(bottles),
         ingredients=ingredients,

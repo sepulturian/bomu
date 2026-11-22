@@ -1,49 +1,83 @@
 {% extends "base.html" %}
-{% from "components/icons.html" import glass_icon, ui_icon %}
+{% from "components/icons.html" import glass_icon, ui_icon, cocktail_specimen %}
+{% set hide_tabbar = (bottle_count == 0) %}
 
 {% block title %}Tonight &middot; Bomu{% endblock %}
 
 {% block extra_css %}
 <style>
+    {% if bottle_count == 0 %}
+    .container {
+        padding-bottom: 2rem;
+    }
+    {% endif %}
+
     .tonight-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 0.75rem;
-        margin-bottom: 0.35rem;
+        margin-bottom: 0.25rem;
     }
 
     .tonight-header h1 {
         margin-bottom: 0;
     }
 
+    .surprise-btn {
+        min-height: 34px;
+        padding: 0.25rem 0.78rem;
+        font-size: 0.8rem;
+        background: var(--bg-elevated);
+        border: 1px solid rgba(255, 236, 214, 0.12);
+        color: var(--ink-champagne);
+    }
+
     .stat-bar {
         display: flex;
         align-items: center;
-        gap: 0.55rem;
-        margin-bottom: 0.7rem;
-        font-size: 0.84rem;
+        gap: 0.5rem;
+        margin-bottom: 0.85rem;
+        font-size: 0.82rem;
     }
 
     .stat-ready {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-weight: 600;
+        color: var(--ink);
+    }
+
+    .stat-num {
+        font-family: var(--font-body);
+        font-variant-numeric: tabular-nums;
         font-weight: 700;
-        color: var(--sage);
     }
 
     .stat-sep {
         color: var(--ink-faint);
     }
 
-    /* Compact Featured Hero Card */
+    .stat-oneaway {
+        color: var(--ink-dim);
+        font-weight: 500;
+    }
+
+    .stat-oneaway-arrow {
+        color: var(--zest);
+    }
+
+    /* Full-Bleed Editorial Featured Hero */
     .featured-hero {
         position: relative;
         display: block;
-        border-radius: var(--radius-card);
+        margin: 0 -1.15rem 0.9rem;
+        border-radius: 0;
         overflow: hidden;
-        background: var(--bg-elevated);
-        border: 1px solid var(--border-highlight);
-        min-height: 154px;
-        margin-bottom: 0.65rem;
+        background: var(--bg-base);
+        border: none;
+        min-height: 244px;
     }
 
     .featured-hero-img {
@@ -52,7 +86,7 @@
         width: 100%;
         height: 100%;
         object-fit: cover;
-        object-position: center 38%;
+        object-position: center 42%;
         display: block;
     }
 
@@ -62,160 +96,218 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: linear-gradient(145deg, #281d16 0%, #110d0a 100%);
-        color: var(--zest);
-        opacity: 0.3;
+        background: linear-gradient(145deg, #241b14 0%, #0b0907 100%);
+        color: rgba(223, 176, 73, 0.22);
     }
 
     .featured-hero-fallback .glass-sig {
-        width: 88px;
-        height: 88px;
+        width: 84px;
+        height: 84px;
     }
 
     .featured-hero-scrim {
         position: relative;
         z-index: 2;
-        min-height: 154px;
-        padding: 0.75rem 1rem 0.85rem;
+        min-height: 244px;
+        padding: 1.15rem 1.15rem 0.95rem;
         display: flex;
         flex-direction: column;
-        justify-content: space-between;
-        background: linear-gradient(180deg,
-            rgba(17, 13, 10, 0.24) 0%,
-            rgba(17, 13, 10, 0.48) 45%,
-            rgba(17, 13, 10, 0.94) 100%);
+        justify-content: flex-end;
+        background:
+            linear-gradient(180deg,
+                rgba(11, 9, 7, 0.56) 0%,
+                rgba(11, 9, 7, 0.04) 22%,
+                rgba(11, 9, 7, 0.42) 54%,
+                rgba(11, 9, 7, 0.93) 84%,
+                #0b0907 100%),
+            radial-gradient(ellipse 85% 60% at 15% 88%, rgba(11, 9, 7, 0.62) 0%, rgba(11, 9, 7, 0) 72%);
     }
 
     .featured-kicker {
-        display: inline-flex;
-        align-items: center;
-        padding: 0.2rem 0.6rem;
-        border-radius: var(--radius-pill);
-        background: rgba(17, 13, 10, 0.78);
-        border: 1px solid var(--zest-border);
-        color: var(--zest);
-        font-family: var(--font-display);
-        font-weight: 700;
-        font-size: 0.72rem;
-        letter-spacing: 0.08em;
+        font-family: var(--font-body);
+        font-weight: 600;
+        font-size: 0.65rem;
+        letter-spacing: 0.14em;
         text-transform: uppercase;
-        width: fit-content;
-    }
-
-    .featured-bottom {
-        display: flex;
-        align-items: flex-end;
-        justify-content: space-between;
-        gap: 0.75rem;
+        color: var(--zest);
+        margin-bottom: 0.22rem;
     }
 
     .featured-name {
         font-family: var(--font-display);
         font-weight: 800;
-        font-size: 1.55rem;
+        font-size: 2.15rem;
         letter-spacing: 0.015em;
         text-transform: uppercase;
-        line-height: 1.02;
+        line-height: 0.98;
         color: var(--ink);
-        margin-bottom: 0.18rem;
+        margin-bottom: 0;
+    }
+
+    .featured-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-top: 0.35rem;
+    }
+
+    .featured-meta-col {
+        min-width: 0;
+        flex: 1;
     }
 
     .featured-bottles {
-        font-size: 0.78rem;
-        color: var(--sage);
-        font-weight: 600;
+        font-size: 0.8rem;
+        color: var(--ink-champagne);
+        font-weight: 500;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
 
-    .featured-teaser {
-        font-size: 0.79rem;
-        line-height: 1.35;
-        color: #d3c6b1;
-        margin-top: 0.22rem;
-        display: -webkit-box;
-        -webkit-line-clamp: 1;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
+    .featured-cta {
+        min-height: 36px;
+        padding: 0.3rem 0.95rem;
+        font-size: 0.94rem;
+        flex-shrink: 0;
     }
 
-    /* One Ingredient Away spotlight */
-    .spotlight {
-        background: var(--bg-elevated);
-        border: 1px solid var(--zest-border);
-        border-radius: var(--radius-card);
-        padding: 0.85rem 0.95rem 0.9rem;
-        margin-bottom: 0.65rem;
+    /* Borderless Editorial One-Ingredient Strip + Unlocked Drinks Carousel */
+    .spotlight-strip {
+        background: transparent;
+        border: none;
+        border-top: 1px solid var(--hairline);
+        border-bottom: 1px solid var(--hairline);
+        border-radius: 0;
+        padding: 0.72rem 0 0.82rem;
+        margin-bottom: 1.05rem;
     }
 
-    .spot-kicker {
-        font-family: var(--font-display);
-        font-weight: 700;
-        font-size: 0.72rem;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: #a89a84;
-        margin-bottom: 0.35rem;
-    }
-
-    .spot-headline {
-        font-size: 1.04rem;
-        font-weight: 600;
-        line-height: 1.35;
-        color: var(--ink);
-        margin: 0 0 0.55rem;
-    }
-
-    .spot-drink {
-        color: var(--zest);
-    }
-
-    .spot-need {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 0.35rem;
-        font-size: 0.82rem;
-        color: var(--ink-dim);
-        margin-bottom: 0.55rem;
-    }
-
-    .spot-pill {
-        display: inline-flex;
-        align-items: center;
-        padding: 0.12rem 0.55rem;
-        border-radius: var(--radius-pill);
-        background: rgba(214, 168, 78, 0.12);
-        border: 1px solid var(--zest-border);
-        color: var(--ink);
-        font-weight: 700;
-    }
-
-    .spot-row .oneaway-tile {
-        flex: 0 0 116px;
-        background: var(--bg-base);
-    }
-
-    .spot-row .oneaway-img-wrap {
-        height: 76px;
-    }
-
-    .spot-row .oneaway-name {
-        font-size: 0.86rem;
-        margin-bottom: 0;
-    }
-
-    .spot-actions {
+    .spotlight-top {
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 0.75rem;
-        margin-top: 0.15rem;
     }
 
-    .spot-actions form {
+    .spotlight-copy {
+        min-width: 0;
+        flex: 1;
+    }
+
+    .spot-kicker {
+        font-family: var(--font-body);
+        font-weight: 600;
+        font-size: 0.66rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ink-dim);
+        margin-bottom: 0.2rem;
+    }
+
+    .spot-line {
+        font-size: 0.86rem;
+        line-height: 1.35;
+        color: var(--ink);
+    }
+
+    .spot-drink {
+        color: var(--zest);
+        font-weight: 600;
+    }
+
+    .spotlight-action {
+        flex-shrink: 0;
+    }
+
+    .spotlight-action form {
         margin: 0;
+    }
+
+    .spotlight-action .btn-sm {
+        min-height: 34px;
+        padding: 0.22rem 0.8rem;
+        font-size: 0.84rem;
+        background: var(--bg-surface);
+    }
+
+    .spot-carousel {
+        display: flex;
+        gap: 0.55rem;
+        overflow-x: auto;
+        margin: 0.65rem -1.15rem 0;
+        padding: 0 1.15rem 0.05rem;
+        scroll-padding-inline: 1.15rem;
+        scroll-snap-type: x proximity;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    .spot-carousel::-webkit-scrollbar { display: none; }
+
+    .spot-drink-card {
+        flex: 0 0 126px;
+        height: 98px;
+        border-radius: 12px;
+        position: relative;
+        overflow: hidden;
+        scroll-snap-align: start;
+        background: var(--bg-elevated);
+        border: 1px solid rgba(255, 236, 214, 0.10);
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+    }
+
+    .spot-drink-card::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg,
+            rgba(11, 9, 7, 0.04) 0%,
+            rgba(11, 9, 7, 0.34) 48%,
+            rgba(11, 9, 7, 0.92) 100%);
+        pointer-events: none;
+    }
+
+    .spot-drink-img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center 38%;
+        display: block;
+    }
+
+    .spot-drink-fallback {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding-bottom: 16px;
+        background: var(--bg-surface);
+    }
+
+    .spot-drink-fallback .specimen-svg {
+        width: 48px;
+        height: 48px;
+    }
+
+    .spot-drink-name {
+        position: relative;
+        z-index: 2;
+        padding: 0.44rem 0.58rem;
+        font-family: var(--font-body);
+        font-weight: 600;
+        font-size: 0.8rem;
+        line-height: 1.2;
+        color: var(--ink);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     /* The whole featured card is the link, so hovering it pours "Mix it". */
@@ -223,16 +315,14 @@
         .featured-hero:hover .btn::before { transform: translateY(58%); }
     }
 
-    /* Only the drink name and the glass are yellow in this card. */
-    .spot-actions .section-link { color: #d9cdb8; font-weight: 600; }
-    .spot-actions .section-link:hover { color: var(--zest); }
-
-    /* One-Away Horizontal Carousel */
+    /* One-Away Horizontal Carousel (full-bleed edge scroll) */
     .hscroll-row {
         display: flex;
         gap: 0.6rem;
         overflow-x: auto;
-        padding: 0.15rem 0 0.5rem;
+        margin-inline: -1.15rem;
+        padding: 0.15rem 1.15rem 0.5rem;
+        scroll-padding-inline: 1.15rem;
         scroll-snap-type: x proximity;
         -webkit-overflow-scrolling: touch;
         scrollbar-width: none;
@@ -241,18 +331,19 @@
     .hscroll-row::-webkit-scrollbar { display: none; }
 
     .oneaway-tile {
-        flex: 0 0 154px;
+        flex: 0 0 152px;
         scroll-snap-align: start;
         background: var(--bg-elevated);
-        border-radius: var(--radius-control);
+        border: 1px solid var(--hairline);
+        border-radius: 12px;
         overflow: hidden;
         display: flex;
         flex-direction: column;
     }
 
     .oneaway-img-wrap {
-        height: 94px;
-        background: var(--bg-pill);
+        height: 76px;
+        background: var(--bg-surface);
         position: relative;
         overflow: hidden;
         display: flex;
@@ -260,34 +351,31 @@
         justify-content: center;
     }
 
-    .oneaway-img-wrap img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        object-position: center 38%;
-        display: block;
+    .oneaway-img-wrap .specimen-svg {
+        width: 50px;
+        height: 50px;
     }
 
     .oneaway-body {
-        padding: 0.55rem 0.68rem 0.65rem;
+        padding: 0.52rem 0.65rem 0.6rem;
     }
 
     .oneaway-name {
-        font-family: var(--font-display);
-        font-weight: 700;
-        font-size: 0.98rem;
-        text-transform: uppercase;
-        letter-spacing: 0.02em;
-        line-height: 1.1;
+        font-family: var(--font-body);
+        font-weight: 600;
+        font-size: 0.88rem;
+        text-transform: none;
+        letter-spacing: -0.01em;
+        line-height: 1.2;
         color: var(--ink);
-        margin-bottom: 0.25rem;
+        margin-bottom: 0.22rem;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
 
     .oneaway-need {
-        font-size: 0.74rem;
+        font-size: 0.73rem;
         color: var(--terracotta);
         font-weight: 600;
         white-space: nowrap;
@@ -295,20 +383,20 @@
         text-overflow: ellipsis;
     }
 
-    /* Empty Bar Onboarding */
+    /* Empty Bar Onboarding (Full-bleed media, zero outer card box) */
     .onboard-hero {
-        background: var(--bg-elevated);
-        border: 1px solid var(--border-subtle);
-        border-radius: var(--radius-card);
-        overflow: hidden;
-        margin-top: 0.25rem;
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        margin-top: 0;
     }
 
     .onboard-media {
         position: relative;
-        height: 168px;
+        height: 152px;
+        margin: -0.25rem -1.15rem 0.35rem;
         overflow: hidden;
-        background: #110d0a;
+        background: var(--bg-base);
     }
 
     .onboard-media img {
@@ -317,34 +405,36 @@
         object-fit: cover;
         object-position: center 58%;
         display: block;
+        filter: brightness(0.76) contrast(1.04) saturate(0.78);
     }
 
     .onboard-media::after {
         content: "";
         position: absolute;
         inset: 0;
-        background: linear-gradient(180deg, rgba(17, 13, 10, 0) 40%, #1b1510 100%);
+        background: linear-gradient(180deg, rgba(11, 9, 7, 0.16) 0%, rgba(11, 9, 7, 0.62) 58%, #0b0907 100%);
     }
 
     .onboard-content {
-        padding: 0.35rem 1.05rem 1.2rem;
+        padding: 0;
     }
 
     .onboard-kicker {
-        font-family: var(--font-display);
-        font-weight: 700;
-        font-size: 0.74rem;
-        letter-spacing: 0.08em;
+        font-family: var(--font-body);
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+        font-size: 0.68rem;
+        letter-spacing: 0.12em;
         text-transform: uppercase;
         color: var(--zest);
-        margin-bottom: 0.2rem;
+        margin-bottom: 0.22rem;
     }
 
     .onboard-summary {
-        font-size: 0.88rem;
+        font-size: 0.86rem;
         color: var(--ink-dim);
         line-height: 1.4;
-        margin-bottom: 0.8rem;
+        margin-bottom: 0.75rem;
     }
 
     .step2-top {
@@ -355,51 +445,80 @@
         margin-bottom: 0.25rem;
     }
 
-    .scan-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 0.55rem;
-        margin: 0.75rem 0 0.7rem;
+    /* Featured Camera Scan Hero + Secondary Single-Bottle Link */
+    .scan-hero-card {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        background: var(--bg-surface);
+        border: 1px solid rgba(223, 176, 73, 0.24);
+        border-radius: 12px;
+        padding: 0.78rem 0.9rem;
+        margin: 0.65rem 0 0.2rem;
+        transition: background var(--dur-snap) var(--ease-snap), border-color var(--dur-snap) var(--ease-snap);
     }
 
-    .scan-card {
-        display: flex;
-        flex-direction: column;
+    .scan-hero-card:hover { background: var(--bg-active); border-color: rgba(223, 176, 73, 0.4); }
+
+    .scan-badge {
+        width: 38px;
+        height: 38px;
+        border-radius: 9px;
+        background: var(--zest-soft);
+        color: var(--zest);
+        display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 0.35rem;
-        min-height: 68px;
-        padding: 0.55rem;
-        border-radius: 10px;
-        background: #1c1611;
-        border: 1px solid rgba(240, 228, 205, 0.18);
-        text-align: center;
-        font-family: var(--font-display);
-        font-weight: 600;
-        font-size: 1.02rem;
-        letter-spacing: 0.02em;
-        color: #f0e4cd;
-        -webkit-tap-highlight-color: transparent;
-        transition: border-color 200ms var(--ease-snap), background-color 200ms var(--ease-snap);
+        flex-shrink: 0;
     }
 
-    .scan-card:hover { border-color: rgba(244, 196, 48, 0.55); }
-    .scan-card:active { background: #241c15; }
-
-    .scan-card svg {
+    .scan-badge svg {
         width: 20px;
         height: 20px;
-        color: var(--zest);
+    }
+
+    .scan-hero-title {
+        font-size: 0.92rem;
+        font-weight: 600;
+        color: var(--ink);
+        line-height: 1.2;
+    }
+
+    .scan-hero-sub {
+        font-size: 0.75rem;
+        color: var(--ink-dim);
+        margin-top: 0.12rem;
+    }
+
+    .scan-sub-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.38rem;
+        min-height: 36px;
+        font-size: 0.78rem;
+        font-weight: 500;
+        color: var(--ink-dim);
+        margin-bottom: 0.45rem;
+        transition: color var(--dur-snap) var(--ease-snap);
+    }
+
+    .scan-sub-link:hover { color: var(--zest); }
+
+    .scan-sub-link svg {
+        width: 14px;
+        height: 14px;
+        color: var(--ink-dim);
+        flex-shrink: 0;
     }
 
     .sheet-divider {
         display: flex;
         align-items: center;
         gap: 0.65rem;
-        color: var(--ink-dim);
-        font-size: 0.72rem;
-        font-weight: 700;
-        letter-spacing: 0.08em;
+        color: var(--ink-faint);
+        font-size: 0.66rem;
+        font-weight: 600;
+        letter-spacing: 0.12em;
         text-transform: uppercase;
         margin-bottom: 0.65rem;
     }
@@ -409,44 +528,55 @@
         content: "";
         flex: 1;
         height: 1px;
-        background: var(--border-subtle);
+        background: var(--hairline);
     }
 
-    /* Flat 10px pour-fill tiles matching Add Bottle's type picker */
+    /* Balanced 3x4 Spirit Grid + Tactile Mixer Cloud */
     .tile-grid {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 0.42rem;
-        margin-bottom: 0.7rem;
+        gap: 0.46rem;
+        margin-bottom: 0.85rem;
     }
 
     .kc-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
     }
 
     .pour-tile {
         position: relative;
         overflow: hidden;
         isolation: isolate;
-        display: flex;
+        display: inline-flex;
         align-items: center;
         justify-content: center;
-        min-height: 46px;
-        padding: 0.32rem 0.4rem;
+        width: 100%;
+        height: 40px;
+        padding: 0 0.38rem;
+        margin-bottom: 0;
         border-radius: 10px;
-        background: #1c1611;
-        border: 1px solid rgba(240, 228, 205, 0.18);
-        color: #f0e4cd;
-        font-family: var(--font-display);
-        font-size: 0.96rem;
-        font-weight: 600;
-        letter-spacing: 0.02em;
-        line-height: 1.08;
+        background: var(--bg-surface);
+        border: 1px solid rgba(255, 236, 214, 0.13);
+        color: var(--ink);
+        font-family: var(--font-body);
+        font-size: 0.78rem;
+        font-weight: 500;
+        line-height: 1;
+        letter-spacing: 0;
+        text-transform: none;
+        white-space: nowrap;
         text-align: center;
         cursor: pointer;
         user-select: none;
         -webkit-tap-highlight-color: transparent;
-        transition: color 200ms var(--ease-snap), border-color 200ms var(--ease-snap);
+        transition: color 200ms var(--ease-snap), background-color 200ms var(--ease-snap), border-color 200ms var(--ease-snap);
+    }
+
+    .kc-grid .pour-tile {
+        width: auto;
+        padding: 0 0.85rem;
     }
 
     .pour-tile input {
@@ -462,24 +592,25 @@
         position: absolute;
         inset: 0;
         z-index: -1;
-        background: #efb92b;
-        border-top: 1.5px solid #fff3c2;
+        background: var(--zest);
+        border-top: 1.5px solid #fff0b8;
         transform: translateY(102%);
         transition: transform 260ms cubic-bezier(0.3, 0.7, 0.2, 1);
     }
 
-    .pour-tile:hover { border-color: rgba(244, 196, 48, 0.55); }
+    .pour-tile:hover { background: var(--bg-active); border-color: rgba(255, 236, 214, 0.22); }
 
     .pour-tile:has(input:focus-visible),
     .pour-tile:focus-within {
-        outline: 2px solid #fff3c2;
+        outline: 2px solid #fff0b8;
         outline-offset: 2px;
     }
 
     .pour-tile.is-selected,
     .pour-tile:has(input:checked) {
-        border-color: #efb92b;
-        color: #1a1208;
+        border-color: var(--zest);
+        color: var(--ink-on-zest);
+        font-weight: 600;
     }
 
     .pour-tile.is-selected::before,
@@ -492,21 +623,21 @@
     }
 
     .onboard-hint {
-        font-size: 0.8rem;
+        font-size: 0.78rem;
         color: var(--ink-dim);
         margin: 0 0 0.65rem;
         min-height: 1.15em;
     }
 
     .onboard-footer {
-        margin-top: 0.75rem;
+        margin-top: 0.7rem;
         text-align: center;
     }
 
     .onboard-skip {
-        font-size: 0.82rem;
-        font-weight: 600;
-        color: var(--ink-dim);
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: rgba(182, 168, 149, 0.62);
         display: inline-flex;
         align-items: center;
         min-height: 36px;
@@ -517,10 +648,18 @@
     /* Quick Kitchen Check (0-ready users with bottles) */
     .kitchen-check {
         background: var(--bg-elevated);
-        border: 1px solid var(--zest-border);
+        border: 1px solid var(--hairline-strong);
         border-radius: var(--radius-card);
         padding: 0.95rem 1rem 1rem;
         margin-bottom: 0.85rem;
+    }
+
+    .kc-headline {
+        font-size: 1.02rem;
+        font-weight: 600;
+        line-height: 1.35;
+        color: var(--ink);
+        margin: 0 0 0.35rem;
     }
 
     .kc-sub {
@@ -557,8 +696,11 @@
 
     @media (min-width: 768px) {
         .featured-hero {
-            min-height: 210px;
-            background: #1b1510;
+            margin-inline: 0;
+            border-radius: var(--radius-card);
+            border: 1px solid var(--hairline);
+            min-height: 214px;
+            background: var(--bg-elevated);
         }
 
         .featured-hero-img {
@@ -576,54 +718,59 @@
         }
 
         .featured-hero-scrim {
-            min-height: 210px;
+            min-height: 214px;
             padding: 1.25rem 1.5rem;
             background:
-                linear-gradient(180deg, rgba(17, 13, 10, 0.04) 0%, rgba(17, 13, 10, 0.56) 100%),
-                linear-gradient(90deg, #1b1510 0%, #1b1510 62%, rgba(27, 21, 16, 0.85) 68%, rgba(27, 21, 16, 0.08) 100%);
+                linear-gradient(180deg, rgba(12, 9, 7, 0.04) 0%, rgba(12, 9, 7, 0.56) 100%),
+                linear-gradient(90deg, #15110d 0%, #15110d 62%, rgba(21, 17, 13, 0.85) 68%, rgba(21, 17, 13, 0.08) 100%);
         }
 
         .featured-name {
             font-size: 2.15rem;
         }
 
+        .hscroll-row,
+        .spot-carousel {
+            margin-inline: 0;
+            padding: 0.15rem 0 0.5rem;
+            scroll-padding-inline: 0;
+        }
+
+        .spot-carousel {
+            padding: 0 0 0.05rem;
+        }
+
+        .spot-drink-card {
+            flex: 0 0 152px;
+            height: 108px;
+        }
+
         .oneaway-tile {
             flex: 0 0 184px;
-        }
-
-        .spot-row .oneaway-tile {
-            flex: 0 0 140px;
-        }
-
-        .spot-row .oneaway-img-wrap {
-            height: 92px;
         }
 
         .onboard-hero {
             display: grid;
             grid-template-columns: 0.82fr 1.18fr;
             align-items: stretch;
+            background: var(--bg-elevated);
+            border: 1px solid var(--hairline);
+            border-radius: var(--radius-card);
+            overflow: hidden;
         }
 
         .onboard-media {
             height: auto;
             min-height: 390px;
+            margin: 0;
         }
 
         .onboard-media::after {
-            background: linear-gradient(90deg, rgba(17, 13, 10, 0) 50%, #1b1510 100%);
+            background: linear-gradient(90deg, rgba(11, 9, 7, 0) 50%, #14100c 100%);
         }
 
         .onboard-content {
             padding: 1.5rem 1.6rem;
-        }
-
-        .tile-grid {
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-        }
-
-        .kc-grid {
-            grid-template-columns: repeat(3, minmax(0, 1fr));
         }
     }
 </style>
@@ -640,20 +787,22 @@
             <form method="POST" action="/quick-setup" id="quick-setup-form">
                 <div id="onboard-step-1">
                     {% if stocked_count == 0 %}
-                        <div class="onboard-kicker">Step 1 of 2</div>
+                        <div class="onboard-kicker">Step 01 of 02</div>
                     {% endif %}
                     <h1>What&rsquo;s on your shelf?</h1>
-                    <div class="scan-grid">
-                        <a href="/scan-bulk" class="scan-card">
-                            {{ ui_icon("shelf") }}
-                            <span>Scan a shelf</span>
-                        </a>
-                        <a href="/scan" class="scan-card">
-                            {{ ui_icon("camera") }}
-                            <span>Scan a bottle</span>
-                        </a>
-                    </div>
-                    <div class="sheet-divider">or tap what you have</div>
+                    <a href="/scan-bulk" class="scan-hero-card">
+                        <span class="scan-badge">{{ ui_icon("shelf") }}</span>
+                        <div style="min-width: 0; flex: 1;">
+                            <div class="scan-hero-title">Scan your shelf</div>
+                            <div class="scan-hero-sub">Snap a photo to log multiple bottles</div>
+                        </div>
+                        {{ ui_icon("chevron", "row-chevron") }}
+                    </a>
+                    <a href="/scan" class="scan-sub-link">
+                        {{ ui_icon("camera") }}
+                        <span>Scan a single bottle instead &rarr;</span>
+                    </a>
+                    <div class="sheet-divider">tap what you have</div>
                     <div class="tile-grid" id="onboard-bottle-grid">
                         {% for b in onboard_data.bottles %}
                             <label class="pour-tile" data-bottle-key="{{ b.key }}" data-bottle-label="{{ b.label }}">
@@ -682,11 +831,11 @@
                 <div id="onboard-step-2" hidden>
                     <div class="step2-top">
                         <button type="button" class="btn btn-ghost btn-sm" id="onboard-back" style="margin-left: -0.65rem;">&larr; Back</button>
-                        <span class="onboard-kicker" style="margin-bottom: 0;">Step 2 of 2</span>
+                        <span class="onboard-kicker" style="margin-bottom: 0;">Step 02 of 02</span>
                     </div>
                     <h1>What&rsquo;s in your kitchen?</h1>
                     <p class="onboard-summary" id="step2-summary"></p>
-                    <div class="tile-grid" id="onboard-mixer-grid">
+                    <div class="tile-grid kc-grid" id="onboard-mixer-grid">
                         {% for m in onboard_data.mixers %}
                             <label class="pour-tile {% if m.preticked %}is-selected{% endif %}">
                                 <input type="checkbox" name="ingredient" value="{{ m.id }}" {% if m.preticked %}checked{% endif %}>
@@ -709,7 +858,7 @@
     <div class="tonight-header">
         <h1>Tonight</h1>
         {% if recs.total_makeable > 0 %}
-            <a href="/surprise" class="btn btn-secondary btn-sm">
+            <a href="/surprise" class="btn btn-secondary btn-sm surprise-btn">
                 {{ ui_icon("shuffle", "btn-icon") }}
                 <span>Surprise me</span>
             </a>
@@ -717,10 +866,10 @@
     </div>
 
     <div class="stat-bar">
-        <span class="stat-ready">{{ recs.total_makeable }} ready</span>
+        <span class="stat-ready"><span class="ready-dot" aria-hidden="true"></span><span class="stat-num">{{ recs.total_makeable }}</span> ready</span>
         {% if recs.total_one_away > 0 %}
             <span class="stat-sep">&middot;</span>
-            <a href="/one-away" style="color: var(--zest); font-weight: 600;">{{ recs.total_one_away }} almost there &rarr;</a>
+            <a href="/one-away" class="stat-oneaway"><span class="stat-num">{{ recs.total_one_away }}</span> almost there <span class="stat-oneaway-arrow" aria-hidden="true">&rarr;</span></a>
         {% endif %}
     </div>
 
@@ -736,72 +885,59 @@
                 {{ glass_icon(featured.recipe.glass) }}
             </div>
             <div class="featured-hero-scrim">
-                <span class="featured-kicker">Featured pour</span>
-                <div class="featured-bottom">
-                    <div style="min-width: 0;">
-                        <div class="featured-name">{{ featured.recipe.name }}</div>
+                <div class="featured-kicker">Featured pour</div>
+                <div class="featured-name">{{ featured.recipe.name }}</div>
+                <div class="featured-footer">
+                    <div class="featured-meta-col">
                         {% if featured.your_bottles %}
                             <div class="featured-bottles">
-                                Using {{ featured.your_bottles | map('short_name') | join(' · ') }}
+                                {{ featured.your_bottles | map('short_name') | join(' · ') }}
                             </div>
                         {% elif featured.recipe.glass %}
                             <div class="featured-bottles" style="color: var(--ink-dim);">{{ featured.recipe.glass|glass_label }}</div>
                         {% endif %}
-                        {% if featured.recipe.about %}
-                            <div class="featured-teaser">{{ featured.recipe.about.split('. ')[0] ~ '.' }}</div>
-                        {% endif %}
                     </div>
-                    <span class="btn btn-sm" style="flex-shrink: 0;">Mix it</span>
+                    <span class="btn btn-sm featured-cta">Mix it</span>
                 </div>
             </div>
         </a>
     {% endif %}
 
-    {# One Ingredient Away spotlight: hidden when Quick Kitchen Check is rescuing a 0-ready shelf #}
+    {# Borderless Editorial One-Ingredient Strip + Carousel #}
     {% if spot and not kitchen_check %}
-        <section class="spotlight" id="one-away-spotlight">
-            <div class="spot-kicker">One {{ 'ingredient' if spot.kind == 'ingredient' else 'bottle' }} away</div>
-            <p class="spot-headline">
-                {%- for text, is_drink in spot_view.headline -%}
-                    {%- if is_drink %}<span class="spot-drink">{{ text }}</span>{% else %}{{ text }}{% endif -%}
-                {%- endfor -%}
-            </p>
-            <div class="spot-need">
-                <span>{{ 'Just add' if spot.kind == 'ingredient' else 'Pick up' }}</span>
-                <span class="spot-pill">{{ spot_view.label }}</span>
-                <span>and you can make {{ spot.drinks|length }}:</span>
+        <section class="spotlight-strip" id="one-away-spotlight">
+            <div class="spotlight-top">
+                <div class="spotlight-copy">
+                    <div class="spot-kicker">One away &middot; Unlocks {{ spot.drinks|length }} drink{{ 's' if spot.drinks|length != 1 else '' }}</div>
+                    <div class="spot-line">
+                        {{ 'Add' if spot.kind == 'ingredient' else 'Pick up' }} <strong>{{ spot_view.label }}</strong> to mix these
+                    </div>
+                </div>
+                <div class="spotlight-action">
+                    {% if spot.kind == 'ingredient' %}
+                        <form method="POST" action="/stock-add">
+                            <input type="hidden" name="ingredient" value="{{ spot.ingredient_id }}">
+                            <button type="submit" class="btn btn-sm btn-glass" data-label="I have this">I have this</button>
+                        </form>
+                    {% else %}
+                        <a href="{{ spot_view.add_url }}" class="btn btn-sm btn-glass" data-label="Add bottle">Add bottle</a>
+                    {% endif %}
+                </div>
             </div>
-            <div class="hscroll-row spot-row">
+            <div class="spot-carousel">
                 {% for d in spot.drinks %}
                     {% set img_url = d|recipe_image %}
-                    <a href="/recipe/{{ d.id }}" class="oneaway-tile">
-                        <div class="oneaway-img-wrap">
-                            {% if img_url %}
-                                <img src="{{ img_url }}" alt="{{ d.name }}" loading="lazy"
-                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                            {% endif %}
-                            <div class="drink-thumb-fallback" {% if img_url %}style="display: none;"{% endif %}>
-                                {{ glass_icon(d.glass) }}
-                            </div>
+                    <a href="/recipe/{{ d.id }}" class="spot-drink-card">
+                        {% if img_url %}
+                            <img class="spot-drink-img" src="{{ img_url }}" alt="{{ d.name }}" loading="lazy"
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        {% endif %}
+                        <div class="spot-drink-fallback" {% if img_url %}style="display: none;"{% endif %}>
+                            {{ cocktail_specimen(d.glass, d|liquid_tone) }}
                         </div>
-                        <div class="oneaway-body">
-                            <div class="oneaway-name">{{ d.name }}</div>
-                        </div>
+                        <span class="spot-drink-name">{{ d.name }}</span>
                     </a>
                 {% endfor %}
-            </div>
-            <div class="spot-actions">
-                {% if spot.kind == 'ingredient' %}
-                    <form method="POST" action="/stock-add">
-                        <input type="hidden" name="ingredient" value="{{ spot.ingredient_id }}">
-                        <button type="submit" class="btn btn-sm btn-glass" data-label="I have this">I have this</button>
-                    </form>
-                {% else %}
-                    <a href="{{ spot_view.add_url }}" class="btn btn-sm btn-glass" data-label="Add to my bar">Add to my bar</a>
-                {% endif %}
-                {% if spot.other_groups %}
-                    <a href="/one-away" class="section-link">More ingredients &rarr;</a>
-                {% endif %}
             </div>
         </section>
     {% endif %}
@@ -809,45 +945,35 @@
     {# Ready List (excluding featured drink if multiple ready) #}
     {% if recs.total_makeable > 0 %}
         {% set list_count = (recs.total_makeable - 1) if (featured and recs.total_makeable > 1) else recs.total_makeable %}
-        <div class="section-row" style="margin: 0.65rem 0 0.5rem;">
-            <h2>{% if featured and recs.total_makeable > 1 %}More ready ({{ list_count }}){% else %}Ready to pour ({{ list_count }}){% endif %}</h2>
-            <div class="segmented" style="padding: 3px; min-width: 162px;">
-                <a href="/" class="segmented-item {% if not grouped %}active{% endif %}" style="min-height: 32px; font-size: 0.76rem; padding: 0 0.7rem;">All</a>
-                <a href="/?group=spirit" class="segmented-item {% if grouped %}active{% endif %}" style="min-height: 32px; font-size: 0.76rem; padding: 0 0.7rem;">By spirit</a>
+        <div class="section-row" style="margin: 0.25rem 0 0.35rem;">
+            <h2>{% if featured and recs.total_makeable > 1 %}More to pour{% else %}Ready to pour{% endif %}<span class="eyebrow-count">{{ list_count }}</span></h2>
+            <div class="segmented" style="padding: 3px; min-width: 144px;">
+                <a href="/" class="segmented-item {% if not grouped %}active{% endif %}" style="min-height: 30px; font-size: 0.76rem; padding: 0 0.65rem;">All</a>
+                <a href="/?group=spirit" class="segmented-item {% if grouped %}active{% endif %}" style="min-height: 30px; font-size: 0.76rem; padding: 0 0.65rem;">By spirit</a>
             </div>
         </div>
 
         {% macro render_drink_row(r, ratings) -%}
             {% set thumb = ratings.get(r.recipe.id, 0) %}
-            {% set img_url = r.recipe|recipe_image %}
             <a href="/recipe/{{ r.recipe.id }}" class="drink-card {% if thumb == -1 %}is-disliked{% endif %}">
-                <div class="drink-thumb">
-                    {% if img_url %}
-                        <img src="{{ img_url }}" alt="{{ r.recipe.name }}" loading="lazy"
-                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                    {% endif %}
-                    <div class="drink-thumb-fallback" {% if img_url %}style="display: none;"{% endif %}>
-                        {{ glass_icon(r.recipe.glass) }}
-                    </div>
+                <div class="drink-thumb is-specimen" data-tone="{{ r.recipe|liquid_tone }}">
+                    {{ cocktail_specimen(r.recipe.glass, r.recipe|liquid_tone) }}
                 </div>
                 <div class="drink-meta">
                     <div class="drink-title">
                         <span>{{ r.recipe.name }}</span>
-                        {% if thumb == 1 %}
-                            <span style="color: var(--sage); display: inline-flex;" title="Liked">
-                                {{ ui_icon("thumb-up", "btn-icon") }}
-                            </span>
-                        {% endif %}
                     </div>
                     {% if r.your_bottles %}
                         <div class="drink-sub">{{ r.your_bottles | map('short_name') | join(' · ') }}</div>
                     {% endif %}
-                    <div class="drink-glass-line">
-                        {{ glass_icon(r.recipe.glass) }}
-                        <span>{{ r.recipe.glass|glass_label }}</span>
-                    </div>
+                    <div class="drink-meta-line">{{ r.recipe|drink_style }} &middot; {{ r.recipe.glass|glass_label }}</div>
                 </div>
-                {{ ui_icon("chevron", "row-chevron") }}
+                <div class="row-right">
+                    {% if thumb == 1 %}
+                        {{ ui_icon("bookmark-filled", "liked-mark") }}
+                    {% endif %}
+                    {{ ui_icon("chevron", "row-chevron") }}
+                </div>
             </a>
         {%- endmacro %}
 
@@ -861,9 +987,7 @@
                 {% endfor %}
                 {% if group_filtered %}
                     <div class="spirit-group" style="margin-bottom: 0.9rem;">
-                        <div style="font-family: var(--font-display); font-weight: 700; font-size: 0.92rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-dim); margin: 0.55rem 0 0.4rem;">
-                            {{ spirit_name }} &middot; {{ group_filtered|length }}
-                        </div>
+                        <h2 style="margin: 0.65rem 0 0.25rem;">{{ spirit_name }}<span class="eyebrow-count">{{ group_filtered|length }}</span></h2>
                         <div class="drink-grid">
                             {% for r in group_filtered %}
                                 {{ render_drink_row(r, recs.ratings) }}
@@ -911,7 +1035,7 @@
     {% elif kitchen_check %}
         <section class="kitchen-check" id="kitchen-check">
             <div class="spot-kicker">Quick kitchen check</div>
-            <p class="spot-headline">
+            <p class="kc-headline">
                 You already have the bottles for <span class="spot-drink">{{ kitchen_check.max_unlockable }} drink{{ 's' if kitchen_check.max_unlockable != 1 else '' }}</span>.
             </p>
             <p class="kc-sub">Tap what&rsquo;s in your fridge or pantry to unlock them now.</p>
@@ -950,16 +1074,9 @@
         </div>
         <div class="hscroll-row">
             {% for item in recs.one_away %}
-                {% set img_url = item.recipe.recipe|recipe_image %}
                 <a href="/recipe/{{ item.recipe.recipe.id }}" class="oneaway-tile">
                     <div class="oneaway-img-wrap">
-                        {% if img_url %}
-                            <img src="{{ img_url }}" alt="{{ item.recipe.recipe.name }}" loading="lazy"
-                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                        {% endif %}
-                        <div class="drink-thumb-fallback" {% if img_url %}style="display: none;"{% endif %}>
-                            {{ glass_icon(item.recipe.recipe.glass) }}
-                        </div>
+                        {{ cocktail_specimen(item.recipe.recipe.glass, item.recipe.recipe|liquid_tone) }}
                     </div>
                     <div class="oneaway-body">
                         <div class="oneaway-name">{{ item.recipe.recipe.name }}</div>

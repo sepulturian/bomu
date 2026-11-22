@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "components/icons.html" import glass_icon, ui_icon %}
+{% from "components/icons.html" import glass_icon, ui_icon, cocktail_specimen %}
 
 {% block title %}Explore &middot; Bomu{% endblock %}
 
@@ -7,7 +7,7 @@
 <style>
     .explore-head {
         display: flex;
-        align-items: center;
+        align-items: baseline;
         justify-content: space-between;
         gap: 0.75rem;
         margin-bottom: 0.65rem;
@@ -15,68 +15,142 @@
 
     .explore-head h1 { margin-bottom: 0; }
 
-    .filter-block {
+    .explore-head-meta {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+        flex-shrink: 0;
+    }
+
+    .explore-count {
+        font-family: var(--font-body);
+        font-variant-numeric: tabular-nums;
+        font-size: 0.78rem;
+        font-weight: 500;
+        color: var(--ink-dim);
+    }
+
+    .explore-reset-btn {
+        background: none;
+        border: none;
+        padding: 0;
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--zest);
+        cursor: pointer;
+    }
+
+    .explore-search-row {
         display: flex;
-        flex-direction: column;
+        align-items: center;
         gap: 0.5rem;
-        margin-bottom: 0.65rem;
+        margin-bottom: 0.55rem;
+    }
+
+    .explore-search-row .search-wrap {
+        flex: 1;
+        min-width: 0;
+        margin-bottom: 0;
+    }
+
+    .filter-toggle-btn {
+        min-height: 44px;
+        padding: 0 0.85rem;
+        border-radius: var(--radius-control);
+        background: var(--bg-elevated);
+        border: 1px solid rgba(255, 236, 214, 0.12);
+        color: var(--ink-champagne);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.82rem;
+        font-weight: 600;
+        cursor: pointer;
+        flex-shrink: 0;
+        transition: color var(--dur-snap) var(--ease-snap), background var(--dur-snap) var(--ease-snap), border-color var(--dur-snap) var(--ease-snap);
+    }
+
+    .filter-toggle-btn:hover {
+        background: var(--bg-surface);
+        border-color: rgba(255, 236, 214, 0.2);
+        color: var(--ink);
+    }
+
+    .filter-toggle-btn.is-open,
+    .filter-toggle-btn.has-active {
+        color: var(--zest);
+        background: var(--bg-active);
+        border-color: rgba(223, 176, 73, 0.42);
+    }
+
+    .filter-count {
+        min-width: 17px;
+        height: 17px;
+        padding: 0 5px;
+        border-radius: 999px;
+        background: var(--zest-soft);
+        color: var(--zest);
+        font-size: 0.68rem;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .filter-dropdowns {
-        display: grid;
+        display: none;
         grid-template-columns: 1fr 1fr;
         gap: 0.5rem;
+        margin-bottom: 0.55rem;
+    }
+
+    .filter-dropdowns.is-open {
+        display: grid;
     }
 
     .filter-dropdowns select {
-        min-height: 44px;
-        padding: 0.45rem 2.1rem 0.45rem 0.85rem;
+        min-height: 42px;
+        padding: 0.4rem 2.1rem 0.4rem 0.85rem;
         font-size: 0.84rem;
         font-weight: 600;
         border-radius: var(--radius-control);
         margin-bottom: 0;
     }
 
-    .explore-count-row {
+    .explore-status-tabs {
+        margin-bottom: 0.45rem;
+    }
+
+    .explore-status-tabs .segmented-item {
+        min-height: 34px;
+        font-size: 0.78rem;
+        padding: 0 0.5rem;
+    }
+
+    .ready-sub-row {
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        margin-bottom: 0.55rem;
-        font-size: 0.8rem;
-        color: var(--ink-dim);
-        font-weight: 600;
+        gap: 0.38rem;
     }
 
-    .drink-style-line {
-        margin-top: 0.16rem;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.35rem;
-        font-size: 0.74rem;
-        color: var(--ink-dim);
-    }
-
-    .style-dot {
-        width: 5px;
-        height: 5px;
+    .ready-pip {
+        width: 6px;
+        height: 6px;
         border-radius: 50%;
-        background: var(--zest);
-        opacity: 0.7;
+        background: var(--sage);
         flex-shrink: 0;
+    }
+
+    #explore-list[data-active-status="makeable"] .ready-pip {
+        display: none;
     }
 
     .drink-card.is-disliked { opacity: 0.48; }
 
     @media (min-width: 768px) {
-        .filter-block {
-            flex-direction: row;
-            align-items: center;
-            justify-content: space-between;
-            gap: 0.85rem;
-        }
-
         .filter-dropdowns {
-            min-width: 340px;
+            max-width: 420px;
         }
     }
 </style>
@@ -85,10 +159,14 @@
 {% block content %}
 <div class="explore-head">
     <h1>Explore</h1>
+    <div class="explore-head-meta">
+        <button type="button" class="explore-reset-btn" id="explore-reset" style="display: none;">Reset</button>
+        <span id="explore-visible-count" class="explore-count">{{ total_count }} cocktails</span>
+    </div>
 </div>
 
 {% if not logged_in %}
-<div class="card" style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem 1rem; border: 1px solid var(--zest-border); margin-bottom: 0.85rem;">
+<div class="card" style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem 1rem; margin-bottom: 0.85rem;">
     <p style="font-size: 0.9rem; color: var(--ink); line-height: 1.4; flex: 1 1 240px;">
         Browse all {{ total_count }} cocktails. Sign up to see which ones you can pour from your bar.
     </p>
@@ -99,79 +177,63 @@
 </div>
 {% endif %}
 
-<div class="search-wrap">
-    {{ ui_icon("search", "search-icon") }}
-    <input type="search" id="explore-search" placeholder="Search cocktails or ingredients..." autocomplete="off">
-</div>
-
-<div class="filter-block">
-    {% if logged_in %}
-    <div class="chip-strip" data-filter-group="status">
-        <button type="button" class="chip active" data-val="all">All</button>
-        <button type="button" class="chip" data-val="makeable">Ready ({{ makeable_total }})</button>
-        <button type="button" class="chip" data-val="one_away">One away ({{ one_away_total }})</button>
+<div class="explore-search-row">
+    <div class="search-wrap">
+        {{ ui_icon("search", "search-icon") }}
+        <input type="search" id="explore-search" placeholder="Search cocktails, spirits..." autocomplete="off">
     </div>
-    {% endif %}
-
-    <div class="filter-dropdowns">
-        <select id="explore-spirit-select" aria-label="Filter by base spirit">
-            <option value="all">All Spirits</option>
-            {% for sp in spirit_filters %}
-                <option value="{{ sp }}">{{ sp }}</option>
-            {% endfor %}
-        </select>
-
-        <select id="explore-style-select" aria-label="Filter by drink style">
-            <option value="all">All Styles</option>
-            {% for st in style_filters %}
-                <option value="{{ st }}">{{ st }}</option>
-            {% endfor %}
-        </select>
-    </div>
-</div>
-
-<div class="explore-count-row">
-    <span id="explore-visible-count">{{ total_count }} cocktails</span>
-    <button type="button" class="section-link" id="explore-reset" style="background: none; border: none; cursor: pointer; display: none;">
-        Reset filters
+    <button type="button" class="filter-toggle-btn" id="explore-filter-toggle"
+            aria-expanded="false" aria-controls="explore-filter-drawer">
+        {{ ui_icon("sliders", "btn-icon") }}
+        <span>Filter</span>
+        <span class="filter-count" id="explore-filter-count" style="display: none;"></span>
     </button>
 </div>
 
-<div id="explore-list" class="drink-grid">
+<div class="filter-dropdowns" id="explore-filter-drawer">
+    <select id="explore-spirit-select" aria-label="Filter by base spirit">
+        <option value="all">All Spirits</option>
+        {% for sp in spirit_filters %}
+            <option value="{{ sp }}">{{ sp }}</option>
+        {% endfor %}
+    </select>
+
+    <select id="explore-style-select" aria-label="Filter by drink style">
+        <option value="all">All Styles</option>
+        {% for st in style_filters %}
+            <option value="{{ st }}">{{ st }}</option>
+        {% endfor %}
+    </select>
+</div>
+
+{% if logged_in %}
+<div class="segmented explore-status-tabs" data-filter-group="status" role="tablist">
+    <button type="button" class="segmented-item active" data-val="all">All</button>
+    <button type="button" class="segmented-item" data-val="makeable">Ready ({{ makeable_total }})</button>
+    <button type="button" class="segmented-item" data-val="one_away">One away ({{ one_away_total }})</button>
+</div>
+{% endif %}
+
+<div id="explore-list" class="drink-grid" data-active-status="all">
     {% for e in entries %}
-        {% set img_url = e.recipe|recipe_image %}
         <a href="/recipe/{{ e.recipe.id }}"
            class="drink-card explore-item {% if e.thumb == -1 %}is-disliked{% endif %}"
            data-search="{{ e.search_text }}"
            data-status="{{ e.status }}"
            data-spirit="{{ e.spirit_group }}"
            data-style="{{ e.style_group }}">
-            <div class="drink-thumb">
-                {% if img_url %}
-                    <img src="{{ img_url }}" alt="{{ e.recipe.name }}" loading="lazy"
-                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                {% endif %}
-                <div class="drink-thumb-fallback" {% if img_url %}style="display: none;"{% endif %}>
-                    {{ glass_icon(e.recipe.glass) }}
-                </div>
+            <div class="drink-thumb is-specimen" data-tone="{{ e.recipe|liquid_tone }}">
+                {{ cocktail_specimen(e.recipe.glass, e.recipe|liquid_tone) }}
             </div>
             <div class="drink-meta">
                 <div class="drink-title">
                     <span>{{ e.recipe.name }}</span>
-                    {% if e.thumb == 1 %}
-                        <span style="color: var(--sage); display: inline-flex;" title="Liked">
-                            {{ ui_icon("thumb-up", "btn-icon") }}
-                        </span>
-                    {% endif %}
                 </div>
                 {% if logged_in %}
                     {% if e.status == 'makeable' %}
-                        <div class="drink-sub">
-                            {% if e.your_bottles %}
-                                Ready &middot; {{ e.your_bottles | join(' · ') }}
-                            {% else %}
-                                Ready
-                            {% endif %}
+                        <div class="drink-sub ready-sub-row">
+                            <span class="ready-pip" aria-hidden="true"></span>
+                            <span style="overflow: hidden; text-overflow: ellipsis;">{{ e.your_bottles | join(' · ') if e.your_bottles else 'In your bar' }}</span>
                         </div>
                     {% elif e.status == 'one_away' %}
                         <div class="drink-sub is-missing">One away &middot; Need {{ e.missing[0] }}</div>
@@ -179,18 +241,16 @@
                         <div class="drink-sub is-dim">Missing {{ e.missing|length }} items</div>
                     {% endif %}
                 {% endif %}
-                <div class="drink-style-line">
-                    <span class="style-dot"></span>
-                    <span>{{ e.style_group }} &middot; {{ e.spirit_group }}</span>
+                <div class="drink-meta-line">
+                    {{ e.style_group }} &middot; {{ e.recipe.glass|glass_label }}
                 </div>
-                {% if not logged_in %}
-                <div class="drink-glass-line">
-                    {{ glass_icon(e.recipe.glass) }}
-                    <span>{{ e.recipe.glass|glass_label }}</span>
-                </div>
-                {% endif %}
             </div>
-            {{ ui_icon("chevron", "row-chevron") }}
+            <div class="row-right">
+                {% if e.thumb == 1 %}
+                    {{ ui_icon("bookmark-filled", "liked-mark") }}
+                {% endif %}
+                {{ ui_icon("chevron", "row-chevron") }}
+            </div>
         </a>
     {% endfor %}
 </div>
@@ -210,6 +270,10 @@
         var search = document.getElementById("explore-search");
         var spiritSel = document.getElementById("explore-spirit-select");
         var styleSel = document.getElementById("explore-style-select");
+        var filterToggle = document.getElementById("explore-filter-toggle");
+        var filterCountEl = document.getElementById("explore-filter-count");
+        var filterDrawer = document.getElementById("explore-filter-drawer");
+        var exploreList = document.getElementById("explore-list");
         var items = document.querySelectorAll(".explore-item");
         var countEl = document.getElementById("explore-visible-count");
         var resetBtn = document.getElementById("explore-reset");
@@ -227,7 +291,14 @@
                 el.style.display = ok ? "" : "none";
                 if (ok) shown++;
             });
+            if (exploreList) exploreList.setAttribute("data-active-status", state.status);
             var dirty = state.q !== "" || state.status !== "all" || state.spirit !== "all" || state.style !== "all";
+            var drawerActiveCount = (state.spirit !== "all" ? 1 : 0) + (state.style !== "all" ? 1 : 0);
+            if (filterToggle) filterToggle.classList.toggle("has-active", drawerActiveCount > 0);
+            if (filterCountEl) {
+                filterCountEl.textContent = drawerActiveCount > 0 ? String(drawerActiveCount) : "";
+                filterCountEl.style.display = drawerActiveCount > 0 ? "inline-flex" : "none";
+            }
             countEl.textContent = dirty ? (shown + " of " + total + " cocktails") : (total + " cocktails");
             resetBtn.style.display = dirty ? "inline-flex" : "none";
             emptyBox.style.display = shown === 0 ? "block" : "none";
@@ -239,11 +310,19 @@
             if (spiritSel) spiritSel.value = "all";
             if (styleSel) styleSel.value = "all";
             document.querySelectorAll("[data-filter-group]").forEach(function (grp) {
-                grp.querySelectorAll(".chip").forEach(function (c) {
+                grp.querySelectorAll(".segmented-item").forEach(function (c) {
                     c.classList.toggle("active", c.dataset.val === "all");
                 });
             });
             apply();
+        }
+
+        if (filterToggle && filterDrawer) {
+            filterToggle.addEventListener("click", function () {
+                var open = filterDrawer.classList.toggle("is-open");
+                filterToggle.classList.toggle("is-open", open);
+                filterToggle.setAttribute("aria-expanded", open ? "true" : "false");
+            });
         }
 
         search.addEventListener("input", function () {
@@ -253,11 +332,11 @@
 
         document.querySelectorAll("[data-filter-group]").forEach(function (grp) {
             var key = grp.getAttribute("data-filter-group");
-            grp.querySelectorAll(".chip").forEach(function (chip) {
-                chip.addEventListener("click", function () {
-                    grp.querySelectorAll(".chip").forEach(function (c) { c.classList.remove("active"); });
-                    chip.classList.add("active");
-                    state[key] = chip.dataset.val;
+            grp.querySelectorAll(".segmented-item").forEach(function (tab) {
+                tab.addEventListener("click", function () {
+                    grp.querySelectorAll(".segmented-item").forEach(function (c) { c.classList.remove("active"); });
+                    tab.classList.add("active");
+                    state[key] = tab.dataset.val;
                     apply();
                 });
             });

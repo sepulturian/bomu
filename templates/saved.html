@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "components/icons.html" import glass_icon, ui_icon %}
+{% from "components/icons.html" import glass_icon, ui_icon, cocktail_specimen %}
 
 {% block title %}Saved &middot; Bomu{% endblock %}
 
@@ -13,16 +13,9 @@
     <div class="drink-grid">
         {% for item in favorites %}
             {% set r = item.recipe %}
-            {% set img_url = r|recipe_image %}
             <a href="/recipe/{{ r.id }}" class="drink-card">
-                <div class="drink-thumb">
-                    {% if img_url %}
-                        <img src="{{ img_url }}" alt="{{ r.name }}" loading="lazy"
-                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                    {% endif %}
-                    <div class="drink-thumb-fallback" {% if img_url %}style="display: none;"{% endif %}>
-                        {{ glass_icon(r.glass) }}
-                    </div>
+                <div class="drink-thumb is-specimen" data-tone="{{ r|liquid_tone }}">
+                    {{ cocktail_specimen(r.glass, r|liquid_tone) }}
                 </div>
                 <div class="drink-meta">
                     <div class="drink-title">
@@ -37,10 +30,7 @@
                     {% else %}
                         <div class="drink-sub is-dim">Missing {{ item.missing|length }} items</div>
                     {% endif %}
-                    <div class="drink-glass-line">
-                        {{ glass_icon(r.glass) }}
-                        <span>{{ r.glass|glass_label }}</span>
-                    </div>
+                    <div class="drink-meta-line">{{ r|drink_style }} &middot; {{ r.glass|glass_label }}</div>
                 </div>
                 {{ ui_icon("chevron", "row-chevron") }}
             </a>
@@ -68,23 +58,14 @@
         <div style="padding: 0 0.7rem 0.7rem;">
             {% for d in disliked %}
                 {% set r = d.recipe %}
-                {% set img_url = r|recipe_image %}
                 <div class="drink-card" style="justify-content: space-between;">
                     <a href="/recipe/{{ r.id }}" style="display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 0;">
-                        <div class="drink-thumb" style="width: 48px; height: 48px; border-radius: 12px;">
-                            {% if img_url %}
-                                <img src="{{ img_url }}" alt="{{ r.name }}" loading="lazy"
-                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                            {% endif %}
-                            <div class="drink-thumb-fallback" {% if img_url %}style="display: none;"{% endif %}>
-                                {{ glass_icon(r.glass) }}
-                            </div>
+                        <div class="drink-thumb is-specimen" data-tone="{{ r|liquid_tone }}">
+                            {{ cocktail_specimen(r.glass, r|liquid_tone) }}
                         </div>
                         <div class="drink-meta">
-                            <div class="drink-title" style="font-size: 1.1rem;">{{ r.name }}</div>
-                            <div class="drink-glass-line">
-                                <span>{{ r.glass|glass_label }}</span>
-                            </div>
+                            <div class="drink-title">{{ r.name }}</div>
+                            <div class="drink-meta-line">{{ r|drink_style }} &middot; {{ r.glass|glass_label }}</div>
                         </div>
                     </a>
                     <form method="POST" action="/rate/{{ r.id }}" style="margin: 0; flex-shrink: 0;">

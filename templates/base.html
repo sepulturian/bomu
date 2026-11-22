@@ -1,4 +1,4 @@
-{% from "components/icons.html" import glass_icon, ui_icon %}
+{% from "components/icons.html" import glass_icon, ui_icon, nav_icon %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,7 +7,7 @@
     {% block meta %}{% endblock %}
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <link rel="manifest" href="/static/manifest.json">
-    <meta name="theme-color" content="#140e0a">
+    <meta name="theme-color" content="#0b0907">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -18,41 +18,49 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Direction 4 — Espresso & Zest (Refined)
-           Deep espresso surfaces + citrus lemon zest + condensed grotesk + selective capsule CTAs */
+        /* Nocturnal Speakeasy Utility — Obsidian Surfaces + Burnished Brass + Champagne Ivory */
         :root {
-            --bg-base: #110d0a;
-            --bg-elevated: #1b1510;
-            --bg-card: #211a13;
-            --bg-pill: #2a2018;
-            --bg-pill-hover: #35281f;
-            --border-subtle: rgba(255, 236, 214, 0.08);
-            --border-highlight: rgba(255, 236, 214, 0.18);
+            --bg-base: #0b0907;
+            --bg-elevated: #17120e;
+            --bg-surface: #221c16;
+            --bg-active: #31271e;
+            --bg-card: #17120e;
+            --bg-pill: #221c16;
+            --bg-pill-hover: #31271e;
 
-            --ink: #f4ede2;
-            --ink-dim: #bba996;
-            --ink-faint: #8e7c6a;
+            --hairline: rgba(255, 236, 214, 0.09);
+            --hairline-strong: rgba(255, 236, 214, 0.14);
+            --border-subtle: rgba(255, 236, 214, 0.10);
+            --border-highlight: rgba(255, 236, 214, 0.15);
 
-            --zest: #f4c430;
-            --zest-hover: #ffd34d;
-            --zest-soft: rgba(244, 196, 48, 0.13);
-            --zest-border: rgba(244, 196, 48, 0.36);
-            --ink-on-zest: #140e0a;
+            --ink: #f6efe4;
+            --ink-champagne: #dcd0bc;
+            --ink-dim: #b6a895;
+            --ink-faint: #928473;
 
-            --sage: #95d5b2;
-            --sage-soft: rgba(149, 213, 178, 0.13);
-            --sage-border: rgba(149, 213, 178, 0.34);
+            --zest: #dfb049;
+            --zest-hover: #ecc05f;
+            --zest-soft: rgba(223, 176, 73, 0.16);
+            --zest-border: rgba(223, 176, 73, 0.44);
+            --ink-on-zest: #120d08;
 
-            --terracotta: #e76f51;
-            --terracotta-soft: rgba(231, 111, 81, 0.14);
-            --terracotta-border: rgba(231, 111, 81, 0.42);
+            --sage: #6e9f77;
+            --sage-text: #8ab892;
+            --sage-soft: rgba(110, 159, 119, 0.11);
+            --sage-border: rgba(110, 159, 119, 0.36);
+            --ink-on-sage: #0d140e;
+
+            --terracotta: #d46b50;
+            --terracotta-soft: rgba(212, 107, 80, 0.12);
+            --terracotta-border: rgba(212, 107, 80, 0.34);
 
             --font-display: "Barlow Condensed", "Bahnschrift", "Oswald", "Arial Narrow", sans-serif;
             --font-body: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --font-mono: var(--font-body);
 
             --radius-pill: 999px;
-            --radius-card: 20px;
-            --radius-control: 14px;
+            --radius-card: 16px;
+            --radius-control: 10px;
             --radius-btn: 10px;
 
             --ease-snap: cubic-bezier(0.2, 0, 0, 1);
@@ -97,7 +105,7 @@
         .topbar {
             max-width: 600px;
             margin: 0 auto;
-            padding: 0.65rem 1rem 0.2rem;
+            padding: 0.5rem 1.15rem 0.2rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -107,35 +115,69 @@
         .wordmark {
             display: inline-flex;
             align-items: center;
-            gap: 0.42rem;
-            min-height: 40px;
+            gap: 0.38rem;
+            min-height: 44px;
             font-family: var(--font-display);
             font-weight: 800;
-            font-size: 1.45rem;
-            letter-spacing: 0.08em;
+            font-size: 1.28rem;
+            letter-spacing: 0.1em;
             text-transform: uppercase;
             color: var(--ink);
         }
 
         .wordmark .glass-sig {
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             color: var(--zest);
             flex-shrink: 0;
         }
 
-        /* "aaron · out": plain text, no avatar */
+        .account-avatar-btn {
+            min-width: 44px;
+            min-height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: flex-end;
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+        }
+
+        .account-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-elevated);
+            border: 1px solid var(--hairline-strong);
+            color: var(--ink-dim);
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            transition: border-color var(--dur-snap) var(--ease-snap), color var(--dur-snap) var(--ease-snap), background var(--dur-snap) var(--ease-snap);
+        }
+
+        .account-avatar-btn:hover .account-avatar,
+        .account-avatar-btn:focus-visible .account-avatar {
+            border-color: var(--zest-border);
+            color: var(--zest);
+            background: var(--bg-surface);
+        }
+
         .account-line {
             display: inline-flex;
             align-items: center;
             gap: 0.4rem;
             min-width: 0;
-            font-size: 0.86rem;
+            font-size: 0.84rem;
             color: var(--ink-dim);
         }
 
         .account-user {
-            max-width: 16ch;
+            max-width: 140px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -148,7 +190,7 @@
             border: none;
             color: var(--ink-dim);
             font: inherit;
-            min-height: 40px;
+            min-height: 44px;
             padding: 0 0.15rem;
             cursor: pointer;
             text-underline-offset: 3px;
@@ -159,6 +201,14 @@
         .account-out:focus-visible {
             color: var(--zest);
             text-decoration: underline;
+        }
+
+        .signout-user {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--ink-faint);
+            letter-spacing: 0.02em;
+            margin-bottom: 0.25rem;
         }
 
         /* Sign-out confirm */
@@ -216,7 +266,7 @@
         .container {
             max-width: 600px;
             margin: 0 auto;
-            padding: 0.25rem 1rem 92px;
+            padding: 0.25rem 1.15rem 84px;
         }
 
         /* Condensed Grotesk Display System */
@@ -232,14 +282,24 @@
         }
 
         .section-heading, h2 {
-            font-family: var(--font-display);
-            font-weight: 700;
-            font-size: 1.15rem;
-            line-height: 1.1;
-            letter-spacing: 0.05em;
+            font-family: var(--font-body);
+            font-weight: 600;
+            font-size: 0.72rem;
+            line-height: 1.2;
+            letter-spacing: 0.12em;
             text-transform: uppercase;
-            color: var(--zest);
-            margin-bottom: 0.55rem;
+            color: var(--ink-dim);
+            margin-bottom: 0.5rem;
+        }
+
+        .eyebrow-count {
+            font-family: var(--font-body);
+            font-variant-numeric: tabular-nums;
+            font-weight: 600;
+            font-size: 0.72rem;
+            color: var(--ink-faint);
+            margin-left: 0.42rem;
+            letter-spacing: 0.02em;
         }
 
         .section-row {
@@ -247,7 +307,7 @@
             align-items: center;
             justify-content: space-between;
             gap: 0.75rem;
-            margin: 1.25rem 0 0.6rem;
+            margin: 1.15rem 0 0.45rem;
         }
 
         .section-row h2 { margin-bottom: 0; }
@@ -263,22 +323,16 @@
         }
 
         /* Buttons: "the pour" (2026-11-15). One job each:
-             .btn            solid zest, Barlow Condensed in sentence case.
+             .btn            solid brushed brass, Barlow Condensed in sentence case.
                              The ONE main action on a view. Hover raises a
-                             brighter level halfway (with a pale meniscus
-                             line); press / tap fills it.
-             .btn-glass      "empty glass": dark face, zest rim, cream text.
+                             brighter level halfway; press / tap fills it.
+             .btn-glass      "empty glass": dark face, brass rim, cream text.
                              Pressing pours it full and the label turns dark
                              at the liquid line. Needs data-label="<label>".
-                             Used for "I have this".
-             .btn-secondary  dark face, cream hairline, body font. Zest only
-                             on hover, so zest still means "primary".
+             .btn-secondary  dark face, subtle hairline, body font.
              .btn-ghost      plain text. Back / Not now / Cancel.
              .btn-danger     red underlined text link, 44px tap height.
-             .btn-sm         smaller, for inline cards.
-           No drop shadows, no all-caps, no gradients or glows. Labels are
-           written in sentence case. Touch: base.html JS adds .is-pouring on
-           pointerdown so a tap shows the fill (phones have no hover). */
+             .btn-sm         smaller, for inline cards. */
         .btn {
             --pour: cubic-bezier(0.3, 0.7, 0.2, 1);
             position: relative;
@@ -292,8 +346,8 @@
             padding: 0.5rem 1.4rem;
             border-radius: 10px;
             border: 1px solid transparent;
-            background: #efb92b;
-            color: #1a1208;
+            background: var(--zest);
+            color: var(--ink-on-zest);
             font-family: var(--font-display);
             font-weight: 600;
             font-size: 1.06rem;
@@ -312,9 +366,9 @@
             position: absolute;
             inset: 0;
             z-index: -1;
-            background: #ffd95e;
-            border-top: 1.5px solid #fff3c2;
-            box-shadow: 0 -6px 10px -6px rgba(255, 243, 194, 0.5);
+            background: var(--zest-hover);
+            border-top: 1.5px solid #fff0b8;
+            box-shadow: 0 -6px 10px -6px rgba(255, 240, 184, 0.45);
             transform: translateY(102%);
             transition: transform 420ms var(--pour);
         }
@@ -325,12 +379,15 @@
         .btn.is-pouring::before { transform: translateY(0); transition-duration: 160ms; }
 
         .btn:focus-visible {
-            outline: 2px solid #fff3c2;
+            outline: 2px solid #fff0b8;
             outline-offset: 2px;
         }
         .btn:disabled,
         .btn[aria-disabled="true"] {
-            opacity: 0.55;
+            background: rgba(223, 176, 73, 0.09);
+            border-color: rgba(223, 176, 73, 0.24);
+            color: rgba(223, 176, 73, 0.56);
+            opacity: 1;
             cursor: default;
         }
         .btn:disabled::before,
@@ -355,27 +412,27 @@
         .btn-danger::before { display: none; }
 
         .btn-secondary {
-            min-height: 46px;
-            background: #1c1611;
-            border-color: rgba(240, 228, 205, 0.22);
-            color: #f0e4cd;
+            min-height: 44px;
+            background: var(--bg-elevated);
+            border-color: rgba(255, 236, 214, 0.12);
+            color: var(--ink-champagne);
             font-weight: 600;
-            font-size: 0.92rem;
-            padding-inline: 1.15rem;
+            font-size: 0.9rem;
+            padding-inline: 1.1rem;
         }
-        .btn-secondary:hover { border-color: rgba(244, 196, 48, 0.55); }
-        .btn-secondary:active { background: #241c15; }
-        .btn-secondary.btn-sm { min-height: 36px; font-size: 0.82rem; padding-inline: 0.9rem; }
+        .btn-secondary:hover { background: var(--bg-surface); color: var(--ink); border-color: rgba(255, 236, 214, 0.2); }
+        .btn-secondary:active { background: var(--bg-active); }
+        .btn-secondary.btn-sm { min-height: 36px; font-size: 0.8rem; padding-inline: 0.85rem; }
 
         .btn-ghost {
             background: transparent;
-            color: #b9ab93;
+            color: var(--ink-dim);
             font-weight: 600;
             font-size: 0.88rem;
             padding-inline: 0.65rem;
         }
         .btn-ghost:hover,
-        .btn-ghost:active { color: #f0e4cd; }
+        .btn-ghost:active { color: var(--ink); }
 
         .back-link {
             display: inline-flex;
@@ -383,7 +440,7 @@
             gap: 0.25rem;
             min-height: 44px;
             padding: 0 0.45rem 0 0;
-            color: #b9ab93;
+            color: var(--ink-dim);
             font-family: var(--font-body);
             font-size: 0.88rem;
             font-weight: 600;
@@ -391,21 +448,21 @@
             transition: color var(--dur-snap) var(--ease-snap);
         }
         .back-link:hover,
-        .back-link:focus-visible { color: #f0e4cd; }
+        .back-link:focus-visible { color: var(--ink); }
 
         .btn-danger {
             min-height: 44px;
             padding: 0;
             background: transparent;
             border: 0;
-            color: #ec7560;
+            color: var(--terracotta);
             font-weight: 600;
             font-size: 0.86rem;
             text-decoration: underline;
-            text-decoration-color: rgba(236, 117, 96, 0.45);
+            text-decoration-color: rgba(223, 114, 85, 0.45);
             text-underline-offset: 3px;
         }
-        .btn-danger:hover { text-decoration-color: #ec7560; }
+        .btn-danger:hover { text-decoration-color: var(--terracotta); }
 
         /* The empty glass. Base label is cream; ::after is a dark copy of the
            label revealed from the bottom with the liquid, so the text turns
@@ -413,16 +470,16 @@
         @property --lvl { syntax: "<percentage>"; inherits: true; initial-value: 0%; }
         .btn-glass {
             --lvl: 0%;
-            background: #1a1410;
-            border-color: rgba(239, 185, 43, 0.6);
-            color: #f3e9d6;
+            background: var(--bg-surface);
+            border-color: rgba(233, 180, 52, 0.42);
+            color: var(--ink);
             transition: --lvl 300ms var(--pour), border-color 200ms var(--pour);
         }
         .btn-glass::before {
             transform: none;
             transition: none;
-            background: #efb92b;
-            border-top-color: #ffe08a;
+            background: var(--zest);
+            border-top-color: #fff0b8;
             box-shadow: none;
             clip-path: inset(calc(100% - var(--lvl)) 0 0 0);
         }
@@ -432,10 +489,10 @@
             inset: 0;
             display: grid;
             place-items: center;
-            color: #1a1208;
+            color: var(--ink-on-zest);
             clip-path: inset(calc(100% - var(--lvl)) 0 0 0);
         }
-        .btn-glass:hover { border-color: #efb92b; }
+        .btn-glass:hover { border-color: var(--zest); }
         .btn-glass:hover::before { transform: none; }
         .btn-glass:active,
         .btn-glass.is-pouring { --lvl: 100%; }
@@ -449,26 +506,28 @@
         .btn:hover .arrow { transform: translateX(2px); }
 
         .btn-icon { width: 16px; height: 16px; flex-shrink: 0; }
+        .liked-mark { width: 13px; height: 13px; color: var(--zest); opacity: 0.85; flex-shrink: 0; }
+        .row-right { display: inline-flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
 
         /* Status Pills */
         .pill {
             display: inline-flex;
             align-items: center;
             gap: 0.35rem;
-            padding: 0.28rem 0.7rem;
+            padding: 0.25rem 0.65rem;
             border-radius: var(--radius-pill);
-            background: var(--bg-pill);
-            border: 1px solid var(--border-subtle);
+            background: var(--bg-surface);
+            border: 1px solid var(--hairline);
             color: var(--ink-dim);
-            font-size: 0.75rem;
+            font-size: 0.74rem;
             font-weight: 600;
             line-height: 1.2;
             white-space: nowrap;
         }
 
         .pill .glass-sig, .pill svg {
-            width: 15px;
-            height: 15px;
+            width: 14px;
+            height: 14px;
             flex-shrink: 0;
         }
 
@@ -505,98 +564,148 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            min-height: 40px;
-            padding: 0.35rem 0.9rem;
+            min-height: 34px;
+            padding: 0.25rem 0.85rem;
             border-radius: var(--radius-pill);
-            background: linear-gradient(180deg, #261d15 0%, #1c150f 100%);
-            border: 1px solid rgba(255, 236, 214, 0.11);
+            background: transparent;
+            border: 1px solid var(--hairline-strong);
             color: var(--ink-dim);
             font-size: 0.8rem;
             font-weight: 600;
             white-space: nowrap;
-            box-shadow: inset 0 1px 0 rgba(255, 236, 214, 0.07), 0 2px 6px rgba(0, 0, 0, 0.35);
+            box-shadow: none;
             cursor: pointer;
             transition: background var(--dur-snap) var(--ease-snap), color var(--dur-snap) var(--ease-snap), border-color var(--dur-snap) var(--ease-snap);
         }
 
         .chip.active {
-            background: linear-gradient(180deg, #382a1e 0%, #281d15 100%);
-            border-color: var(--zest);
+            background: var(--bg-active);
+            border-color: rgba(233, 180, 52, 0.45);
             color: var(--zest);
-            box-shadow: inset 0 1px 0 rgba(244, 196, 48, 0.28), 0 3px 10px rgba(244, 196, 48, 0.14);
+            box-shadow: none;
         }
 
-        /* Recessed Segmented Switch with Warm Cream Active Pill */
+        /* Calibrated Segmented Switch */
         .segmented {
             display: flex;
-            padding: 4px;
-            border-radius: var(--radius-pill);
-            background: #15100c;
-            border: 1px solid rgba(255, 236, 214, 0.1);
-            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.65);
-            gap: 4px;
+            padding: 3px;
+            border-radius: 10px;
+            background: var(--bg-elevated);
+            border: 1px solid rgba(255, 236, 214, 0.11);
+            box-shadow: none;
+            gap: 2px;
         }
 
         .segmented-item {
             flex: 1;
-            min-height: 40px;
+            min-height: 36px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 0.4rem;
-            border-radius: var(--radius-pill);
+            border-radius: 8px;
             border: 1px solid transparent;
             background: transparent;
             color: var(--ink-dim);
-            font-size: 0.84rem;
+            font-size: 0.82rem;
             font-weight: 600;
+            font-variant-numeric: tabular-nums;
             white-space: nowrap;
             cursor: pointer;
-            transition: background var(--dur-snap) var(--ease-snap), color var(--dur-snap) var(--ease-snap), box-shadow var(--dur-snap) var(--ease-snap);
+            transition: background var(--dur-snap) var(--ease-snap), color var(--dur-snap) var(--ease-snap), border-color var(--dur-snap) var(--ease-snap);
         }
 
         .segmented-item.active {
-            background: linear-gradient(180deg, #fbf6ee 0%, #e9dfd1 100%);
-            border-color: transparent;
-            color: #140e0a;
-            font-weight: 700;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5), inset 0 1px 0 #ffffff;
+            background: var(--bg-active);
+            border: 1px solid rgba(255, 236, 214, 0.12);
+            color: var(--ink);
+            font-weight: 600;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
         }
 
-        /* Standard Cards & Rows (14px-20px radius, not inflated pills) */
+        /* Tonal Cards & Editorial Hairline Rows */
         .card {
             background: var(--bg-elevated);
             border-radius: var(--radius-card);
-            padding: 1rem 1.05rem;
+            padding: 0.95rem 1rem;
             margin-bottom: 0.75rem;
         }
 
         .drink-card {
             display: flex;
             align-items: center;
-            gap: 0.8rem;
-            background: var(--bg-elevated);
-            border-radius: 18px;
-            padding: 0.55rem 0.85rem 0.55rem 0.55rem;
-            margin-bottom: 0.5rem;
+            gap: 0.85rem;
+            background: transparent;
+            border-radius: 0;
+            padding: 0.68rem 0;
+            margin-bottom: 0;
+            border-bottom: 1px solid var(--hairline);
             transition: background var(--dur-snap) var(--ease-snap), transform var(--dur-snap) var(--ease-snap);
         }
 
+        .drink-grid > .drink-card:last-child {
+            border-bottom: none;
+        }
+
         .drink-card:active {
-            transform: scale(0.985);
-            background: var(--bg-pill);
+            transform: scale(0.99);
+            background: rgba(244, 232, 214, 0.03);
         }
 
         .drink-card.is-disliked { opacity: 0.55; }
 
         .drink-thumb {
-            width: 60px;
-            height: 60px;
-            border-radius: 13px;
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
             overflow: hidden;
-            background: var(--bg-pill);
+            background: var(--bg-elevated);
+            border: 1px solid rgba(255, 236, 214, 0.10);
             flex-shrink: 0;
             position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .drink-thumb.is-specimen {
+            background: radial-gradient(circle at 50% 54%, var(--tone-glow, rgba(223, 176, 73, 0.10)) 0%, var(--bg-elevated) 72%);
+        }
+        .drink-thumb.is-specimen[data-tone="ruby"] { --tone-glow: rgba(207, 63, 52, 0.15); border-color: rgba(207, 63, 52, 0.18); }
+        .drink-thumb.is-specimen[data-tone="orange"] { --tone-glow: rgba(226, 132, 48, 0.15); border-color: rgba(226, 132, 48, 0.18); }
+        .drink-thumb.is-specimen[data-tone="honey"] { --tone-glow: rgba(223, 179, 68, 0.14); border-color: rgba(223, 179, 68, 0.18); }
+        .drink-thumb.is-specimen[data-tone="citrus"] { --tone-glow: rgba(125, 165, 86, 0.15); border-color: rgba(125, 165, 86, 0.18); }
+        .drink-thumb.is-specimen[data-tone="amber"] { --tone-glow: rgba(196, 114, 48, 0.15); border-color: rgba(196, 114, 48, 0.18); }
+        .drink-thumb.is-specimen[data-tone="espresso"] { --tone-glow: rgba(138, 92, 66, 0.16); border-color: rgba(155, 108, 79, 0.18); }
+        .drink-thumb.is-specimen[data-tone="cream"] { --tone-glow: rgba(221, 209, 190, 0.12); border-color: rgba(221, 209, 190, 0.16); }
+        .drink-thumb.is-specimen[data-tone="crystal"] { --tone-glow: rgba(188, 205, 214, 0.13); border-color: rgba(188, 205, 214, 0.16); }
+
+        .drink-thumb.is-specimen::after {
+            display: none;
+        }
+
+        .ready-dot {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--sage);
+            flex-shrink: 0;
+        }
+
+        .specimen-svg {
+            width: 38px;
+            height: 38px;
+            display: block;
+        }
+
+        .drink-thumb::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            box-shadow: inset 0 -10px 16px rgba(11, 9, 7, 0.42);
+            pointer-events: none;
         }
 
         .drink-thumb img {
@@ -606,12 +715,13 @@
             display: block;
         }
 
-        /* Tone down external bright CocktailDB studio cutouts on dark surfaces */
+        /* Unify external photography into the warm nocturnal canvas */
         .drink-thumb img[src^="http"],
         .featured-hero-img[src^="http"],
+        .spot-drink-img[src^="http"],
         .oneaway-img-wrap img[src^="http"],
         .recipe-hero-media img[src^="http"] {
-            filter: brightness(0.84) contrast(1.06) saturate(1.05);
+            filter: brightness(0.80) contrast(1.06) sepia(0.08) saturate(0.95);
         }
 
         .drink-thumb-fallback {
@@ -620,31 +730,31 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(150deg, #2b2017 0%, #17110c 100%);
-            color: rgba(244, 196, 48, 0.34);
+            background: linear-gradient(150deg, #211a14 0%, #120e0b 100%);
+            color: rgba(233, 180, 52, 0.24);
         }
 
-        .drink-thumb-fallback .glass-sig { width: 24px; height: 24px; }
+        .drink-thumb-fallback .glass-sig { width: 22px; height: 22px; }
 
         .drink-meta { flex: 1; min-width: 0; }
 
         .drink-title {
-            font-family: var(--font-display);
-            font-weight: 700;
-            font-size: 1.2rem;
-            line-height: 1.05;
-            letter-spacing: 0.015em;
-            text-transform: uppercase;
+            font-family: var(--font-body);
+            font-weight: 600;
+            font-size: 0.98rem;
+            line-height: 1.24;
+            letter-spacing: -0.01em;
+            text-transform: none;
             color: var(--ink);
             display: flex;
             align-items: center;
-            gap: 0.35rem;
+            gap: 0.38rem;
         }
 
         .drink-sub {
-            margin-top: 0.22rem;
-            font-size: 0.78rem;
-            color: var(--sage);
+            margin-top: 0.14rem;
+            font-size: 0.8rem;
+            color: var(--ink-champagne);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -653,8 +763,17 @@
         .drink-sub.is-missing { color: var(--terracotta); }
         .drink-sub.is-dim { color: var(--ink-dim); }
 
+        .drink-meta-line {
+            margin-top: 0.12rem;
+            font-size: 0.74rem;
+            color: var(--ink-dim);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
         .drink-glass-line {
-            margin-top: 0.18rem;
+            margin-top: 0.12rem;
             display: inline-flex;
             align-items: center;
             gap: 0.3rem;
@@ -663,71 +782,74 @@
         }
 
         .drink-glass-line .glass-sig {
-            width: 14px;
-            height: 14px;
+            width: 13px;
+            height: 13px;
             color: var(--zest);
+            opacity: 0.85;
             flex-shrink: 0;
         }
 
-        .row-chevron { width: 17px; height: 17px; color: var(--ink-faint); flex-shrink: 0; }
+        .row-chevron { width: 16px; height: 16px; color: var(--ink-faint); flex-shrink: 0; }
 
-        /* Inputs & Search Bars (14px control radius so inputs never look like CTA pills) */
+        /* Inputs & Search Bars (calibrated low-light definition) */
         .search-wrap {
             position: relative;
-            margin-bottom: 0.7rem;
+            margin-bottom: 0.65rem;
         }
 
         .search-wrap svg {
             position: absolute;
-            left: 0.9rem;
+            left: 0.85rem;
             top: 50%;
             transform: translateY(-50%);
-            width: 17px;
-            height: 17px;
+            width: 16px;
+            height: 16px;
             color: var(--ink-faint);
             pointer-events: none;
         }
 
         .search-wrap input[type="search"] {
-            padding-left: 2.6rem;
+            padding-left: 2.5rem;
             margin-bottom: 0;
         }
 
         input[type="text"], input[type="password"], input[type="search"], select, input[type="file"] {
             width: 100%;
-            min-height: 46px;
-            padding: 0.6rem 0.95rem;
+            min-height: 44px;
+            padding: 0.55rem 0.9rem;
             border-radius: var(--radius-control);
             background: var(--bg-elevated);
-            border: 1px solid var(--border-subtle);
+            border: 1px solid rgba(255, 236, 214, 0.12);
             color: var(--ink);
-            font-size: 0.94rem;
-            margin-bottom: 0.8rem;
+            font-size: 0.92rem;
+            margin-bottom: 0.75rem;
             transition: border-color var(--dur-snap) var(--ease-snap), background var(--dur-snap) var(--ease-snap);
         }
 
         select {
             appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 24 24'%3E%3Cpath stroke='%23f4c430' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 24 24'%3E%3Cpath stroke='%23dfb049' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
-            background-position: right 0.9rem center;
-            padding-right: 2.35rem;
+            background-position: right 0.85rem center;
+            padding-right: 2.25rem;
         }
 
         input:focus, select:focus {
             outline: none;
-            border-color: var(--zest);
-            background: var(--bg-pill);
+            border-color: var(--zest-border);
+            background: var(--bg-surface);
         }
 
         input::placeholder { color: var(--ink-faint); }
 
         label {
             display: block;
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
             color: var(--ink-dim);
-            margin-bottom: 0.3rem;
+            margin-bottom: 0.45rem;
         }
 
         .form-group { margin-bottom: 0.25rem; }
@@ -750,7 +872,7 @@
         /* Unified Accordion Disclosure Component */
         .accordion-bar {
             background: var(--bg-elevated);
-            border: 1px solid var(--border-subtle);
+            border: 1px solid var(--hairline);
             border-radius: var(--radius-control);
             margin-bottom: 0.85rem;
             overflow: hidden;
@@ -800,7 +922,7 @@
             transform: rotate(180deg);
         }
 
-        /* Flush Pill-Free Dark Espresso 4-Tab Bottom Bar */
+        /* Architectural Monoline 4-Tab Bottom Bar */
         .tabbar-scrim { display: none; }
 
         .tabbar {
@@ -811,16 +933,25 @@
             z-index: 90;
             max-width: 480px;
             margin: 0 auto;
-            height: 72px;
-            padding: 0 0.35rem env(safe-area-inset-bottom, 0px);
-            background: linear-gradient(180deg, rgba(26, 19, 14, 0.97) 0%, rgba(15, 11, 8, 0.99) 100%);
-            border-top: 1px solid rgba(244, 196, 48, 0.18);
-            box-shadow: 0 -10px 28px rgba(0, 0, 0, 0.65);
-            backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px);
+            height: 62px;
+            padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px));
+            background: #120e0b;
+            border-top: 1px solid rgba(255, 236, 214, 0.12);
+            box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.42);
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             align-items: stretch;
+        }
+
+        .tabbar::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 100%;
+            height: 28px;
+            background: linear-gradient(180deg, rgba(11, 9, 7, 0) 0%, rgba(11, 9, 7, 0.86) 72%, #0b0907 100%);
+            pointer-events: none;
         }
 
         .tabbar a {
@@ -833,58 +964,26 @@
             height: 100%;
             color: var(--ink-faint);
             text-decoration: none;
-            font-family: var(--font-display);
-            font-size: 0.76rem;
-            font-weight: 700;
+            font-family: var(--font-body);
+            font-size: 0.65rem;
+            font-weight: 600;
             letter-spacing: 0.06em;
             text-transform: uppercase;
             transition: color var(--dur-snap) var(--ease-snap), transform var(--dur-snap) var(--ease-snap);
         }
 
-        .tabbar a .nav-icon-img {
-            width: 30px;
-            height: 30px;
-            object-fit: contain;
-            opacity: 0.62;
-            filter: saturate(0.72) brightness(0.9);
-            transition: transform 180ms var(--ease-snap), opacity 180ms var(--ease-snap), filter 180ms var(--ease-snap);
+        .tabbar a svg,
+        .tabbar a .nav-icon {
+            width: 22px;
+            height: 22px;
+            flex-shrink: 0;
         }
 
         .tabbar a:active { transform: scale(0.95); }
 
         .tabbar a.active {
             color: var(--zest);
-            font-weight: 800;
-            background: radial-gradient(circle at 50% 34%, rgba(244, 196, 48, 0.15) 0%, transparent 66%);
-        }
-
-        .tabbar a.active::before {
-            content: "";
-            position: absolute;
-            top: -1px;
-            left: 22%;
-            right: 22%;
-            height: 2.5px;
-            border-radius: 0 0 3px 3px;
-            background: linear-gradient(90deg, rgba(244, 196, 48, 0.25), #ffdf6b 50%, rgba(244, 196, 48, 0.25));
-            box-shadow: 0 2px 10px rgba(244, 196, 48, 0.6);
-        }
-
-        .tabbar a.active::after {
-            content: "";
-            position: absolute;
-            bottom: 5px;
-            width: 4px;
-            height: 4px;
-            border-radius: 50%;
-            background: var(--zest);
-            box-shadow: 0 0 6px var(--zest);
-        }
-
-        .tabbar a.active .nav-icon-img {
-            opacity: 1;
-            transform: translateY(-1px) scale(1.08);
-            filter: saturate(1.15) brightness(1.08) drop-shadow(0 3px 8px rgba(244, 196, 48, 0.35));
+            font-weight: 700;
         }
 
         .empty-state {
@@ -904,16 +1003,16 @@
         @media (min-width: 520px) {
             .tabbar {
                 max-width: 560px;
-                height: 74px;
-                border-radius: 20px 20px 0 0;
-                border-left: 1px solid rgba(244, 196, 48, 0.18);
-                border-right: 1px solid rgba(244, 196, 48, 0.18);
+                height: 64px;
+                border-radius: 16px 16px 0 0;
+                border-left: 1px solid var(--hairline);
+                border-right: 1px solid var(--hairline);
             }
         }
 
         @media (min-width: 768px) {
             body {
-                background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(58, 39, 24, 0.36) 0%, rgba(26, 18, 12, 0.16) 55%, #110d0a 100%) fixed, var(--bg-base);
+                background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(58, 39, 24, 0.28) 0%, rgba(20, 14, 10, 0.14) 55%, #0c0907 100%) fixed, var(--bg-base);
             }
 
             .topbar {
@@ -923,7 +1022,7 @@
 
             .container {
                 max-width: 960px;
-                padding: 0.4rem 2rem 110px;
+                padding: 0.4rem 2rem 100px;
             }
 
             .tabbar {
@@ -933,7 +1032,7 @@
             .drink-grid {
                 display: grid;
                 grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 0.7rem;
+                gap: 0 1.5rem;
             }
 
             .drink-grid .drink-card,
@@ -944,7 +1043,7 @@
             .bottle-grid {
                 display: grid;
                 grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 0.6rem;
+                gap: 0 1.5rem;
             }
 
             .bottle-grid .bottle-row {
@@ -993,6 +1092,7 @@
 
     {% if current_username %}
     <dialog class="signout-dialog" id="signout-dialog" aria-labelledby="signout-title" closedby="any">
+        <div class="signout-user">Signed in as {{ current_username }}</div>
         <h2 id="signout-title">Calling it a night?</h2>
         <p>Your bar stays stocked for next time.</p>
         <div class="signout-actions">
@@ -1019,21 +1119,25 @@
 
     {% if current_username and not hide_tabbar %}
         {% set p = request.path %}
+        {% set is_tonight = (p == '/' or p == '/recommend') %}
+        {% set is_bar = (p.startswith('/bar') or p.startswith('/add') or p.startswith('/edit') or p.startswith('/scan') or p.startswith('/confirm') or p.startswith('/checklist')) %}
+        {% set is_explore = (p.startswith('/explore') or p.startswith('/one-away')) %}
+        {% set is_saved = (p.startswith('/saved') or p.startswith('/favorites')) %}
         <nav class="tabbar" aria-label="Primary navigation">
-            <a href="/" class="{% if p == '/' or p == '/recommend' %}active{% endif %}">
-                <img src="/static/nav/tonight.webp" alt="" class="nav-icon-img" width="30" height="30">
+            <a href="/" class="{% if is_tonight %}active{% endif %}">
+                {{ nav_icon("tonight", is_tonight) }}
                 <span>Tonight</span>
             </a>
-            <a href="/bar" class="{% if p.startswith('/bar') or p.startswith('/add') or p.startswith('/edit') or p.startswith('/scan') or p.startswith('/confirm') or p.startswith('/checklist') %}active{% endif %}">
-                <img src="/static/nav/bar.webp" alt="" class="nav-icon-img" width="30" height="30">
+            <a href="/bar" class="{% if is_bar %}active{% endif %}">
+                {{ nav_icon("bar", is_bar) }}
                 <span>Bar</span>
             </a>
-            <a href="/explore" class="{% if p.startswith('/explore') or p.startswith('/one-away') %}active{% endif %}">
-                <img src="/static/nav/explore.webp" alt="" class="nav-icon-img" width="30" height="30">
+            <a href="/explore" class="{% if is_explore %}active{% endif %}">
+                {{ nav_icon("explore", is_explore) }}
                 <span>Explore</span>
             </a>
-            <a href="/saved" class="{% if p.startswith('/saved') or p.startswith('/favorites') %}active{% endif %}">
-                <img src="/static/nav/saved.webp" alt="" class="nav-icon-img" width="30" height="30">
+            <a href="/saved" class="{% if is_saved %}active{% endif %}">
+                {{ nav_icon("saved", is_saved) }}
                 <span>Saved</span>
             </a>
         </nav>

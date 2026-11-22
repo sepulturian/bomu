@@ -21,17 +21,16 @@
 <style>
     .recipe-hero {
         position: relative;
-        border-radius: var(--radius-card);
-        overflow: hidden;
-        background: var(--bg-elevated);
-        margin-bottom: 0.85rem;
+        margin: -0.25rem -1.15rem 1.05rem;
+        border-radius: 0;
+        background: var(--bg-base);
     }
 
     .recipe-hero-media {
-        height: 230px;
+        height: 205px;
         position: relative;
         overflow: hidden;
-        background: #110d0a;
+        background: var(--bg-base);
     }
 
     .recipe-hero-media img {
@@ -46,82 +45,114 @@
         content: "";
         position: absolute;
         inset: 0;
-        background: linear-gradient(180deg, rgba(17, 13, 10, 0) 56%, #1b1510 100%);
+        background: linear-gradient(180deg,
+            rgba(11, 9, 7, 0.14) 0%,
+            rgba(11, 9, 7, 0.36) 48%,
+            rgba(11, 9, 7, 0.92) 86%,
+            #0b0907 100%);
     }
 
     .recipe-hero-noimg {
-        height: 96px;
+        height: 112px;
         display: flex;
         align-items: center;
         justify-content: center;
-        background: linear-gradient(155deg, #2b2017 0%, #17110c 100%);
-        color: rgba(244, 196, 48, 0.38);
+        background: linear-gradient(180deg, #1b1510 0%, #0b0907 100%);
+        color: rgba(213, 162, 62, 0.25);
     }
 
     .recipe-sig-circle {
-        width: 56px;
-        height: 56px;
+        width: 52px;
+        height: 52px;
         border-radius: 50%;
-        border: 1px solid var(--border-subtle);
-        background: rgba(244, 196, 48, 0.06);
+        border: 1px solid var(--hairline);
+        background: rgba(233, 180, 52, 0.06);
         display: flex;
         align-items: center;
         justify-content: center;
     }
 
     .recipe-sig-circle .glass-sig {
-        width: 30px;
-        height: 30px;
+        width: 28px;
+        height: 28px;
     }
 
-    .recipe-hero-body {
-        padding: 0.45rem 1rem 0.8rem;
+    .recipe-hero-overlay {
+        position: relative;
+        z-index: 2;
+        padding: 0 1.15rem 0.2rem;
+        margin-top: -64px;
     }
 
-    .recipe-hero-body h1 {
-        font-size: 1.85rem;
-        margin-bottom: 0.35rem;
+    .recipe-hero-overlay.is-noimg {
+        margin-top: -12px;
+    }
+
+    .recipe-hero-overlay h1 {
+        font-size: 2.2rem;
+        margin-bottom: 0.28rem;
     }
 
     .recipe-meta-row {
         display: flex;
         flex-wrap: wrap;
-        gap: 0.45rem;
+        gap: 0.55rem;
         align-items: center;
     }
 
-    /* Compact Interactive Pour List */
+    .recipe-glass-meta {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        font-size: 0.82rem;
+        font-weight: 500;
+        color: var(--ink-dim);
+    }
+
+    .recipe-glass-icon {
+        display: inline-flex;
+        color: var(--zest);
+        opacity: 0.9;
+    }
+
+    .recipe-glass-icon .glass-sig {
+        width: 15px;
+        height: 15px;
+    }
+
+    /* Hyper-scannable Hairline Pour List */
     .pour-list {
         display: flex;
         flex-direction: column;
-        gap: 0.4rem;
-        margin-bottom: 1rem;
+        gap: 0;
+        margin-bottom: 1.1rem;
+        border-top: 1px solid var(--hairline);
     }
 
     .pour-row {
         width: 100%;
         display: flex;
         align-items: center;
-        gap: 0.65rem;
-        min-height: 46px;
-        padding: 0.46rem 0.85rem;
-        border-radius: var(--radius-control);
-        background: var(--bg-elevated);
-        border: 1px solid transparent;
+        gap: 0.72rem;
+        min-height: 50px;
+        padding: 0.62rem 0;
+        border-radius: 0;
+        background: transparent;
+        border: none;
+        border-bottom: 1px solid var(--hairline);
         text-align: left;
         cursor: pointer;
         color: var(--ink);
-        transition: border-color var(--dur-snap) var(--ease-snap), background var(--dur-snap) var(--ease-snap), opacity var(--dur-snap) var(--ease-snap);
+        transition: opacity var(--dur-snap) var(--ease-snap), background var(--dur-snap) var(--ease-snap);
     }
 
     .pour-row.is-missing {
-        border-color: var(--terracotta-border);
-        background: rgba(231, 111, 81, 0.07);
+        border-left: 2px solid var(--terracotta);
+        padding-left: 0.65rem;
     }
 
     .pour-row.is-checked {
-        opacity: 0.45;
-        background: var(--bg-base);
+        opacity: 0.42;
     }
 
     .pour-row.is-checked .pour-name {
@@ -132,7 +163,8 @@
         width: 22px;
         height: 22px;
         border-radius: 50%;
-        border: 1.75px solid #6d5e4d;
+        border: 1.75px solid rgba(255, 236, 214, 0.44);
+        background: rgba(255, 236, 214, 0.03);
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -146,9 +178,9 @@
     }
 
     .pour-row.is-checked .pour-circle {
-        background: var(--zest);
-        border-color: var(--zest);
-        color: var(--ink-on-zest);
+        background: var(--sage);
+        border-color: var(--sage);
+        color: var(--ink-on-sage);
     }
 
     .pour-info {
@@ -157,9 +189,17 @@
     }
 
     .pour-name {
-        font-size: 0.94rem;
+        font-size: 0.95rem;
         font-weight: 600;
         color: var(--ink);
+    }
+
+    .pour-opt-tag {
+        font-size: 0.72rem;
+        color: var(--ink-faint);
+        font-weight: 500;
+        font-style: normal;
+        margin-left: 0.35rem;
     }
 
     .pour-row.is-missing .pour-name {
@@ -167,9 +207,10 @@
     }
 
     .pour-sub {
-        font-size: 0.76rem;
-        color: var(--sage);
-        margin-top: 0.08rem;
+        font-size: 0.77rem;
+        color: var(--ink-champagne);
+        margin-top: 0.1rem;
+        line-height: 1.3;
     }
 
     .pour-sub.is-missing { color: var(--terracotta); }
@@ -181,12 +222,23 @@
         text-overflow: ellipsis;
     }
 
+    .pour-more-bottles {
+        color: var(--ink-dim);
+        font-weight: 500;
+        cursor: pointer;
+    }
+
+    .pour-more-bottles:hover {
+        color: var(--zest);
+        text-decoration: underline;
+    }
+
     .pour-missing-bar {
         display: flex;
         align-items: center;
         flex-wrap: wrap;
         gap: 0.45rem;
-        margin: 0.3rem 0.4rem 0.25rem;
+        margin: 0.35rem 0 0.5rem 0.65rem;
     }
 
     .pour-missing-bar form {
@@ -196,75 +248,87 @@
     .pour-measure {
         text-align: right;
         flex-shrink: 0;
-        padding-left: 0.45rem;
+        padding-left: 0.5rem;
         font-variant-numeric: tabular-nums;
     }
 
     .pour-oz {
-        font-family: var(--font-display);
+        font-family: var(--font-body);
+        font-variant-numeric: tabular-nums;
         font-weight: 700;
-        font-size: 1.08rem;
-        letter-spacing: 0.02em;
+        font-size: 0.96rem;
+        letter-spacing: -0.01em;
         color: var(--zest);
-        line-height: 1.05;
+        line-height: 1.2;
     }
 
     .pour-ml {
-        font-size: 0.8rem;
+        font-family: var(--font-body);
+        font-variant-numeric: tabular-nums;
+        font-size: 0.74rem;
+        font-weight: 500;
+        color: var(--ink-dim);
+        line-height: 1.25;
+        margin-top: 2px;
+    }
+
+    .pour-count {
+        font-family: var(--font-body);
+        font-variant-numeric: tabular-nums;
+        font-size: 0.84rem;
         font-weight: 600;
-        color: #d6cec2;
+        color: var(--ink-dim);
         line-height: 1.15;
     }
 
-    /* Arm's-length mixing steps */
+    /* Editorial Mixing Steps (Zero boxed cards) */
     .step-list {
         display: flex;
         flex-direction: column;
-        gap: 0.48rem;
-        margin-bottom: 1.15rem;
+        gap: 0.15rem;
+        margin-bottom: 1.45rem;
     }
 
     .step-card {
         display: flex;
-        align-items: flex-start;
-        gap: 0.8rem;
-        padding: 0.82rem 0.95rem;
-        border-radius: var(--radius-control);
-        background: var(--bg-elevated);
+        align-items: baseline;
+        gap: 0.75rem;
+        padding: 0.48rem 0;
+        background: transparent;
+        border-radius: 0;
     }
 
     .step-badge {
-        width: 26px;
-        height: 26px;
-        border-radius: 50%;
-        background: var(--zest-soft);
-        border: 1px solid var(--zest-border);
+        font-family: var(--font-body);
+        font-variant-numeric: tabular-nums;
+        font-weight: 700;
+        font-size: 0.8rem;
         color: var(--zest);
-        font-family: var(--font-display);
-        font-weight: 800;
-        font-size: 0.96rem;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
+        min-width: 1.45rem;
         flex-shrink: 0;
-        margin-top: 0.08rem;
     }
 
     .step-text {
-        font-size: 1.02rem;
+        font-size: 0.98rem;
         line-height: 1.48;
         color: var(--ink);
     }
 
-    .tip-card {
-        border-radius: var(--radius-card);
-        background: var(--bg-elevated);
-        border: 1px solid var(--zest-border);
-        padding: 0.9rem 1rem;
-        margin-bottom: 1rem;
+    .tip-card,
+    .about-card {
+        border: none;
+        border-top: 1px solid var(--hairline);
+        border-radius: 0;
+        background: transparent;
+        padding: 1rem 0 0;
+        margin: 0.25rem 0 1.25rem;
     }
 
-    /* Flush Pill-Free Dark Espresso Bartender Dock */
+    /* Unified Frosted Bartender Dock */
+    .container {
+        padding-bottom: 92px;
+    }
+
     .bartender-dock {
         position: fixed;
         left: 0;
@@ -273,133 +337,230 @@
         max-width: 480px;
         margin: 0 auto;
         z-index: 90;
-        background: linear-gradient(180deg, rgba(26, 19, 14, 0.97) 0%, rgba(15, 11, 8, 0.99) 100%);
-        border-top: 1px solid rgba(244, 196, 48, 0.18);
+        height: 62px;
+        padding: 0 1rem env(safe-area-inset-bottom, 0px);
+        background: #120e0b;
+        border-top: 1px solid rgba(255, 236, 214, 0.12);
+        box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.42);
         border-radius: 0;
-        padding: 0.65rem 1rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
-        box-shadow: 0 -10px 28px rgba(0, 0, 0, 0.65);
-        backdrop-filter: blur(18px);
-        -webkit-backdrop-filter: blur(18px);
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 0.5rem;
     }
 
-    /* Dock buttons follow the .btn system in base.html: Back is plain text
-       (like .btn-ghost); Like / Pass are dark hairline buttons (like
-       .btn-secondary) that turn sage / terracotta once rated. */
+    .bartender-dock::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 100%;
+        height: 28px;
+        background: linear-gradient(180deg, rgba(11, 9, 7, 0) 0%, rgba(11, 9, 7, 0.86) 72%, #0b0907 100%);
+        pointer-events: none;
+    }
+
     .dock-back {
         display: inline-flex;
         align-items: center;
-        gap: 0.3rem;
-        min-height: 46px;
-        padding: 0 0.6rem 0 0.35rem;
-        background: transparent;
-        color: #b9ab93;
+        gap: 0.25rem;
+        height: 36px;
+        padding: 0 0.75rem 0 0.45rem;
+        border-radius: 9px;
+        background: var(--bg-surface);
+        border: 1px solid rgba(255, 236, 214, 0.12);
+        color: var(--ink-champagne);
         font-family: var(--font-body);
         font-weight: 600;
-        font-size: 0.88rem;
-        transition: color var(--dur-snap) var(--ease-snap);
+        font-size: 0.82rem;
+        transition: color var(--dur-snap) var(--ease-snap), background var(--dur-snap) var(--ease-snap), border-color var(--dur-snap) var(--ease-snap);
     }
 
-    .dock-back:hover { color: #f0e4cd; }
+    .dock-back:hover {
+        background: var(--bg-active);
+        border-color: rgba(255, 236, 214, 0.2);
+        color: var(--ink);
+    }
+
+    .batch-toggle {
+        height: 36px;
+        padding: 2px;
+        border-radius: 9px;
+        min-width: 86px;
+    }
+
+    .batch-toggle .segmented-item {
+        font-family: var(--font-body);
+        font-variant-numeric: tabular-nums;
+        min-height: 30px;
+        padding: 0 0.55rem;
+        font-size: 0.78rem;
+        border-radius: 7px;
+    }
 
     .dock-rate-group {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.4rem;
     }
 
-    .dock-rate-btn {
+    .dock-save-btn {
+        height: 36px;
+        padding: 0 0.78rem;
+        gap: 0.35rem;
+        border-radius: 9px;
+        border: 1px solid rgba(255, 236, 214, 0.12);
+        background: var(--bg-surface);
+        color: var(--ink);
+        font-family: var(--font-body);
+        font-size: 0.82rem;
+        font-weight: 600;
         display: inline-flex;
         align-items: center;
-        gap: 0.4rem;
-        min-height: 46px;
-        padding: 0 1.05rem;
-        border-radius: 10px;
-        border: 1px solid rgba(240, 228, 205, 0.22);
-        background: #1c1611;
-        color: #f0e4cd;
-        font-family: var(--font-body);
-        font-weight: 600;
-        font-size: 0.94rem;
-        letter-spacing: -0.01em;
+        justify-content: center;
         cursor: pointer;
-        transition: background-color var(--dur-snap) var(--ease-snap), border-color var(--dur-snap) var(--ease-snap), color var(--dur-snap) var(--ease-snap);
+        transition: color var(--dur-snap) var(--ease-snap), background var(--dur-snap) var(--ease-snap), border-color var(--dur-snap) var(--ease-snap);
     }
 
-    .dock-rate-btn:hover { border-color: rgba(244, 196, 48, 0.55); }
-    .dock-rate-btn:active { background: #241c15; }
+    .dock-save-btn svg {
+        width: 15px;
+        height: 15px;
+        flex-shrink: 0;
+    }
 
-    .dock-rate-btn svg {
+    .dock-save-btn:hover {
+        background: var(--bg-active);
+        border-color: rgba(255, 236, 214, 0.2);
+    }
+
+    .dock-save-btn.is-up {
+        color: var(--zest);
+        background: var(--zest-soft);
+        border-color: var(--zest-border);
+    }
+
+    .dock-more {
+        position: relative;
+    }
+
+    .dock-more-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 9px;
+        border: 1px solid rgba(255, 236, 214, 0.12);
+        background: var(--bg-surface);
+        color: var(--ink-dim);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: color var(--dur-snap) var(--ease-snap), background var(--dur-snap) var(--ease-snap), border-color var(--dur-snap) var(--ease-snap);
+    }
+
+    .dock-more-btn svg {
         width: 17px;
         height: 17px;
     }
 
-    .dock-rate-btn.dock-like-idle svg {
-        color: var(--zest);
+    .dock-more-btn:hover {
+        background: var(--bg-active);
+        border-color: rgba(255, 236, 214, 0.2);
+        color: var(--ink);
     }
 
-    .dock-rate-btn.is-up {
-        background: var(--sage-soft);
-        border-color: var(--sage-border);
-        color: var(--sage);
-    }
-
-    .dock-rate-btn.is-down {
+    .dock-more-btn.is-down {
+        color: var(--terracotta);
         background: var(--terracotta-soft);
         border-color: var(--terracotta-border);
+    }
+
+    .dock-more-menu {
+        position: absolute;
+        right: 0;
+        bottom: calc(100% + 10px);
+        min-width: 172px;
+        padding: 0.35rem;
+        border-radius: 12px;
+        background: var(--bg-elevated);
+        border: 1px solid rgba(255, 236, 214, 0.16);
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.68);
+        z-index: 120;
+    }
+
+    .dock-more-item {
+        width: 100%;
+        min-height: 40px;
+        padding: 0.4rem 0.72rem;
+        border-radius: 8px;
+        border: none;
+        background: transparent;
+        color: var(--ink-champagne);
+        font-family: var(--font-body);
+        font-size: 0.84rem;
+        font-weight: 500;
+        text-align: left;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        transition: background var(--dur-snap) var(--ease-snap), color var(--dur-snap) var(--ease-snap);
+    }
+
+    .dock-more-item svg {
+        width: 15px;
+        height: 15px;
+        flex-shrink: 0;
+    }
+
+    .dock-more-item:hover {
+        background: var(--bg-surface);
+        color: var(--ink);
+    }
+
+    .dock-more-item.is-down {
         color: var(--terracotta);
     }
 
     @media (min-width: 520px) {
         .bartender-dock {
             max-width: 620px;
-            border-radius: 20px 20px 0 0;
-            border-left: 1px solid rgba(244, 196, 48, 0.18);
-            border-right: 1px solid rgba(244, 196, 48, 0.18);
-        }
-
-        .recipe-hero {
-            display: grid;
-            grid-template-columns: 200px 1fr;
-            align-items: center;
-            background: #1b1510;
-            border: 1px solid var(--border-subtle);
-        }
-
-        .recipe-hero-media {
-            height: 200px;
-        }
-
-        .recipe-hero-media::after {
-            background: linear-gradient(90deg, rgba(17, 13, 10, 0) 55%, #1b1510 100%);
-        }
-
-        .recipe-hero-noimg {
-            height: 200px;
+            border-radius: 16px 16px 0 0;
+            border-left: 1px solid var(--hairline);
+            border-right: 1px solid var(--hairline);
         }
     }
 
     @media (min-width: 768px) {
         .recipe-hero {
+            display: grid;
             grid-template-columns: 250px 1fr;
+            align-items: center;
+            margin: 0.35rem 0 1.25rem;
+            border-radius: var(--radius-card);
+            background: var(--bg-elevated);
+            border: 1px solid var(--hairline);
+            overflow: hidden;
         }
 
         .recipe-hero-media {
             height: 220px;
         }
 
+        .recipe-hero-media::after {
+            background: linear-gradient(90deg, rgba(12, 9, 7, 0) 55%, #15110d 100%);
+        }
+
         .recipe-hero-noimg {
             height: 220px;
         }
 
-        .recipe-hero-body {
+        .recipe-hero-overlay,
+        .recipe-hero-overlay.is-noimg {
+            margin-top: 0;
             padding: 1.25rem 1.75rem;
         }
 
-        .recipe-hero-body h1 {
+        .recipe-hero-overlay h1 {
             font-size: 2.35rem;
         }
 
@@ -416,7 +577,7 @@
 {% block content %}
 {% set img_url = recipe|recipe_image %}
 
-<section class="recipe-hero" style="margin-top: 0.35rem;">
+<section class="recipe-hero">
     {% if img_url %}
         <div class="recipe-hero-media">
             <img src="{{ img_url }}" alt="{{ recipe.name }}"
@@ -429,12 +590,12 @@
             </div>
         </div>
     {% endif %}
-    <div class="recipe-hero-body">
+    <div class="recipe-hero-overlay {% if not img_url %}is-noimg{% endif %}">
         <h1>{{ recipe.name }}</h1>
         <div class="recipe-meta-row">
             {% if recipe.glass %}
-                <span class="pill">
-                    <span style="color: var(--zest); display: inline-flex;">{{ glass_icon(recipe.glass) }}</span>
+                <span class="recipe-glass-meta">
+                    <span class="recipe-glass-icon">{{ glass_icon(recipe.glass) }}</span>
                     <span>{{ recipe.glass|glass_label }}</span>
                 </span>
             {% endif %}
@@ -447,7 +608,7 @@
 
 <div class="recipe-desktop-grid">
 <div class="recipe-col-left">
-<div class="section-row" style="margin: 0.35rem 0 0.4rem;">
+<div class="section-row" style="margin: 0.25rem 0 0.4rem;">
     <h2>Pour list</h2>
     <button type="button" id="reset-pours" class="section-link" style="background: none; border: none; cursor: pointer; display: none; min-height: 28px;">
         Reset checks
@@ -459,32 +620,41 @@
         {% set is_missing = i.id in missing_ids %}
         {% set is_optional = i.requirement_type == 'optional' %}
         {% set clean_note = i.notes|clean_notes %}
+        {% set hints = bottle_hints.get(i.id, []) %}
+        {% set first_short = (hints[0]|short_name) if hints else '' %}
+        {% set same_single = (hints|length == 1) and (first_short|lower == i.raw_name|lower or i.raw_name|lower in first_short|lower) %}
+        {% set note_dup = (not clean_note) or (clean_note|lower == i.raw_name|lower) or (clean_note|lower in i.raw_name|lower) %}
         <div class="pour-wrap">
             <button type="button" class="pour-row {% if is_missing %}is-missing{% endif %}"
                     data-pour-id="{{ i.id }}" aria-pressed="false"
-                    {% if is_optional %}style="opacity: 0.84;"{% endif %}>
+                    {% if is_optional %}style="opacity: 0.86;"{% endif %}>
                 <span class="pour-circle">{{ ui_icon("check") }}</span>
                 <span class="pour-info">
                     <span class="pour-name">
-                        {{ i.raw_name }}{% if is_optional %} <span class="pill" style="font-size: 0.66rem; padding: 0.08rem 0.42rem; vertical-align: middle;">optional</span>{% endif %}
+                        {{ i.raw_name }}{% if is_optional %}<span class="pour-opt-tag">optional</span>{% endif %}
                     </span>
-                    {% if clean_note %}
+                    {% if not note_dup %}
                         <span class="pour-sub is-dim" style="display: block;">{{ clean_note }}</span>
                     {% endif %}
                     {% if is_missing %}
                         <span class="pour-sub is-missing" style="display: block;">Missing from bar</span>
-                    {% elif bottle_hints.get(i.id) %}
+                    {% elif hints and not same_single %}
                         <span class="pour-sub" style="display: block;">
-                            Use your: {% for b in bottle_hints[i.id] %}<strong>{{ b|short_name }}</strong>{% if not loop.last %}, {% endif %}{% endfor %}
+                            <span>{{ first_short }}</span>{% if hints|length > 1 %}<span class="pour-all-bottles" hidden>{% for b in hints[1:] %}, {{ b|short_name }}{% endfor %}</span><span class="pour-more-bottles" data-extra="{{ hints|length - 1 }}"> &middot; +{{ hints|length - 1 }} more</span>{% endif %}
                         </span>
                     {% endif %}
                 </span>
                 <span class="pour-measure">
                     {% if i.raw_measure %}
-                        <span class="pour-oz" style="display: block;">{{ i.raw_measure }}</span>
                         {% set metric = i.raw_measure|metric(i.raw_name) %}
-                        {% if metric != i.raw_measure %}
-                            <span class="pour-ml" style="display: block;">{{ metric }}</span>
+                        {% set raw_trim = i.raw_measure.strip() %}
+                        {% if metric == i.raw_measure and raw_trim.isdigit() %}
+                            <span class="pour-count" data-base-count="{{ raw_trim }}">&times;{{ raw_trim }}</span>
+                        {% else %}
+                            <span class="pour-oz" style="display: block;" data-base-measure="{{ i.raw_measure }}">{{ i.raw_measure }}</span>
+                            {% if metric != i.raw_measure %}
+                                <span class="pour-ml" style="display: block;" data-base-measure="{{ metric }}">{{ metric }}</span>
+                            {% endif %}
                         {% endif %}
                     {% else %}
                         <span class="pour-ml" style="display: block;">to taste</span>
@@ -494,7 +664,7 @@
             {% if logged_in and is_missing %}
                 {% set sugs = i.raw_name|suggestions %}
                 {% if sugs %}
-                    <div style="margin: 0.25rem 0.4rem 0.15rem; padding: 0.4rem 0.75rem; border-radius: 12px; background: var(--zest-soft); font-size: 0.78rem; color: var(--zest);">
+                    <div style="margin: 0.25rem 0 0.2rem 0.65rem; padding: 0.4rem 0.75rem; border-radius: 10px; background: var(--zest-soft); font-size: 0.78rem; color: var(--zest);">
                         <span style="color: var(--ink-dim);">Try:</span> {{ sugs | join(' · ') }}
                     </div>
                 {% endif %}
@@ -524,7 +694,7 @@
 <div class="step-list">
     {% for step in step_list %}
         <div class="step-card">
-            <span class="step-badge">{{ loop.index }}</span>
+            <span class="step-badge">{{ "%02d"|format(loop.index) }}</span>
             <p class="step-text">{{ step }}</p>
         </div>
     {% endfor %}
@@ -532,7 +702,7 @@
 
 {% if recipe.tip %}
     <div class="tip-card">
-        <div style="font-family: var(--font-display); font-weight: 700; font-size: 0.9rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--zest); margin-bottom: 0.35rem;">
+        <div style="font-family: var(--font-body); font-weight: 600; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--zest); margin-bottom: 0.35rem;">
             Worth knowing
         </div>
         <p style="font-size: 0.94rem; line-height: 1.55; color: var(--ink);">{{ recipe.tip }}</p>
@@ -540,8 +710,8 @@
 {% endif %}
 
 {% if recipe.about %}
-    <div class="card">
-        <div style="font-family: var(--font-display); font-weight: 700; font-size: 0.88rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-dim); margin-bottom: 0.35rem;">
+    <div class="about-card">
+        <div style="font-family: var(--font-body); font-weight: 600; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-dim); margin-bottom: 0.35rem;">
             About this cocktail
         </div>
         <p style="font-size: 0.92rem; line-height: 1.56; color: var(--ink);">{{ recipe.about }}</p>
@@ -555,7 +725,7 @@
             Optional bartender riffs. The cocktail is complete without them.
         </p>
         {% for e in enhancements %}
-            <div style="padding: 0.6rem 0; {% if not loop.last %}border-bottom: 1px solid var(--border-subtle);{% endif %}">
+            <div style="padding: 0.6rem 0; {% if not loop.last %}border-bottom: 1px solid var(--hairline);{% endif %}">
                 <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 0.75rem;">
                     <span style="font-weight: 600; color: var(--ink);">{{ e.name }}</span>
                     {% if e.measure %}
@@ -582,31 +752,42 @@
 </div>
 </div>
 
-<div class="tabbar-scrim" aria-hidden="true"></div>
 <nav class="bartender-dock" aria-label="Cocktail actions">
     <a href="{{ '/' if logged_in else '/explore' }}" class="dock-back"
        onclick="if (document.referrer && document.referrer.indexOf(window.location.host) !== -1) { history.back(); return false; }">
         {{ ui_icon("back", "btn-icon") }}
         <span>Back</span>
     </a>
+    <div class="segmented batch-toggle" role="group" aria-label="Batch size">
+        <button type="button" class="segmented-item active" data-scale="1">1&times;</button>
+        <button type="button" class="segmented-item" data-scale="2">2&times;</button>
+    </div>
     {% if logged_in %}
     <div class="dock-rate-group">
         <form method="POST" action="/rate/{{ recipe.id }}" style="margin: 0;">
             <input type="hidden" name="thumb" value="1">
-            <button type="submit" class="dock-rate-btn {% if rating == 1 %}is-up{% else %}dock-like-idle{% endif %}"
-                    title="{{ 'Tap again to clear rating' if rating == 1 else 'Like cocktail' }}">
-                {{ ui_icon("thumb-up") }}
-                <span>{{ 'Liked' if rating == 1 else 'Like' }}</span>
+            <button type="submit" class="dock-save-btn {% if rating == 1 %}is-up{% endif %}"
+                    aria-label="{{ 'Saved' if rating == 1 else 'Save cocktail' }}"
+                    title="{{ 'Tap again to remove from Saved' if rating == 1 else 'Save cocktail' }}">
+                {{ ui_icon("bookmark-filled" if rating == 1 else "bookmark") }}
+                <span>{{ "Saved" if rating == 1 else "Save" }}</span>
             </button>
         </form>
-        <form method="POST" action="/rate/{{ recipe.id }}" style="margin: 0;">
-            <input type="hidden" name="thumb" value="-1">
-            <button type="submit" class="dock-rate-btn {% if rating == -1 %}is-down{% endif %}"
-                    title="{{ 'Tap again to clear rating' if rating == -1 else 'Not for me' }}">
-                {{ ui_icon("thumb-down") }}
-                <span>Pass</span>
-            </button>
-        </form>
+        <details class="dock-more" id="dock-more">
+            <summary class="bare dock-more-btn {% if rating == -1 %}is-down{% endif %}"
+                     aria-label="More options" title="More options">
+                {{ ui_icon("more") }}
+            </summary>
+            <div class="dock-more-menu" role="menu">
+                <form method="POST" action="/rate/{{ recipe.id }}" style="margin: 0;">
+                    <input type="hidden" name="thumb" value="-1">
+                    <button type="submit" class="dock-more-item {% if rating == -1 %}is-down{% endif %}" role="menuitem">
+                        {{ ui_icon("thumb-down") }}
+                        <span>{{ 'Undo "Not for me"' if rating == -1 else 'Not for me' }}</span>
+                    </button>
+                </form>
+            </div>
+        </details>
     </div>
     {% else %}
     <div class="dock-rate-group">
@@ -650,6 +831,23 @@
             });
         });
 
+        document.querySelectorAll(".pour-more-bottles").forEach(function (btn) {
+            btn.addEventListener("click", function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                var list = btn.previousElementSibling;
+                if (!list) return;
+                var expanded = list.hasAttribute("hidden");
+                if (expanded) {
+                    list.removeAttribute("hidden");
+                    btn.textContent = " · less";
+                } else {
+                    list.setAttribute("hidden", "");
+                    btn.textContent = " · +" + btn.getAttribute("data-extra") + " more";
+                }
+            });
+        });
+
         resetBtn.addEventListener("click", function () {
             saved = {};
             try { sessionStorage.removeItem(key); } catch (e) {}
@@ -657,6 +855,65 @@
         });
 
         syncUI();
+
+        // Batch scaler (1x / 2x)
+        function formatQty(val) {
+            var whole = Math.floor(val + 1e-6);
+            var frac = val - whole;
+            var fracStr = "";
+            if (Math.abs(frac - 0.25) < 0.04) fracStr = "1/4";
+            else if (Math.abs(frac - 0.333) < 0.05) fracStr = "1/3";
+            else if (Math.abs(frac - 0.5) < 0.04) fracStr = "1/2";
+            else if (Math.abs(frac - 0.667) < 0.05) fracStr = "2/3";
+            else if (Math.abs(frac - 0.75) < 0.04) fracStr = "3/4";
+            else if (frac > 0.05) return String(Math.round(val * 10) / 10);
+            if (whole && fracStr) return whole + " " + fracStr;
+            if (fracStr) return fracStr;
+            return String(whole);
+        }
+
+        function scaleMeasure(raw, factor) {
+            if (factor === 1) return raw;
+            return raw.replace(/^(\d+\s+\d+\/\d+|\d+\/\d+|\d+(?:\.\d+)?)/, function (numStr) {
+                var val = 0;
+                if (numStr.indexOf(" ") !== -1 && numStr.indexOf("/") !== -1) {
+                    var parts = numStr.split(/\s+/);
+                    var fr = parts[1].split("/");
+                    val = parseFloat(parts[0]) + parseFloat(fr[0]) / parseFloat(fr[1]);
+                } else if (numStr.indexOf("/") !== -1) {
+                    var fr2 = numStr.split("/");
+                    val = parseFloat(fr2[0]) / parseFloat(fr2[1]);
+                } else {
+                    val = parseFloat(numStr);
+                }
+                if (isNaN(val)) return numStr;
+                return formatQty(val * factor);
+            });
+        }
+
+        var batchBtns = document.querySelectorAll(".batch-toggle [data-scale]");
+        batchBtns.forEach(function (b) {
+            b.addEventListener("click", function () {
+                var factor = parseInt(b.getAttribute("data-scale"), 10) || 1;
+                batchBtns.forEach(function (x) { x.classList.toggle("active", x === b); });
+                document.querySelectorAll("[data-base-measure]").forEach(function (el) {
+                    el.textContent = scaleMeasure(el.getAttribute("data-base-measure"), factor);
+                });
+                document.querySelectorAll("[data-base-count]").forEach(function (el) {
+                    var base = parseInt(el.getAttribute("data-base-count"), 10);
+                    if (!isNaN(base)) el.textContent = "\u00d7" + (base * factor);
+                });
+            });
+        });
+
+        var dockMore = document.getElementById("dock-more");
+        if (dockMore) {
+            document.addEventListener("click", function (e) {
+                if (dockMore.open && !dockMore.contains(e.target)) {
+                    dockMore.open = false;
+                }
+            });
+        }
     })();
 </script>
 {% endblock %}
