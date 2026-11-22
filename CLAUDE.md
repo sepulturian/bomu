@@ -282,8 +282,14 @@ A rename touches the `ingredients` row, `recipe_ingredients` rows
 `SUGGESTIONS` in `suggestions.py`. There are no ingredient photos any more.
 
 A `user_stock` row is a tick. `/stock-add` and `/quick-setup` call
-`add_ingredients_to_stock()`, which only adds; `set_all_ingredients_stock()`
-wipes the user's checklist first and is for `/checklist` only.
+`add_ingredients_to_stock()`, which only adds. The Mixers page autosaves one
+tick per request through `POST /checklist/item` (`set_ingredient_stock()`),
+answers JSON with the real count, and puts the box back with an error if the
+save fails. `set_all_ingredients_stock()` wipes the user's checklist first and
+is only for the no-JavaScript `/checklist` submit: never send a whole page's
+checklist from code that can run on a stale page (it used to, and unticked
+items added elsewhere). Signed-out requests sent with
+`X-Requested-With: fetch` get a 401 JSON answer, not a login redirect.
 
 ---
 
@@ -486,59 +492,47 @@ chips and status pills stay rounded.
 Copies of the newest 2 entries; every entry, oldest first, is in
 [`docs/session-log.md`](docs/session-log.md).
 
-### 2026-11-21 (third session) — App review, then the scanner fixed for phone photos (Claude Code)
+### 2026-11-21 (fourth session) — Second review, then Mixers autosave fixed (Claude Code)
 
-Asked for an objective review with a grade and 3 improvements. Graded **B−
-(about 80/100)**: matcher and catalog A, design A−, code B, security and
-reliability B−, "is it working for the friends" D.
+Second review: still **B−, about 81/100** (code up to B+; security and
+reliability still B−; "working for the friends" still D, no friend activity
+since 2026-07-24). New improvements: (1) one-tap sign-in links and a password
+change page, since there is no account recovery at all (running as its own
+session on branch `claude/distracted-spence-fcfce8`, not merged); (2) Mixers
+saving, fixed below; (3) error alerts such as Sentry (needs Aaron's account).
+Also noted: no backup of Neon (snapshot with a Neon branch before migrations),
+the `?` to `%s` rewrite in `database.py`, `/robots.txt` 404.
 
-**Evidence (live Neon, read only):** nobody but Aaron has added a bottle,
-scanned or rated since 2026-07-24; all 4 ratings are Aaron's, from April; no
-signups since signup opened on 2026-11-19; Avishka and Rajapaksha have never
-added anything. Visits aren't recorded, so whether friends open the app is
-unknowable. Shehan ticking 6 basics (lemon, lime, simple syrup, soda water,
-sugar, Angostura) would take him from 0 to 9 ready.
+**Bugs found (reproduced on a scratch copy):** the Mixers page autosaved by
+posting its whole checklist to `/checklist`, which replaced the user's ticks.
+A page opened before an "I have this" tap elsewhere unticked that item on its
+next save (Grenadine). Signed out, a tick showed "Saved · 17 stocked" and stored
+nothing, because `fetch()` followed the login redirect to a 200 page; a dropped
+connection failed silently. Enter in the filter box would submit the whole form.
 
-**Improvements:** (1) scanner with phone photos, done below; (2) get the
-friends back and record visits: last-seen tracking proposed as its own task,
-not started (backlog #23); (3) slim `CLAUDE.md`, done in the second session.
+**Changed:**
+- `POST /checklist/item` + `set_ingredient_stock()`: one tick per request,
+  JSON with the real count; unknown ids get a 400.
+- `login_required`: signed-out `X-Requested-With: fetch` requests get a 401
+  JSON answer instead of a redirect.
+- `my_bar.html`: saves queue one at a time; a failed save puts the box back
+  with "Not saved: you've been signed out." or "Not saved. Check your
+  connection."; Enter in the filter no longer submits; Back reloads the page.
+- `/checklist` (no-JS submit) drops junk ids instead of 500ing.
+- `verify_routes.py` `check_mixers_save()`: 9 checks.
 
-**Bug found:** Vercel rejects request bodies over 4.5 MB before Flask runs. On
-live, a 5.2 MB logged-out POST to `/scan` got Vercel's bare
-`FUNCTION_PAYLOAD_TOO_LARGE` page; 3 MB reached Flask. The scan forms send the
-camera's full-size photo and `MAX_CONTENT_LENGTH` was 10 MB, so the friendly
-413 message could never fire. Broken since the move to Vercel; unnoticed
-because nobody has scanned since July.
-
-**Changed (`842942b`):**
-- `templates/components/photo_upload.html` (used by `scan.html` and
-  `scan_bulk.html`) shrinks the photo in the browser to a 1568 px JPEG, the
-  size `prepare_image()` uses, with EXIF rotation applied. A file over 4 MB it
-  can't shrink gets an inline message instead of an upload.
-- `MAX_CONTENT_LENGTH` 10 MB -> 4 MB.
-- `log_scan()` runs for every scan Claude answers, identified or not; one that
-  raises (nothing billed) doesn't count. An unreadable photo now uses one of a
-  user's 15 daily scans; before, junk photos could run up the API bill under
-  the caps.
-- Replies parsed without raising (`_parse_scan_json()`). A shelf scan that
-  found nothing rendered "Found 1 bottle" above an empty card; it now says
-  nothing was found.
-- `verify_routes.py` `check_scanner()`: both scan routes with a fake Claude
-  client (no API calls). 5 of its checks fail against the old `app.py`.
-
-**Verified:** `verify_routes.py` on `bomu.db` and `--db bomu_live.db`. In the
-in-app browser (Chromium) on a scratch copy with a fake client: an 11.8 MB
-EXIF-rotated photo arrived as 785 KB, 1176x1568 and upright; a 5 MB file the
-browser can't decode showed the inline message and uploaded nothing. Pushed to
-`main` with the `CLAUDE.md` split. **Not verified:** a real phone on live.
+**Verified:** `verify_routes.py` on `bomu.db` and `--db bomu_live.db`; both
+repros, a simulated dropped connection and Enter in the filter, in the in-app
+browser at phone width; Neon's `user_stock` has the primary key
+`ON CONFLICT` needs (read-only check). Pushed to `main`.
 
 **Open / next:**
-1. Scan once from a real phone on www.bomu.lol (iPhone Safari matters most).
-2. `#17` rotate the Neon password, open since 2026-11-15.
-3. `#23` last-seen tracking, then nudge each friend with their own unlock.
-4. `#24` pre-push check; `#25` small findings from the review.
+1. Merge the sign-in links branch when its session finishes (needs a Neon
+   migration first, with Aaron's OK).
+2. Error alerts (needs a Sentry account); `#23` last-seen tracking.
+3. `#17` rotate the Neon password; scan once from a real phone.
 
-### 2026-11-21 (fourth session) — Account recovery: single-use sign-in links and change password (Claude Code)
+### 2026-11-21 (fifth session) — Account recovery: single-use sign-in links and change password (Claude Code)
 
 Accounts have no email, so a friend who forgot their password was locked out
 unless Aaron edited the database. Now Aaron makes a one-time link and sends it

@@ -196,6 +196,11 @@
         opacity: 1;
         transform: translateX(-50%) translateY(0);
     }
+    .autosave-toast.is-error {
+        border-color: var(--terracotta-border);
+        color: var(--terracotta);
+        white-space: nowrap;
+    }
 
     /* Add Bottle Bottom Sheet */
     .sheet-backdrop {
@@ -857,55 +862,91 @@
             return stockedNow;
         }
 
-        function showToast(msg) {
+        function showToast(msg, isError) {
             if (!toast) return;
             toast.textContent = msg;
+            toast.classList.toggle("is-error", !!isError);
             toast.classList.add("is-visible");
             clearTimeout(toastTimer);
             toastTimer = setTimeout(function () {
                 toast.classList.remove("is-visible");
-            }, 1800);
-        }
-
-        var saveInFlight = false;
-        var savePending = false;
-        function flushMixers() {
-            if (!mixersForm) return;
-            if (saveInFlight) {
-                savePending = true;
-                return;
-            }
-            saveInFlight = true;
-            savePending = false;
-            fetch(mixersForm.action, {
-                method: "POST",
-                body: new FormData(mixersForm),
-                headers: { "X-Requested-With": "fetch" },
-                credentials: "same-origin"
-            }).then(function (resp) {
-                if (resp.ok) {
-                    var stockedNow = updateCounts();
-                    showToast("Saved \u00b7 " + stockedNow + " stocked");
-                }
-            }).catch(function () {}).finally(function () {
-                saveInFlight = false;
-                if (savePending) flushMixers();
-            });
+            }, isError ? 4500 : 1800);
         }
 
         var boxes = document.querySelectorAll('input[name="ingredient"]');
+
+        // New ingredients appear twice (their category and "Added from
+        // recipes"), so a tick always updates every box with the same id.
+        function setBoxes(value, checked) {
+            boxes.forEach(function (other) {
+                if (other.value === value) {
+                    other.checked = checked;
+                    var lbl = other.closest(".mixer-pill");
+                    if (lbl) lbl.classList.toggle("is-checked", checked);
+                }
+            });
+        }
+
+        // Each tick saves on its own through /checklist/item. This page used to
+        // send its whole checklist, which made whatever it showed the truth: a
+        // page opened before an "I have this" tap elsewhere unticked that item
+        // on its next save. Saves run one at a time, in order, so a quick
+        // tick-untick can't land backwards.
+        var saveQueue = Promise.resolve();
+
+        function saveOne(value, checked) {
+            var body = new FormData();
+            body.append("ingredient", value);
+            body.append("in_stock", checked ? "1" : "0");
+            return fetch("/checklist/item", {
+                method: "POST",
+                body: body,
+                headers: { "X-Requested-With": "fetch" },
+                credentials: "same-origin"
+            }).then(function (resp) {
+                if (resp.status === 401) throw new Error("signed_out");
+                if (!resp.ok || resp.redirected) throw new Error("failed");
+                return resp.json();
+            }).then(function (data) {
+                if (!data || data.ok !== true) throw new Error("failed");
+                showToast("Saved \u00b7 " + data.stocked_count + " stocked");
+            });
+        }
+
         boxes.forEach(function (cb) {
             cb.addEventListener("change", function () {
-                boxes.forEach(function (other) {
-                    if (other.value === cb.value) {
-                        other.checked = cb.checked;
-                        var lbl = other.closest(".mixer-pill");
-                        if (lbl) lbl.classList.toggle("is-checked", cb.checked);
-                    }
-                });
+                var value = cb.value;
+                var checked = cb.checked;
+                setBoxes(value, checked);
                 updateCounts();
-                flushMixers();
+                saveQueue = saveQueue.then(function () {
+                    return saveOne(value, checked);
+                }).catch(function (err) {
+                    // Nothing was saved: put the box back and say so, rather
+                    // than leave a tick on screen that the server doesn't have.
+                    setBoxes(value, !checked);
+                    updateCounts();
+                    showToast(err && err.message === "signed_out"
+                        ? "Not saved: you've been signed out."
+                        : "Not saved. Check your connection.", true);
+                });
             });
+        });
+
+        // With JavaScript on there's no Save button, so Enter in the filter box
+        // would submit the whole form: a full-page save of whatever this page
+        // shows, which is exactly the stale overwrite the per-tick save avoids.
+        if (mixersForm) {
+            mixersForm.addEventListener("submit", function (e) {
+                e.preventDefault();
+                if (mixerSearch) mixerSearch.blur();
+            });
+        }
+
+        // Back and Forward can restore this page from memory with old ticks on
+        // it. Reload so the checklist shows what is actually saved.
+        window.addEventListener("pageshow", function (e) {
+            if (e.persisted) window.location.reload();
         });
     })();
 </script>

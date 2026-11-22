@@ -19,7 +19,7 @@ from PIL import Image
 from database import (
     init_db, close_request_db, get_all_bottles, get_bottle, add_bottle, update_bottle,
     delete_bottle, get_all_ingredients, set_all_ingredients_stock,
-    add_ingredients_to_stock,
+    add_ingredients_to_stock, set_ingredient_stock,
     get_recipe, get_all_recipes, set_rating, get_rating, get_all_ratings, get_favorites,
     get_auto_added_ingredients, is_auto_added,
     create_user, get_user_by_username, get_user,
@@ -125,6 +125,11 @@ def login_required(view):
     @wraps(view)
     def wrapped(*args, **kwargs):
         if not session.get("user_id"):
+            if request.headers.get("X-Requested-With") == "fetch":
+                # A background save must hear "signed out" plainly. fetch()
+                # follows a redirect, the login page answers 200, and the
+                # Mixers page used to read that as "Saved".
+                return {"ok": False, "error": "signed_out"}, 401
             return redirect(url_for("login", next=request.path))
         return view(*args, **kwargs)
     return wrapped
@@ -1204,13 +1209,37 @@ def confirm_bulk():
 @login_required
 def checklist():
     if request.method == "POST":
-        checked_ids = list(dict.fromkeys(int(x) for x in request.form.getlist("ingredient")))
+        # The no-JavaScript "Save mixers" submit (the page autosaves one tick at
+        # a time through /checklist/item). Junk or unknown ids are dropped
+        # rather than 500ing on int() or on Postgres's foreign key.
+        valid_ids = {i["id"] for i in get_all_ingredients()}
+        checked_ids = list(dict.fromkeys(
+            int(x) for x in request.form.getlist("ingredient")
+            if x.strip().isdigit() and int(x) in valid_ids
+        ))
         set_all_ingredients_stock(uid(), checked_ids)
         if request.headers.get("X-Requested-With") == "fetch":
             return {"ok": True, "stocked_count": len(checked_ids)}, 200
         flash("Mixers saved!")
         return redirect(url_for("bar", tab="mixers"))
     return redirect(url_for("bar", tab="mixers"))
+
+
+@app.route("/checklist/item", methods=["POST"])
+@login_required
+def checklist_item():
+    """Autosave for ONE Mixers tick: form fields `ingredient` (id) and
+    `in_stock` ("1" or "0"). Answers JSON with the user's real tick count,
+    so the page never reports a save that didn't happen."""
+    try:
+        ingredient_id = int(request.form.get("ingredient", ""))
+    except ValueError:
+        return {"ok": False, "error": "bad_ingredient"}, 400
+    if ingredient_id not in {i["id"] for i in get_all_ingredients()}:
+        return {"ok": False, "error": "bad_ingredient"}, 400
+    in_stock = request.form.get("in_stock") == "1"
+    count = set_ingredient_stock(uid(), ingredient_id, in_stock)
+    return {"ok": True, "in_stock": in_stock, "stocked_count": count}
 
 
 @app.route("/bar")
