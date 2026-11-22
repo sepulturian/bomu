@@ -1556,3 +1556,43 @@ browser can't decode showed the inline message and uploaded nothing. Pushed to
 2. `#17` rotate the Neon password, open since 2026-11-15.
 3. `#23` last-seen tracking, then nudge each friend with their own unlock.
 4. `#24` pre-push check; `#25` small findings from the review.
+
+### 2026-11-21 (fourth session) — Account recovery: single-use sign-in links and change password (Claude Code)
+
+Accounts have no email, so a friend who forgot their password was locked out
+unless Aaron edited the database. Now Aaron makes a one-time link and sends it
+over chat, which doubles as the nudge to come back. Branch
+`claude/distracted-spence-fcfce8`, not pushed.
+
+**Changed:** `login_links` table (both `init_db()` paths; DDL shared with
+`migrate_login_links_2026_11.py`). `login_links.py`: token, SHA-256 only,
+7 days, single use enforced by the `UPDATE`'s WHERE clause, a new link
+switches off older unused ones, readers return None with no table.
+`make_login_link.py`. `GET`/`POST /signin/<token>`: any failure shows the "ask
+Aaron for a new one" page (HTTP 410, never 500); rate-limited 15 per 10 min;
+`no-referrer`, `no-store`, `noindex`. `/account/password`: 8+ characters,
+confirm, current password except within 15 minutes of a link sign-in; linked
+under the sign-out dialog's buttons. A hint on `/login`.
+`verify_routes.py` `check_login_links()`.
+
+**Deviation from the brief:** it asked for the GET to spend the link. Chat apps
+fetch a link to build its preview, which would burn it before the friend
+tapped, so the GET only shows the page and its button POSTs.
+
+**Verified:** `verify_routes.py` on `bomu.db`, the unmigrated `bomu_live.db`
+and a migrated copy. The migration on a SQLite copy: dry run, commit, no-op
+re-run, counts unchanged. Neon, nothing written: the migration's dry run, and
+`login_links.py` in one rolled-back transaction on a TEMP table over the
+unpooled URL. In-app browser at 375 px on a scratch copy, end to end.
+**Not verified:** a real phone, or a real chat app's preview.
+
+**Gotchas hit:** Jinja escapes `'` as `&#39;`, so tests must unescape.
+`app.py` is CRLF and a text-mode rewrite flipped it. A TEMP table made through
+Neon's pooler can outlive the client: use the unpooled URL, never commit.
+
+**Open / next:**
+1. With Aaron's OK: merge to `main` (safe before the migration), then
+   `migrate_login_links_2026_11.py --postgres`, then with `--commit`.
+2. Make each friend a link and send it with their own unlock.
+3. Open one link on a real phone through the chat app it'll travel in.
+4. `#23` last-seen tracking; this change is self-contained, merge either order.

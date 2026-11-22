@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% set hide_tabbar = true %}
+{# One action on this page: no "Log in · Sign up" beside it. A signed-in
+   visitor still sees whose account they're in before switching. #}
+{% if not current_username %}{% set hide_account = true %}{% endif %}
+
+{% block title %}Sign in · Bomu{% endblock %}
+
+{% block meta %}
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .link-page { padding-top: 1.25rem; }
+    .link-lede {
+        color: var(--ink-dim);
+        font-size: 0.94rem;
+        line-height: 1.5;
+        margin-bottom: 1.25rem;
+    }
+    .link-lede strong { color: var(--ink); font-weight: 600; }
+    .link-page form { margin: 0; }
+    .link-page .btn { width: 100%; }
+    .link-alt { margin-top: 0.75rem; text-align: center; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-page-narrow link-page">
+{% if link_user %}
+    <h1>Welcome back</h1>
+    <p class="link-lede">
+        This link signs you in as <strong>{{ link_user.username }}</strong>.
+        It works once, so pick a password straight after and you won't need another.
+    </p>
+    <form method="POST" action="{{ url_for('signin_link', token=token) }}">
+        <button type="submit" class="btn">Sign me in</button>
+    </form>
+{% else %}
+    <h1>This link has expired</h1>
+    <p class="link-lede">
+        Sign-in links work once and last a week. Ask Aaron for a new one.
+    </p>
+    {% if current_username %}
+        <a href="/" class="btn btn-secondary">Back to Tonight</a>
+    {% else %}
+        <a href="/login" class="btn btn-secondary">Log in with a password</a>
+        <p class="link-alt"><a href="/explore" class="btn btn-ghost">Browse the cocktails</a></p>
+    {% endif %}
+{% endif %}
+</div>
+{% endblock %}

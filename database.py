@@ -228,6 +228,31 @@ def invalidate_catalog_cache():
     _catalog_cache.clear()
 
 
+# Single-use sign-in links (2026-11-21), made by make_login_link.py and spent
+# by GET/POST /signin/<token>. Only a SHA-256 of the token is stored, so a
+# copy of this table can't sign anyone in. Timestamps are naive UTC written by
+# login_links.py, never by the database clock. Shared by init_db() and
+# migrate_login_links_2026_11.py so the two can't drift.
+LOGIN_LINKS_DDL_POSTGRES = """CREATE TABLE IF NOT EXISTS login_links (
+    token_hash TEXT PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP NOT NULL,
+    used_at TIMESTAMP
+)"""
+LOGIN_LINKS_DDL_SQLITE = """CREATE TABLE IF NOT EXISTS login_links (
+    token_hash TEXT PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP NOT NULL,
+    used_at TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+)"""
+LOGIN_LINKS_INDEX_DDL = (
+    "CREATE INDEX IF NOT EXISTS idx_login_links_user ON login_links (user_id)"
+)
+
+
 def init_db(force=False, seed=True):
     """Create tables and seed ingredient data if they don't exist yet."""
     if _is_postgres():
@@ -309,6 +334,8 @@ def init_db(force=False, seed=True):
                 UNIQUE (recipe_id, name)
             )""",
             "CREATE INDEX IF NOT EXISTS idx_recipe_enhancements_recipe ON recipe_enhancements (recipe_id)",
+            LOGIN_LINKS_DDL_POSTGRES,
+            LOGIN_LINKS_INDEX_DDL,
         ]
         for stmt in ddl_statements:
             c.execute(stmt)
@@ -431,6 +458,10 @@ def init_db(force=False, seed=True):
         )
     """)
 
+    # Single-use sign-in links: see LOGIN_LINKS_DDL_SQLITE above.
+    c.execute(LOGIN_LINKS_DDL_SQLITE)
+    c.execute(LOGIN_LINKS_INDEX_DDL)
+
     # Only seed if the table is empty (first run)
     if seed:
         c.execute("SELECT COUNT(*) FROM ingredients")
@@ -540,6 +571,19 @@ def get_user(user_id):
     row = conn.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
     conn.close()
     return row
+
+
+def set_user_password(user_id, password_hash):
+    """Replace a user's password hash (from /account/password). Returns True
+    if a row was updated."""
+    conn = get_db()
+    cur = conn.execute(
+        "UPDATE users SET password_hash = ? WHERE id = ?", (password_hash, user_id)
+    )
+    updated = cur.rowcount == 1
+    conn.commit()
+    conn.close()
+    return updated
 
 
 # --- Scan-cap helpers ---

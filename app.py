@@ -25,6 +25,8 @@ from database import (
     create_user, get_user_by_username, get_user,
     log_scan, scans_today, scans_today_global,
 )
+from database import get_db, set_user_password
+import login_links
 from matching import (
     get_recommendations, get_recommendations_grouped, get_one_away_grouped,
     matching_user_bottles, missing_ingredient_ids,
@@ -215,6 +217,102 @@ def logout():
     session.clear()
     flash("Logged out. See you at happy hour.")
     return redirect(url_for("login"))
+
+
+# --- Account recovery (2026-11-21) ---
+#
+# There's no email on file, so the way back in for a forgotten password is a
+# single-use link Aaron makes on his laptop (make_login_link.py) and sends over
+# chat. Opening it (GET) only shows whose account it is: chat apps fetch links
+# to build previews, and a GET that spent the token would kill it before the
+# friend tapped. The button POSTs; that spends the link, signs in exactly as
+# /login does, and lands on /account/password, which skips the current
+# password for LINK_SIGNIN_GRACE_SECONDS after a link sign-in.
+
+LINK_SIGNIN_GRACE_SECONDS = 15 * 60
+
+
+def _signin_page(user=None, token=None, status=200):
+    """Render the sign-in-link page with headers that keep the token private:
+    no Referer to other sites, no caching, no indexing."""
+    if user is None:
+        status = status if status == 429 else 410
+    resp = app.make_response((
+        render_template("signin_link.html", link_user=user, token=token), status,
+    ))
+    resp.headers["Referrer-Policy"] = "no-referrer"
+    resp.headers["Cache-Control"] = "no-store"
+    resp.headers["X-Robots-Tag"] = "noindex"
+    return resp
+
+
+@app.route("/signin/<token>", methods=["GET", "POST"])
+def signin_link(token):
+    if not _check_rate_limit("signin", limit=15, window_seconds=600):
+        flash("Too many tries. Give it a few minutes.")
+        return _signin_page(status=429)
+    try:
+        if request.method == "GET":
+            return _signin_page(login_links.peek_link(token), token)
+        user = login_links.redeem_link(token)
+    except Exception:
+        # A bad link must never 500 (database down, a bug): log it and show
+        # the friendly "ask Aaron for a new one" page instead.
+        app.logger.exception("sign-in link failed")
+        try:
+            get_db().rollback()  # Postgres refuses every query after a failed one
+        except Exception:
+            pass
+        return _signin_page()
+    if user is None:
+        return _signin_page()
+    session.clear()
+    session["user_id"] = user["id"]
+    session["username"] = user["username"]
+    session.permanent = True
+    session["link_signin_at"] = int(time.time())
+    return redirect(url_for("account_password"))
+
+
+def _fresh_link_signin():
+    at = session.get("link_signin_at")
+    return isinstance(at, int) and 0 <= time.time() - at < LINK_SIGNIN_GRACE_SECONDS
+
+
+@app.route("/account/password", methods=["GET", "POST"])
+@login_required
+def account_password():
+    fresh = _fresh_link_signin()
+    if request.method == "POST":
+        if not _check_rate_limit("password", limit=15, window_seconds=600):
+            flash("Too many tries. Give it a few minutes.")
+            return render_template("account_password.html", fresh=fresh), 429
+        user = get_user(uid())
+        if user is None:
+            session.clear()
+            return redirect(url_for("login"))
+        current = request.form.get("current", "")
+        password = request.form.get("password", "")
+        confirm = request.form.get("confirm", "")
+        if not fresh and "current" not in request.form:
+            # The page was opened inside the link's grace window and sent after it.
+            flash("That sign-in link was a while ago, so we need your current "
+                  "password too. Forgotten it? Ask Aaron for a fresh link.")
+            return render_template("account_password.html", fresh=fresh)
+        if not fresh and not check_password_hash(user["password_hash"], current):
+            flash("That isn't your current password.")
+            return render_template("account_password.html", fresh=fresh)
+        if len(password) < 8:
+            flash("Password needs at least 8 characters.")
+            return render_template("account_password.html", fresh=fresh)
+        if password != confirm:
+            flash("Passwords don't match.")
+            return render_template("account_password.html", fresh=fresh)
+        set_user_password(user["id"], generate_password_hash(password))
+        session.pop("link_signin_at", None)
+        flash("Password saved. Use it next time you log in.")
+        return redirect(url_for("home"))
+    return render_template("account_password.html", fresh=fresh)
 
 
 def imperial_to_metric(measure, ingredient_name=""):

@@ -156,6 +156,224 @@ def check_scanner(c, app_module, database, uid, failures):
         app_module.client = real_client
 
 
+def check_login_links(app_module, database, scratch, failures):
+    """Single-use sign-in links and /account/password (added 2026-11-21).
+
+    - With no login_links table (the code deploys before the Neon migration),
+      /signin/<token> shows the friendly expired page and nothing else breaks.
+    - make_login_link.py stores only a hash and prints a working link.
+    - Opening a link spends nothing (chat previews fetch it); the button's POST
+      spends it, signs in and lands on /account/password.
+    - Used, expired, tampered, unknown, malformed and replaced links are refused.
+    - A password change works, the old password stops working, and the current
+      password is required except within 15 minutes of a link sign-in.
+    """
+    import html
+    import re
+    import subprocess
+    import time
+    from datetime import datetime
+    from werkzeug.security import generate_password_hash, check_password_hash
+    import login_links
+
+    print("\n  Sign-in links and password change:")
+
+    def check(label, ok, why=""):
+        if ok:
+            print(f"  ok    {label}")
+        else:
+            failures.append((label, why or "check failed"))
+            print(f"  FAIL  {label}" + (f": {why}" if why else ""))
+
+    def text(resp):
+        return html.unescape(resp.get_data(as_text=True))  # "don&#39;t" -> "don't"
+
+    def sql(statement, params=()):
+        conn = sqlite3.connect(scratch)
+        conn.row_factory = sqlite3.Row
+        rows = conn.execute(statement, params).fetchall()
+        conn.commit()
+        conn.close()
+        return rows
+
+    def link_row(token):
+        rows = sql("SELECT * FROM login_links WHERE token_hash = ?",
+                   (login_links.hash_token(token),))
+        return rows[0] if rows else None
+
+    def password_is(pw):
+        row = sql("SELECT password_hash FROM users WHERE id = ?", (link_uid,))[0]
+        return check_password_hash(row["password_hash"], pw)
+
+    def refused(resp):
+        return resp.status_code == 410 and "has expired" in text(resp)
+
+    old_pw, new_pw, third_pw = "link-old-pass-1", "link-new-pass-2", "link-third-pass-3"
+    sql("DELETE FROM users WHERE username = 'verify_link_user'")
+    sql("INSERT INTO users (username, password_hash) VALUES (?, ?)",
+        ("verify_link_user", generate_password_hash(old_pw)))
+    link_uid = sql("SELECT id FROM users WHERE username = 'verify_link_user'")[0]["id"]
+
+    cli = [sys.executable, os.path.join(HERE, "make_login_link.py"), "VERIFY_LINK_USER",
+           "--db", scratch, "--base-url", "http://bomu.test/"]
+    cli_env = dict(os.environ, FORCE_SQLITE="1")
+
+    # 1. No table yet: Neon until migrate_login_links_2026_11.py runs.
+    sql("DROP TABLE IF EXISTS login_links")
+    p = subprocess.run(cli, capture_output=True, text=True, env=cli_env, timeout=120)
+    check("make_login_link.py refuses while login_links is missing",
+          p.returncode == 1 and "No login_links table" in p.stdout, (p.stdout + p.stderr)[-300:])
+    ghost = login_links.new_token()
+    with app_module.app.test_client() as c:
+        r = c.get(f"/signin/{ghost}")
+        check("GET /signin/<token> with no table -> expired page (410)", refused(r), f"HTTP {r.status_code}")
+        r = c.post(f"/signin/{ghost}")
+        check("POST /signin/<token> with no table -> expired page (410)", refused(r), f"HTTP {r.status_code}")
+        for path in ("/login", "/explore"):
+            r = c.get(path)
+            check(f"GET {path} with no table", r.status_code == 200, f"HTTP {r.status_code}")
+        r = c.post("/login", data={"username": "verify_link_user", "password": old_pw})
+        check("POST /login with no table", r.status_code == 302, f"HTTP {r.status_code}")
+        for path in ("/", "/bar", "/account/password"):
+            r = c.get(path)
+            check(f"GET {path} (logged in) with no table", r.status_code == 200, f"HTTP {r.status_code}")
+        r = c.get(f"/signin/{ghost}")
+        check("GET /signin/<token> (logged in) with no table", refused(r), f"HTTP {r.status_code}")
+    database.init_db()  # the table comes back, as the migration would create it
+
+    # 2. The CLI: a link that works, a hash in the table, nothing else printed.
+    p = subprocess.run(cli, capture_output=True, text=True, env=cli_env, timeout=120)
+    m = re.search(r"^http://bomu\.test/signin/([A-Za-z0-9_-]{43})$", p.stdout, re.M)
+    check("make_login_link.py prints a link (SQLite backend, any-case username)",
+          p.returncode == 0 and m is not None and "Backend: SQLITE" in p.stdout,
+          (p.stdout + p.stderr)[-300:])
+    if m is None:
+        return
+    token = m.group(1)
+    row = link_row(token)
+    stored = " ".join(str(v) for v in tuple(row)) if row else ""
+    check("only the token's SHA-256 is stored", row is not None and token not in stored,
+          "row missing" if row is None else "raw token found in the row")
+    check("the hash is not printed", login_links.hash_token(token) not in p.stdout)
+    if row is not None:
+        life = (datetime.fromisoformat(row["expires_at"]) - datetime.fromisoformat(row["created_at"]))
+        check("link lasts 7 days", life.days == 7 and life.seconds == 0, str(life))
+
+    # 3. Opening the link changes nothing; the button signs in.
+    with app_module.app.test_client() as c:
+        r = c.get(f"/signin/{token}")
+        check("GET valid link -> 200 'Sign me in' for the right user",
+              r.status_code == 200 and "verify_link_user" in text(r) and "Sign me in" in text(r),
+              f"HTTP {r.status_code}")
+        check("GET valid link sends no-referrer, no-store, noindex",
+              r.headers.get("Referrer-Policy") == "no-referrer"
+              and "no-store" in r.headers.get("Cache-Control", "")
+              and r.headers.get("X-Robots-Tag") == "noindex")
+        r = c.get(f"/signin/{token}")  # a chat app's preview, then the friend
+        check("GET does not spend the link or sign in",
+              link_row(token)["used_at"] is None and r.status_code == 200
+              and c.get("/bar").status_code == 302)
+        r = c.post(f"/signin/{token}")
+        check("POST valid link -> 302 /account/password",
+              r.status_code == 302 and r.headers.get("Location", "").endswith("/account/password"),
+              f"HTTP {r.status_code} -> {r.headers.get('Location')}")
+        with c.session_transaction() as s:
+            check("session set as /login sets it",
+                  s.get("user_id") == link_uid and s.get("username") == "verify_link_user"
+                  and s.permanent and isinstance(s.get("link_signin_at"), int), str(dict(s)))
+        check("link marked used", link_row(token)["used_at"] is not None)
+
+        r = c.get("/account/password")
+        check("fresh link sign-in: no current-password field",
+              r.status_code == 200 and "Pick a password" in text(r) and 'name="current"' not in text(r),
+              f"HTTP {r.status_code}")
+        r = c.post("/account/password", data={"password": "short", "confirm": "short"})
+        check("password under 8 characters refused",
+              r.status_code == 200 and "at least 8" in text(r) and password_is(old_pw))
+        r = c.post("/account/password", data={"password": new_pw, "confirm": new_pw + "x"})
+        check("mismatched confirm refused",
+              r.status_code == 200 and "don't match" in text(r) and password_is(old_pw))
+        r = c.post("/account/password", data={"password": new_pw, "confirm": new_pw})
+        check("new password saved without the current one (fresh link)",
+              r.status_code == 302 and password_is(new_pw), f"HTTP {r.status_code}")
+        with c.session_transaction() as s:
+            check("grace window closes once the password is saved", "link_signin_at" not in s)
+        c.post("/logout")
+
+    # 4. A spent link stays spent; the old password stops working.
+    with app_module.app.test_client() as c:
+        r = c.post(f"/signin/{token}")
+        with c.session_transaction() as s:
+            signed_in = "user_id" in s
+        check("used link refused (POST), not signed in", refused(r) and not signed_in, f"HTTP {r.status_code}")
+        check("used link refused (GET)", refused(c.get(f"/signin/{token}")))
+        r = c.post("/login", data={"username": "verify_link_user", "password": old_pw})
+        check("old password no longer logs in",
+              r.status_code == 200 and "Wrong username or password" in text(r), f"HTTP {r.status_code}")
+        r = c.post("/login", data={"username": "verify_link_user", "password": new_pw})
+        check("new password logs in", r.status_code == 302, f"HTTP {r.status_code}")
+
+        r = c.get("/")
+        check("sign-out dialog links to /account/password", 'href="/account/password"' in text(r))
+        r = c.get("/account/password")
+        check("password login: current password required",
+              r.status_code == 200 and 'name="current"' in text(r))
+        r = c.post("/account/password", data={"password": third_pw, "confirm": third_pw})
+        check("change refused without the current password",
+              r.status_code == 200 and "current password" in text(r) and password_is(new_pw))
+        r = c.post("/account/password",
+                   data={"current": "not-it-at-all", "password": third_pw, "confirm": third_pw})
+        check("change refused with a wrong current password",
+              r.status_code == 200 and "isn't your current password" in text(r) and password_is(new_pw))
+        r = c.post("/account/password",
+                   data={"current": new_pw, "password": third_pw, "confirm": third_pw})
+        check("change works with the current password", r.status_code == 302 and password_is(third_pw))
+
+        with c.session_transaction() as s:
+            s["link_signin_at"] = int(time.time()) - 16 * 60
+        r = c.get("/account/password")
+        check("link grace window ends after 15 minutes", 'name="current"' in text(r))
+
+    r = app_module.app.test_client().get("/account/password")
+    check("logged out /account/password -> /login",
+          r.status_code == 302 and "/login" in r.headers.get("Location", ""))
+
+    # 5. Expired, tampered, unknown, malformed, replaced.
+    with app_module.app.test_client() as c:
+        first, _exp, _rev = login_links.create_link(link_uid)
+        second, _exp, revoked = login_links.create_link(link_uid)
+        check("a new link switches off the user's earlier unused one",
+              revoked == 1 and refused(c.get(f"/signin/{first}")) and refused(c.post(f"/signin/{first}")))
+        tampered = second[:-1] + ("A" if second[-1] != "A" else "B")
+        check("tampered link refused", refused(c.get(f"/signin/{tampered}"))
+              and refused(c.post(f"/signin/{tampered}")))
+        check("valid link still live after the tampered try",
+              c.get(f"/signin/{second}").status_code == 200)
+        sql("UPDATE login_links SET expires_at = '2020-01-01 00:00:00' WHERE token_hash = ?",
+            (login_links.hash_token(second),))
+        check("expired link refused", refused(c.get(f"/signin/{second}"))
+              and refused(c.post(f"/signin/{second}")))
+        check("unknown link refused", refused(c.get(f"/signin/{login_links.new_token()}")))
+        for junk in ("abc", "a" * 300, "x'%3B--", "%00" * 30, "-" * 43):
+            r = c.get(f"/signin/{junk}")
+            check(f"malformed link refused: {junk[:12]!r}",
+                  r.status_code in (404, 410) and "Traceback" not in text(r), f"HTTP {r.status_code}")
+        with c.session_transaction() as s:
+            check("no refused link signed anyone in", "user_id" not in s)
+
+    # 6. Rate limit (TESTING switches it off, so switch TESTING off briefly).
+    app_module.app.config["TESTING"] = False
+    app_module._auth_attempts.clear()
+    try:
+        with app_module.app.test_client() as c:
+            codes = [c.get(f"/signin/{login_links.new_token()}").status_code for _ in range(16)]
+    finally:
+        app_module.app.config["TESTING"] = True
+        app_module._auth_attempts.clear()
+    check("16th /signin try in 10 minutes is rate-limited (429)",
+          codes[:15] == [410] * 15 and codes[15] == 429, str(codes))
+
+
 # Bottles chosen to exercise the interesting matcher paths rather than to be a
 # realistic bar: a fungible spirit, a sub-typed one, both vermouths, and two
 # name-matched liqueurs including one that only matches on the notes field.
@@ -579,6 +797,8 @@ def main():
         print(f"\n  FAIL  junk bottle type stored as {junk[0]!r}, expected 'other'")
     elif junk:
         print("\n  ok    junk bottle type coerced to 'other'")
+
+    check_login_links(app_module, database, scratch, failures)
 
     os.unlink(scratch)
 

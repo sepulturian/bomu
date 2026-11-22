@@ -198,6 +198,21 @@
         .signout-actions form { margin: 0; display: flex; }
         .signout-actions .btn { width: 100%; padding-inline: 0.5rem; }
 
+        /* Quiet account link under the sign-out choices */
+        .signout-account {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 44px;
+            margin-top: 0.6rem;
+            font-size: 0.84rem;
+            font-weight: 600;
+            color: var(--ink-dim);
+            text-underline-offset: 3px;
+        }
+        .signout-account:hover,
+        .signout-account:focus-visible { color: var(--zest); text-decoration: underline; }
+
         .container {
             max-width: 600px;
             margin: 0 auto;
@@ -986,6 +1001,7 @@
                 <button type="submit" class="btn">Close my tab</button>
             </form>
         </div>
+        <a href="/account/password" class="signout-account">Change password</a>
     </dialog>
     {% endif %}
 

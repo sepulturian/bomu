@@ -53,6 +53,10 @@ users on 0. **Nobody but Aaron has added, scanned or rated anything since
 Visits aren't recorded (#23). **Read user counts from Neon:** `bomu.db` matches its catalog, not
 its per-user tables, and `bomu_live.db` is the frozen 2026-11-15 snapshot.
 
+**Account recovery** (single-use sign-in links plus `/account/password`; see
+`### Sign-in links`) is on branch `claude/distracted-spence-fcfce8`, not on
+`main`, and Neon has no `login_links` table yet.
+
 **Untracked in the main checkout:** `.claude/` (preview `launch.json`, agent
 worktrees) and `redesign/` (the 2026-11-14 brief and mockups). Stage files by
 name; never `git add -A`.
@@ -99,6 +103,22 @@ git push origin main           # triggers the Vercel production build
 Migrations run from the laptop against Neon (the 2026-11 scripts take
 `--postgres`) after a dry run and a test on a SQLite copy.
 
+### Sign-in links
+
+Accounts have no email; a locked-out friend gets a link from Aaron. From the
+main checkout (its `.env` means **live Neon**; the first line says which):
+
+```powershell
+venv\Scripts\python.exe make_login_link.py <username>
+```
+
+It prints `https://www.bomu.lol/signin/<token>`: works once, lasts 7 days, and
+a new link for someone switches off their older unused ones. `login_links`
+holds only the token's SHA-256. Opening the link spends nothing; its button
+POSTs, signs in and lands on `/account/password`, which skips the current
+password for 15 minutes. Needs `migrate_login_links_2026_11.py --postgres`
+(dry run, then `--commit`); until then links show the expired page.
+
 ### Verification
 
 **Check the matcher, not the browser.** A stale render once cost an hour
@@ -123,6 +143,8 @@ sub-typed and name-matched paths, then walks every route, recipe page and POST,
 logged out and in. It never touches Neon (`_pg_url()` ignores `DATABASE_URL`
 once `DB_PATH` is overridden). For a migration, run it on the current DB (code
 must render *without* the new columns, to deploy first) and on a migrated copy.
+`init_db()` creates missing SQLite tables on the copy, so a check for "runs
+before the migration" must drop the table itself (`check_login_links()` does).
 
 **`check_specs.py`** (read-only on `bomu.db`; `--json`) finds rows, steps and
 checklist keys that disagree. Expect 0 flags: anything else is a bug or a gap
@@ -167,6 +189,12 @@ positives.
 - **A rotated Neon password** shows as `POST /login` 500 (`password
   authentication failed`) while `GET /login` is still 200. Update
   `DATABASE_URL` in Vercel, redeploy, then update `.env`.
+- **Chat apps GET every link they preview.** A URL that acts on GET (spends a
+  token, writes data) fires before the person taps it: act on POST.
+- **Changing a password doesn't sign out other devices:** sessions are signed
+  cookies, with nothing server-side to revoke.
+- **`app.py` is the repo's one CRLF file.** A Python text-mode rewrite turns
+  it LF, a whole-file diff; edit it in place.
 - **Vercel rejects request bodies over 4.5 MB** with its own bare 413 page,
   before Flask runs. Any upload path must shrink files in the browser first
   (see Scanner).
@@ -184,7 +212,8 @@ positives.
 ## Data model
 
 `users`, `bottles`, `ingredients`, `user_stock`, `recipes`, `recipe_ingredients`,
-`recipe_enhancements`, `ratings`, `scan_log`. Users: 1 aaron, 2 Avishka,
+`recipe_enhancements`, `ratings`, `scan_log`, `login_links` (see `### Sign-in
+links`). Users: 1 aaron, 2 Avishka,
 3 Rajapaksha, 4 lenasheh (Shehan, Aaron's brother), 5 Maho.
 
 ### recipe_ingredients
@@ -457,61 +486,6 @@ chips and status pills stay rounded.
 Copies of the newest 2 entries; every entry, oldest first, is in
 [`docs/session-log.md`](docs/session-log.md).
 
-### 2026-11-21 (second session) — CLAUDE.md split into current state + docs/session-log.md (Claude Code)
-
-`CLAUDE.md` had grown to 107 KB / 1,491 lines, 69% of it dated session history,
-and every Claude Code and Antigravity session loaded all of it at startup. Docs
-only: no app code or data changed.
-
-**Changed:**
-- New `docs/session-log.md`: all 28 dated entries moved word for word, oldest
-  first, plus the two dated blocks from `## Where things stand` (the 2026-07-29
-  commits and the 2026-11-15 summary) filed by date. An archive at its top keeps,
-  word for word, every current-state paragraph that was moved out or reworded.
-- `CLAUDE.md` rewritten as current state only, with copies of the newest 2
-  entries under `## Recent sessions`. Section names that code comments and old
-  entries cite (Gotchas, Adding recipes, The matcher, Verification, Templates,
-  Scanner, Data model, Running it, Deploy sequence) are unchanged.
-- Lessons that lived only in the log were folded into `## Gotchas` and their
-  sections, a line or two each, after checking each against the code.
-- `## Session handoff protocol` and `AGENTS.md`: at close, append the entry to
-  the bottom of `docs/session-log.md`, refresh `## Recent sessions`, update the
-  current-state sections, keep `CLAUDE.md` under ~30 KB.
-
-**Claims that had decayed, corrected while checking them against the code:**
-- No template uses `|safe` any more (the file said two uses remained).
-- `BOTTLE_TYPE_CHOICES` feeds five templates, not four. The scanner prompts now
-  share `SCANNER_CLASSIFICATION_RULES` but each still lists the types, so a new
-  type needs both prompts as well.
-- The spotlight rotates daily across the top 4 blockers (undocumented), and
-  `build_onboarding_data()` plus `canFillSlots` in `tonight.html` are a third and
-  fourth copy of the distinct-bottle logic.
-- `check_specs.py` and `sweep_namematch.py` read local `bomu.db` only; "safe on
-  the server" dated from PythonAnywhere.
-
-**Gotcha found:** a Claude Code worktree (`.claude/worktrees/*`) has no `.env`,
-but `load_dotenv()` walks up and finds the main checkout's, so the app and the
-matcher run from a worktree read **live Neon**. `verify_routes.py` stays on
-SQLite regardless, because `_pg_url()` ignores `DATABASE_URL` once `DB_PATH` is
-overridden.
-
-**Open item recovered:** "audit Neon for other constraints lost in the Postgres
-migration" (2026-11-15, seventh session) was never closed; only
-`recipe_enhancements` was fixed on 2026-11-19. Now backlog #22.
-
-**Verified:** a script checked that all 300 paragraphs of the old `CLAUDE.md`
-exist word for word in the new `CLAUDE.md` or the log, that every dated entry
-appears exactly once and in order, and that no secret-like strings were added.
-Pushed to `main` on Aaron's go-ahead.
-
-**Open / next:**
-1. Security chore (`#17`): Aaron to delete the `step_88.json` log and rotate the
-   Neon password.
-2. `#22` Neon constraint audit; `#5` rum and sherry sub-types.
-3. Stale code comments left alone in a docs-only session: `verify_routes.py`,
-   `migrate_enhancements.py` and `sweep_namematch.py` still call `bomu.db`
-   stale, and `app.py`'s `__main__` comment still says production runs gunicorn.
-
 ### 2026-11-21 (third session) — App review, then the scanner fixed for phone photos (Claude Code)
 
 Asked for an objective review with a grade and 3 improvements. Graded **B−
@@ -563,3 +537,43 @@ browser can't decode showed the inline message and uploaded nothing. Pushed to
 2. `#17` rotate the Neon password, open since 2026-11-15.
 3. `#23` last-seen tracking, then nudge each friend with their own unlock.
 4. `#24` pre-push check; `#25` small findings from the review.
+
+### 2026-11-21 (fourth session) — Account recovery: single-use sign-in links and change password (Claude Code)
+
+Accounts have no email, so a friend who forgot their password was locked out
+unless Aaron edited the database. Now Aaron makes a one-time link and sends it
+over chat, which doubles as the nudge to come back. Branch
+`claude/distracted-spence-fcfce8`, not pushed.
+
+**Changed:** `login_links` table (both `init_db()` paths; DDL shared with
+`migrate_login_links_2026_11.py`). `login_links.py`: token, SHA-256 only,
+7 days, single use enforced by the `UPDATE`'s WHERE clause, a new link
+switches off older unused ones, readers return None with no table.
+`make_login_link.py`. `GET`/`POST /signin/<token>`: any failure shows the "ask
+Aaron for a new one" page (HTTP 410, never 500); rate-limited 15 per 10 min;
+`no-referrer`, `no-store`, `noindex`. `/account/password`: 8+ characters,
+confirm, current password except within 15 minutes of a link sign-in; linked
+under the sign-out dialog's buttons. A hint on `/login`.
+`verify_routes.py` `check_login_links()`.
+
+**Deviation from the brief:** it asked for the GET to spend the link. Chat apps
+fetch a link to build its preview, which would burn it before the friend
+tapped, so the GET only shows the page and its button POSTs.
+
+**Verified:** `verify_routes.py` on `bomu.db`, the unmigrated `bomu_live.db`
+and a migrated copy. The migration on a SQLite copy: dry run, commit, no-op
+re-run, counts unchanged. Neon, nothing written: the migration's dry run, and
+`login_links.py` in one rolled-back transaction on a TEMP table over the
+unpooled URL. In-app browser at 375 px on a scratch copy, end to end.
+**Not verified:** a real phone, or a real chat app's preview.
+
+**Gotchas hit:** Jinja escapes `'` as `&#39;`, so tests must unescape.
+`app.py` is CRLF and a text-mode rewrite flipped it. A TEMP table made through
+Neon's pooler can outlive the client: use the unpooled URL, never commit.
+
+**Open / next:**
+1. With Aaron's OK: merge to `main` (safe before the migration), then
+   `migrate_login_links_2026_11.py --postgres`, then with `--commit`.
+2. Make each friend a link and send it with their own unlock.
+3. Open one link on a real phone through the chat app it'll travel in.
+4. `#23` last-seen tracking; this change is self-contained, merge either order.
