@@ -253,8 +253,14 @@ A rename touches the `ingredients` row, `recipe_ingredients` rows
 `SUGGESTIONS` in `suggestions.py`. There are no ingredient photos any more.
 
 A `user_stock` row is a tick. `/stock-add` and `/quick-setup` call
-`add_ingredients_to_stock()`, which only adds; `set_all_ingredients_stock()`
-wipes the user's checklist first and is for `/checklist` only.
+`add_ingredients_to_stock()`, which only adds. The Mixers page autosaves one
+tick per request through `POST /checklist/item` (`set_ingredient_stock()`),
+answers JSON with the real count, and puts the box back with an error if the
+save fails. `set_all_ingredients_stock()` wipes the user's checklist first and
+is only for the no-JavaScript `/checklist` submit: never send a whole page's
+checklist from code that can run on a stale page (it used to, and unticked
+items added elsewhere). Signed-out requests sent with
+`X-Requested-With: fetch` get a 401 JSON answer, not a login redirect.
 
 ---
 
@@ -457,61 +463,6 @@ chips and status pills stay rounded.
 Copies of the newest 2 entries; every entry, oldest first, is in
 [`docs/session-log.md`](docs/session-log.md).
 
-### 2026-11-21 (second session) — CLAUDE.md split into current state + docs/session-log.md (Claude Code)
-
-`CLAUDE.md` had grown to 107 KB / 1,491 lines, 69% of it dated session history,
-and every Claude Code and Antigravity session loaded all of it at startup. Docs
-only: no app code or data changed.
-
-**Changed:**
-- New `docs/session-log.md`: all 28 dated entries moved word for word, oldest
-  first, plus the two dated blocks from `## Where things stand` (the 2026-07-29
-  commits and the 2026-11-15 summary) filed by date. An archive at its top keeps,
-  word for word, every current-state paragraph that was moved out or reworded.
-- `CLAUDE.md` rewritten as current state only, with copies of the newest 2
-  entries under `## Recent sessions`. Section names that code comments and old
-  entries cite (Gotchas, Adding recipes, The matcher, Verification, Templates,
-  Scanner, Data model, Running it, Deploy sequence) are unchanged.
-- Lessons that lived only in the log were folded into `## Gotchas` and their
-  sections, a line or two each, after checking each against the code.
-- `## Session handoff protocol` and `AGENTS.md`: at close, append the entry to
-  the bottom of `docs/session-log.md`, refresh `## Recent sessions`, update the
-  current-state sections, keep `CLAUDE.md` under ~30 KB.
-
-**Claims that had decayed, corrected while checking them against the code:**
-- No template uses `|safe` any more (the file said two uses remained).
-- `BOTTLE_TYPE_CHOICES` feeds five templates, not four. The scanner prompts now
-  share `SCANNER_CLASSIFICATION_RULES` but each still lists the types, so a new
-  type needs both prompts as well.
-- The spotlight rotates daily across the top 4 blockers (undocumented), and
-  `build_onboarding_data()` plus `canFillSlots` in `tonight.html` are a third and
-  fourth copy of the distinct-bottle logic.
-- `check_specs.py` and `sweep_namematch.py` read local `bomu.db` only; "safe on
-  the server" dated from PythonAnywhere.
-
-**Gotcha found:** a Claude Code worktree (`.claude/worktrees/*`) has no `.env`,
-but `load_dotenv()` walks up and finds the main checkout's, so the app and the
-matcher run from a worktree read **live Neon**. `verify_routes.py` stays on
-SQLite regardless, because `_pg_url()` ignores `DATABASE_URL` once `DB_PATH` is
-overridden.
-
-**Open item recovered:** "audit Neon for other constraints lost in the Postgres
-migration" (2026-11-15, seventh session) was never closed; only
-`recipe_enhancements` was fixed on 2026-11-19. Now backlog #22.
-
-**Verified:** a script checked that all 300 paragraphs of the old `CLAUDE.md`
-exist word for word in the new `CLAUDE.md` or the log, that every dated entry
-appears exactly once and in order, and that no secret-like strings were added.
-Pushed to `main` on Aaron's go-ahead.
-
-**Open / next:**
-1. Security chore (`#17`): Aaron to delete the `step_88.json` log and rotate the
-   Neon password.
-2. `#22` Neon constraint audit; `#5` rum and sherry sub-types.
-3. Stale code comments left alone in a docs-only session: `verify_routes.py`,
-   `migrate_enhancements.py` and `sweep_namematch.py` still call `bomu.db`
-   stale, and `app.py`'s `__main__` comment still says production runs gunicorn.
-
 ### 2026-11-21 (third session) — App review, then the scanner fixed for phone photos (Claude Code)
 
 Asked for an objective review with a grade and 3 improvements. Graded **B−
@@ -563,3 +514,43 @@ browser can't decode showed the inline message and uploaded nothing. Pushed to
 2. `#17` rotate the Neon password, open since 2026-11-15.
 3. `#23` last-seen tracking, then nudge each friend with their own unlock.
 4. `#24` pre-push check; `#25` small findings from the review.
+
+### 2026-11-21 (fourth session) — Second review, then Mixers autosave fixed (Claude Code)
+
+Second review: still **B−, about 81/100** (code up to B+; security and
+reliability still B−; "working for the friends" still D, no friend activity
+since 2026-07-24). New improvements: (1) one-tap sign-in links and a password
+change page, since there is no account recovery at all (running as its own
+session on branch `claude/distracted-spence-fcfce8`, not merged); (2) Mixers
+saving, fixed below; (3) error alerts such as Sentry (needs Aaron's account).
+Also noted: no backup of Neon (snapshot with a Neon branch before migrations),
+the `?` to `%s` rewrite in `database.py`, `/robots.txt` 404.
+
+**Bugs found (reproduced on a scratch copy):** the Mixers page autosaved by
+posting its whole checklist to `/checklist`, which replaced the user's ticks.
+A page opened before an "I have this" tap elsewhere unticked that item on its
+next save (Grenadine). Signed out, a tick showed "Saved · 17 stocked" and stored
+nothing, because `fetch()` followed the login redirect to a 200 page; a dropped
+connection failed silently. Enter in the filter box would submit the whole form.
+
+**Changed:**
+- `POST /checklist/item` + `set_ingredient_stock()`: one tick per request,
+  JSON with the real count; unknown ids get a 400.
+- `login_required`: signed-out `X-Requested-With: fetch` requests get a 401
+  JSON answer instead of a redirect.
+- `my_bar.html`: saves queue one at a time; a failed save puts the box back
+  with "Not saved: you've been signed out." or "Not saved. Check your
+  connection."; Enter in the filter no longer submits; Back reloads the page.
+- `/checklist` (no-JS submit) drops junk ids instead of 500ing.
+- `verify_routes.py` `check_mixers_save()`: 9 checks.
+
+**Verified:** `verify_routes.py` on `bomu.db` and `--db bomu_live.db`; both
+repros, a simulated dropped connection and Enter in the filter, in the in-app
+browser at phone width; Neon's `user_stock` has the primary key
+`ON CONFLICT` needs (read-only check). Pushed to `main`.
+
+**Open / next:**
+1. Merge the sign-in links branch when its session finishes (needs a Neon
+   migration first, with Aaron's OK).
+2. Error alerts (needs a Sentry account); `#23` last-seen tracking.
+3. `#17` rotate the Neon password; scan once from a real phone.

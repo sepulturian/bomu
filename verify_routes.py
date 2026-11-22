@@ -56,6 +56,79 @@ def source_db():
     return os.path.join(HERE, "bomu.db")
 
 
+def check_mixers_save(c, app_module, database, uid, failures):
+    """The Mixers page saves one tick at a time through POST /checklist/item.
+
+    Pins down the two bugs fixed on 2026-11-21:
+    - a stale page could untick something added elsewhere, because every
+      autosave sent the whole page and replaced the user's checklist;
+    - a signed-out save showed "Saved", because fetch() followed the login
+      redirect to a 200 page. Background requests now get a 401 instead.
+    """
+    print("\n  Mixers autosave (/checklist/item):")
+
+    def stocked():
+        return {i["id"] for i in database.get_all_ingredients(uid) if i["in_stock"]}
+
+    def item(client, ing, on, fetch=True):
+        headers = {"X-Requested-With": "fetch"} if fetch else {}
+        return client.post("/checklist/item", headers=headers, follow_redirects=False,
+                           data={"ingredient": str(ing), "in_stock": "1" if on else "0"})
+
+    def check(label, ok, detail=""):
+        if ok:
+            print(f"  ok    {label}")
+        else:
+            failures.append((label, detail or "failed"))
+            print(f"  FAIL  {label}  {detail}")
+
+    body = c.get("/bar?tab=mixers").get_data(as_text=True)
+    check("Mixers page autosaves per tick", "/checklist/item" in body, "page doesn't post to /checklist/item")
+
+    unticked = sorted(i["id"] for i in database.get_all_ingredients(uid) if not i["in_stock"])
+    if len(unticked) < 2:
+        check("Mixers autosave setup", False, "need two unticked ingredients")
+        return
+    added_elsewhere, ticked_here = unticked[0], unticked[1]
+
+    # "I have this" somewhere else, then a tick on a Mixers page opened earlier.
+    c.post("/stock-add", data={"ingredient": [str(added_elsewhere)]})
+    r = item(c, ticked_here, True)
+    data = r.get_json(silent=True) or {}
+    now = stocked()
+    check("tick saves and reports the real count",
+          r.status_code == 200 and data.get("ok") is True and data.get("stocked_count") == len(now),
+          f"status {r.status_code}, json {data}, stocked {len(now)}")
+    check("tick keeps a tick made elsewhere",
+          added_elsewhere in now and ticked_here in now, f"stocked={sorted(now)}")
+
+    r = item(c, ticked_here, False)
+    now = stocked()
+    check("untick removes only that row",
+          r.status_code == 200 and ticked_here not in now and added_elsewhere in now,
+          f"status {r.status_code}, stocked={sorted(now)}")
+
+    for junk in ("abc", "999999"):
+        r = item(c, junk, True)
+        check(f"/checklist/item rejects ingredient={junk}",
+              r.status_code == 400 and (r.get_json(silent=True) or {}).get("ok") is False,
+              f"status {r.status_code}")
+    r = c.post("/checklist", data={"ingredient": [str(added_elsewhere), "abc", "999999"]},
+               follow_redirects=False)
+    check("no-JS /checklist drops junk ids instead of 500ing",
+          r.status_code == 302 and added_elsewhere in stocked(), f"status {r.status_code}")
+
+    with app_module.app.test_client() as anon:
+        r = item(anon, ticked_here, True)
+        check("signed-out background save gets 401, not a redirect",
+              r.status_code == 401 and (r.get_json(silent=True) or {}).get("error") == "signed_out",
+              f"status {r.status_code}")
+        r = item(anon, ticked_here, True, fetch=False)
+        check("signed-out normal POST still redirects to /login",
+              r.status_code == 302 and "/login" in r.headers.get("Location", ""),
+              f"status {r.status_code}")
+
+
 def check_scanner(c, app_module, database, uid, failures):
     """POST /scan and /scan-bulk with a fake Claude client: no API calls, no cost.
 
@@ -520,6 +593,7 @@ def main():
             visit(c, "GET", f"/edit/{bottle_ids[0]}", follow_redirects=True)
 
         check_scanner(c, app_module, database, uid, failures)
+        check_mixers_save(c, app_module, database, uid, failures)
 
         visit(c, "POST", "/logout", follow_redirects=True)
 

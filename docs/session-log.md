@@ -1556,3 +1556,43 @@ browser can't decode showed the inline message and uploaded nothing. Pushed to
 2. `#17` rotate the Neon password, open since 2026-11-15.
 3. `#23` last-seen tracking, then nudge each friend with their own unlock.
 4. `#24` pre-push check; `#25` small findings from the review.
+
+### 2026-11-21 (fourth session) — Second review, then Mixers autosave fixed (Claude Code)
+
+Second review: still **B−, about 81/100** (code up to B+; security and
+reliability still B−; "working for the friends" still D, no friend activity
+since 2026-07-24). New improvements: (1) one-tap sign-in links and a password
+change page, since there is no account recovery at all (running as its own
+session on branch `claude/distracted-spence-fcfce8`, not merged); (2) Mixers
+saving, fixed below; (3) error alerts such as Sentry (needs Aaron's account).
+Also noted: no backup of Neon (snapshot with a Neon branch before migrations),
+the `?` to `%s` rewrite in `database.py`, `/robots.txt` 404.
+
+**Bugs found (reproduced on a scratch copy):** the Mixers page autosaved by
+posting its whole checklist to `/checklist`, which replaced the user's ticks.
+A page opened before an "I have this" tap elsewhere unticked that item on its
+next save (Grenadine). Signed out, a tick showed "Saved · 17 stocked" and stored
+nothing, because `fetch()` followed the login redirect to a 200 page; a dropped
+connection failed silently. Enter in the filter box would submit the whole form.
+
+**Changed:**
+- `POST /checklist/item` + `set_ingredient_stock()`: one tick per request,
+  JSON with the real count; unknown ids get a 400.
+- `login_required`: signed-out `X-Requested-With: fetch` requests get a 401
+  JSON answer instead of a redirect.
+- `my_bar.html`: saves queue one at a time; a failed save puts the box back
+  with "Not saved: you've been signed out." or "Not saved. Check your
+  connection."; Enter in the filter no longer submits; Back reloads the page.
+- `/checklist` (no-JS submit) drops junk ids instead of 500ing.
+- `verify_routes.py` `check_mixers_save()`: 9 checks.
+
+**Verified:** `verify_routes.py` on `bomu.db` and `--db bomu_live.db`; both
+repros, a simulated dropped connection and Enter in the filter, in the in-app
+browser at phone width; Neon's `user_stock` has the primary key
+`ON CONFLICT` needs (read-only check). Pushed to `main`.
+
+**Open / next:**
+1. Merge the sign-in links branch when its session finishes (needs a Neon
+   migration first, with Aaron's OK).
+2. Error alerts (needs a Sentry account); `#23` last-seen tracking.
+3. `#17` rotate the Neon password; scan once from a real phone.

@@ -708,8 +708,38 @@ def add_ingredients_to_stock(user_id, ingredient_ids):
     conn.close()
 
 
+def set_ingredient_stock(user_id, ingredient_id, in_stock):
+    """Tick or untick ONE checklist row; returns the user's new tick count.
+
+    The Mixers page autosaves through this, one change per request. It used to
+    post the whole page to set_all_ingredients_stock(), which made whatever the
+    page showed the truth: a Mixers page opened before an "I have this" tap
+    elsewhere silently unticked that item the next time anything was ticked."""
+    conn = get_db()
+    if in_stock:
+        conn.execute(
+            "INSERT INTO user_stock (user_id, ingredient_id) VALUES (?, ?) ON CONFLICT (user_id, ingredient_id) DO NOTHING",
+            (user_id, int(ingredient_id)),
+        )
+    else:
+        conn.execute(
+            "DELETE FROM user_stock WHERE user_id = ? AND ingredient_id = ?",
+            (user_id, int(ingredient_id)),
+        )
+    conn.commit()
+    count = conn.execute(
+        "SELECT COUNT(*) FROM user_stock WHERE user_id = ?", (user_id,)
+    ).fetchone()[0]
+    conn.close()
+    return count
+
+
 def set_all_ingredients_stock(user_id, checked_ids):
-    """Replace this user's checklist state: checked ones in stock, rest not."""
+    """Replace this user's checklist state: checked ones in stock, rest not.
+
+    Only for the no-JavaScript "Save mixers" submit. Anything that can run
+    from a page that may be out of date should use set_ingredient_stock() or
+    add_ingredients_to_stock(), which never touch rows they weren't given."""
     conn = get_db()
     conn.execute("DELETE FROM user_stock WHERE user_id = ?", (user_id,))
     if checked_ids:
