@@ -1601,8 +1601,9 @@ browser at phone width; Neon's `user_stock` has the primary key
 
 Accounts have no email, so a friend who forgot their password was locked out
 unless Aaron edited the database. Now Aaron makes a one-time link and sends it
-over chat, which doubles as the nudge to come back. Branch
-`claude/distracted-spence-fcfce8`, not pushed.
+over chat, which doubles as the nudge to come back. Built on branch
+`claude/distracted-spence-fcfce8`, merged with the Mixers session's work,
+migrated on Neon and pushed to `main` on Aaron's go-ahead.
 
 **Changed:** `login_links` table (both `init_db()` paths; DDL shared with
 `migrate_login_links_2026_11.py`). `login_links.py`: token, SHA-256 only,
@@ -1631,8 +1632,8 @@ unpooled URL. In-app browser at 375 px on a scratch copy, end to end.
 Neon's pooler can outlive the client: use the unpooled URL, never commit.
 
 **Open / next:**
-1. With Aaron's OK: merge to `main` (safe before the migration), then
-   `migrate_login_links_2026_11.py --postgres`, then with `--commit`.
+1. Done: Neon has `login_links` (dry run, commit, no-op re-run; empty;
+   matcher counts unchanged), and `main` carries the code.
 2. Make each friend a link and send it with their own unlock.
 3. Open one link on a real phone through the chat app it'll travel in.
 4. `#23` last-seen tracking; this change is self-contained, merge either order.

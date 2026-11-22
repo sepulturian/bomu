@@ -54,8 +54,8 @@ Visits aren't recorded (#23). **Read user counts from Neon:** `bomu.db` matches 
 its per-user tables, and `bomu_live.db` is the frozen 2026-11-15 snapshot.
 
 **Account recovery** (single-use sign-in links plus `/account/password`; see
-`### Sign-in links`) is on branch `claude/distracted-spence-fcfce8`, not on
-`main`, and Neon has no `login_links` table yet.
+`### Sign-in links`) is live, and Neon has its `login_links` table
+(2026-11-21). No links have been made yet.
 
 **Untracked in the main checkout:** `.claude/` (preview `launch.json`, agent
 worktrees) and `redesign/` (the 2026-11-14 brief and mockups). Stage files by
@@ -116,8 +116,8 @@ It prints `https://www.bomu.lol/signin/<token>`: works once, lasts 7 days, and
 a new link for someone switches off their older unused ones. `login_links`
 holds only the token's SHA-256. Opening the link spends nothing; its button
 POSTs, signs in and lands on `/account/password`, which skips the current
-password for 15 minutes. Needs `migrate_login_links_2026_11.py --postgres`
-(dry run, then `--commit`); until then links show the expired page.
+password for 15 minutes. `migrate_login_links_2026_11.py` made the table
+(Neon, 2026-11-21); without it links show the expired page and nothing breaks.
 
 ### Verification
 
@@ -536,8 +536,9 @@ browser at phone width; Neon's `user_stock` has the primary key
 
 Accounts have no email, so a friend who forgot their password was locked out
 unless Aaron edited the database. Now Aaron makes a one-time link and sends it
-over chat, which doubles as the nudge to come back. Branch
-`claude/distracted-spence-fcfce8`, not pushed.
+over chat, which doubles as the nudge to come back. Built on branch
+`claude/distracted-spence-fcfce8`, merged with the Mixers session's work,
+migrated on Neon and pushed to `main` on Aaron's go-ahead.
 
 **Changed:** `login_links` table (both `init_db()` paths; DDL shared with
 `migrate_login_links_2026_11.py`). `login_links.py`: token, SHA-256 only,
@@ -566,8 +567,8 @@ unpooled URL. In-app browser at 375 px on a scratch copy, end to end.
 Neon's pooler can outlive the client: use the unpooled URL, never commit.
 
 **Open / next:**
-1. With Aaron's OK: merge to `main` (safe before the migration), then
-   `migrate_login_links_2026_11.py --postgres`, then with `--commit`.
+1. Done: Neon has `login_links` (dry run, commit, no-op re-run; empty;
+   matcher counts unchanged), and `main` carries the code.
 2. Make each friend a link and send it with their own unlock.
 3. Open one link on a real phone through the chat app it'll travel in.
 4. `#23` last-seen tracking; this change is self-contained, merge either order.
