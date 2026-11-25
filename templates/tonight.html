@@ -933,7 +933,7 @@
                                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                         {% endif %}
                         <div class="spot-drink-fallback" {% if img_url %}style="display: none;"{% endif %}>
-                            {{ cocktail_specimen(d.glass, d|liquid_tone) }}
+                            {{ cocktail_specimen(d.glass, d|liquid_tone, d|drink_garnish) }}
                         </div>
                         <span class="spot-drink-name">{{ d.name }}</span>
                     </a>
@@ -957,7 +957,7 @@
             {% set thumb = ratings.get(r.recipe.id, 0) %}
             <a href="/recipe/{{ r.recipe.id }}" class="drink-card {% if thumb == -1 %}is-disliked{% endif %}">
                 <div class="drink-thumb is-specimen" data-tone="{{ r.recipe|liquid_tone }}">
-                    {{ cocktail_specimen(r.recipe.glass, r.recipe|liquid_tone) }}
+                    {{ cocktail_specimen(r.recipe.glass, r.recipe|liquid_tone, r.recipe|drink_garnish) }}
                 </div>
                 <div class="drink-meta">
                     <div class="drink-title">
@@ -1076,7 +1076,7 @@
             {% for item in recs.one_away %}
                 <a href="/recipe/{{ item.recipe.recipe.id }}" class="oneaway-tile">
                     <div class="oneaway-img-wrap">
-                        {{ cocktail_specimen(item.recipe.recipe.glass, item.recipe.recipe|liquid_tone) }}
+                        {{ cocktail_specimen(item.recipe.recipe.glass, item.recipe.recipe|liquid_tone, item.recipe.recipe|drink_garnish) }}
                     </div>
                     <div class="oneaway-body">
                         <div class="oneaway-name">{{ item.recipe.recipe.name }}</div>

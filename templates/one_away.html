@@ -61,7 +61,7 @@
 {% macro oa_drink(recipe) -%}
     <a href="/recipe/{{ recipe.id }}" class="oa-drink-row">
         <div class="drink-thumb is-specimen" data-tone="{{ recipe|liquid_tone }}">
-            {{ cocktail_specimen(recipe.glass, recipe|liquid_tone) }}
+            {{ cocktail_specimen(recipe.glass, recipe|liquid_tone, recipe|drink_garnish) }}
         </div>
         <div class="drink-meta">
             <div class="oa-drink-title">{{ recipe.name }}</div>

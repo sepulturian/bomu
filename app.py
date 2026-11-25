@@ -575,16 +575,24 @@ def recipe_image_url(recipe):
 
 
 def glass_kind(glass):
-    """Normalize recipe.glass into one of six silhouette keys:
-    coupe, martini, rocks, highball, flute, hurricane."""
+    """Normalize recipe.glass into one of ten silhouette keys:
+    copper_mug, warm_mug, shot, wine, coupe, martini, highball, flute, hurricane, rocks."""
     g = (glass or "").lower()
+    if any(k in g for k in ("copper mug", "mule")):
+        return "copper_mug"
+    if any(k in g for k in ("irish coffee", "toddy", "mug")):
+        return "warm_mug"
+    if any(k in g for k in ("shot", "cordial")):
+        return "shot"
+    if "wine" in g and "flute" not in g:
+        return "wine"
     if any(k in g for k in ("coupe", "nick", "margarita")):
         return "coupe"
     if any(k in g for k in ("martini", "cocktail")):
         return "martini"
-    if any(k in g for k in ("highball", "collins", "pint", "mason", "copper mug", "mule", "pilsner", "parfait")):
+    if any(k in g for k in ("highball", "collins", "pint", "mason", "pilsner", "parfait")):
         return "highball"
-    if any(k in g for k in ("flute", "champagne", "wine")):
+    if any(k in g for k in ("flute", "champagne")):
         return "flute"
     if any(k in g for k in ("hurricane", "tiki", "goblet", "snifter", "pitcher", "punch")):
         return "hurricane"
@@ -670,65 +678,171 @@ def classify_drink_style(recipe_data):
 
 
 def _classify_liquid_tone(recipe_data):
-    """Map a cocktail to a calibrated liquid color token for specimen icons."""
-    name = (recipe_data.get("recipe", {}).get("name") or "").lower()
-    ing_names = " ".join(
+    """Map a cocktail to a calibrated liquid color or gradient token for specimen icons."""
+    recipe = recipe_data.get("recipe", {})
+    name = (recipe.get("name") or "").lower()
+    if glass_kind(recipe.get("glass")) == "copper_mug":
+        return "copper"
+
+    # Only read non-optional ingredients so optional garnishes (like a cherry)
+    # never tint the liquid itself.
+    req_ings = [i for i in recipe_data.get("ingredients", []) if i.get("requirement_type") != "optional"]
+    req_names = " ".join(
         f"{i.get('raw_name') or ''} {i.get('ingredient_name') or ''} {i.get('bottle_type') or ''}".lower()
-        for i in recipe_data.get("ingredients", [])
+        for i in req_ings
     )
-    combined = f"{name} {ing_names}"
-    if any(k in combined for k in (
+    combined = f"{name} {req_names}"
+
+    # Multi-layer / floated signature drinks first
+    if name == "b-52":
+        return "layered_b52"
+    if name == "new york sour":
+        return "float_ruby"
+    if name == "queen's park swizzle":
+        return "swizzle"
+    if name in ("tequila sunrise", "sex on the beach", "bay breeze"):
+        return "sunrise"
+    if name == "irish coffee":
+        return "espresso"
+
+    # Cream / opaque dairy / coconut
+    if any(k in req_names for k in (
         "heavy cream", "light cream", "coconut cream", "cream of coconut",
         "milk", "half-and-half", "vanilla ice cream", "ice cream",
-        "baileys", "irish cream",
-    )):
+        "baileys", "irish cream", "whipped cream",
+    )) and name != "jungle bird":
+        if name == "pink lady":
+            return "coral"
         return "cream"
+
+    # Espresso / dark cola / coffee
     if any(k in combined for k in (
         "espresso", "coffee", "kahlua", "cola", "coca-cola", "coke",
         "stout", "guinness", "cold brew", "root beer",
     )):
         return "espresso"
-    if any(k in ing_names for k in (
+
+    # Rosé / coral / pink / grapefruit
+    if name in (
+        "woo woo", "bacardi cocktail", "clover club", "pink lady",
+        "cosmopolitan", "paloma", "sea breeze", "greyhound", "salty dog",
+        "mary pickford", "el presidente", "brown derby", "hemingway daiquiri",
+        "bellini", "cantarito",
+    ) or ("grapefruit" in req_names and "campari" not in req_names and "red wine" not in req_names):
+        return "coral"
+
+    # Deep ruby (non-optional ingredients + explicit ruby classics)
+    if any(k in req_names for k in (
         "campari", "cranberry", "grenadine", "hibiscus", "pomegranate",
         "raspberry", "cherry", "red wine", "claret", "tomato",
         "blood orange", "peychaud", "cassis", "chambord", "strawberry", "watermelon",
+        "creme de mure", "blackberry",
     )) or name in (
         "negroni", "boulevardier", "americano", "milano-torino", "cardinale",
         "old pal", "el diablo", "rosita", "jungle bird", "blood and sand",
-        "ward eight", "cosmopolitan", "mary pickford",
+        "ward eight", "bramble",
     ):
         return "ruby"
+
+    # Warm orange / tropical
     if any(k in combined for k in (
         "orange juice", "aperol", "tangerine", "passion fruit", "passionfruit",
         "mango", "peach", "apricot", "papaya", "pineapple",
         "screwdriver", "paper plane", "hurricane", "painkiller", "mai tai", "mimosa",
     )):
         return "orange"
+
+    # Herbal green
+    if any(k in req_names for k in ("green chartreuse", "midori", "cucumber")):
+        return "citrus"
+
+    # Honey / golden (lemon, honey, sparkling, ginger, elderflower)
     if any(k in combined for k in (
-        "honey", "lemon juice", "champagne", "prosecco", "sparkling wine", "cava",
+        "honey", "lemon juice", "lemon", "champagne", "prosecco", "sparkling wine", "cava",
         "yellow chartreuse", "st-germain", "elderflower", "ginger beer", "ginger ale",
         "amaretto", "galliano", "drambuie",
-    )):
+    )) and name not in ("mojito", "margarita", "kamikaze", "daiquiri", "gimlet", "last word", "the last word"):
         return "honey"
-    if any(k in combined for k in (
-        "lime juice", "green chartreuse", "midori", "mint", "cucumber", "grapefruit",
-    )):
+
+    # Lime / mint citrus green
+    if any(k in req_names for k in ("lime juice", "lime", "mint")):
         return "citrus"
-    if any(k in combined for k in (
+
+    # Amber aged spirits / vermouth / amaro
+    if any(k in req_names for k in (
         "bourbon", "rye", "scotch", "whiskey", "whisky", "irish", "cognac",
         "brandy", "dark rum", "aged rum", "anejo", "sweet vermouth", "vermouth_sweet",
         "amaro", "fernet", "benedictine", "cynar", "sherry", "port", "calvados",
-        "armagnac", "rum",
-    )):
+        "armagnac", "gold rum", "rum",
+    )) and name not in (
+        "white russian", "dry martini", "vodka martini", "dirty martini",
+        "gibson", "vesper", "gin and tonic", "vodka tonic", "ranch water",
+    ):
         return "amber"
+
     return "crystal"
+
+
+def _classify_drink_garnish(recipe_data):
+    """Pick at most one signature micro-garnish key for cocktail_specimen."""
+    name = (recipe_data.get("recipe", {}).get("name") or "").lower()
+    req_ings = [i for i in recipe_data.get("ingredients", []) if i.get("requirement_type") != "optional"]
+    opt_ings = [i for i in recipe_data.get("ingredients", []) if i.get("requirement_type") == "optional"]
+    req_names = " ".join(f"{i.get('raw_name') or ''} {i.get('ingredient_name') or ''}".lower() for i in req_ings)
+    opt_names = " ".join(f"{i.get('raw_name') or ''} {i.get('ingredient_name') or ''}".lower() for i in opt_ings)
+    all_names = f"{req_names} {opt_names}"
+
+    if name in ("b-52", "new york sour", "bacardi cocktail"):
+        return "none"
+    if name in (
+        "irish coffee", "espresso martini", "clover club", "pink lady",
+        "pisco sour", "ramos gin fizz", "morning glory fizz", "tequila sour", "vodka sour",
+    ) or "egg white" in req_names:
+        return "foam"
+    if name in ("margarita", "tommy's margarita", "salty dog", "bloody maria") or (
+        "salt" in opt_names and "celery salt" not in opt_names
+    ):
+        return "salt_rim"
+    if "olive" in all_names:
+        return "olive_pick"
+    if name == "moscow mule":
+        return "lime_wedge"
+    if "mint" in all_names:
+        return "mint"
+    if "orange slice" in opt_names or name in (
+        "aperol spritz", "tequila sunrise", "sex on the beach",
+        "screwdriver", "garibaldi", "bicicletta",
+    ):
+        return "orange_slice"
+    if "lime wheel" in opt_names:
+        return "lime_wheel"
+    if "lime wedge" in opt_names or name in (
+        "kentucky mule", "jamaican mule", "mexican mule",
+        "gin and tonic", "paloma", "dark and stormy",
+    ):
+        return "lime_wedge"
+    if name in (
+        "manhattan", "whiskey sour", "rob roy", "black manhattan",
+        "brooklyn", "the last word", "aviation", "singapore sling",
+    ):
+        return "cherry_pick"
+    if any(k in opt_names for k in ("orange twist", "lemon twist", "grapefruit twist", "lemon peel")) or name in (
+        "old fashioned", "negroni", "boulevardier", "sazerac",
+        "white lady", "sidecar", "vesper", "martini", "dry martini",
+    ):
+        return "twist"
+    if "cherry" in opt_names:
+        return "cherry_pick"
+    if "lemon slice" in opt_names:
+        return "orange_slice"
+    return "none"
 
 
 _RECIPE_META_MAP = None
 
 
 def _recipe_meta_map():
-    """Cache derived tone and style metadata per recipe id once per process."""
+    """Cache derived tone, style, and garnish metadata per recipe id once per process."""
     global _RECIPE_META_MAP
     if _RECIPE_META_MAP is not None:
         return _RECIPE_META_MAP
@@ -738,6 +852,7 @@ def _recipe_meta_map():
         meta[rid] = {
             "tone": _classify_liquid_tone(rec),
             "style": classify_drink_style(rec),
+            "garnish": _classify_drink_garnish(rec),
         }
     _RECIPE_META_MAP = meta
     return meta
@@ -757,6 +872,13 @@ def recipe_drink_style(recipe):
     return entry["style"] if entry else "Spirit-Forward"
 
 
+def recipe_drink_garnish(recipe):
+    keys = recipe.keys() if recipe and hasattr(recipe, "keys") else ()
+    rid = recipe["id"] if "id" in keys else None
+    entry = _recipe_meta_map().get(rid) if rid is not None else None
+    return entry["garnish"] if entry else "none"
+
+
 app.jinja_env.globals["BOTTLE_TYPE_CHOICES"] = BOTTLE_TYPE_CHOICES
 app.jinja_env.filters["type_label"] = bottle_type_label
 app.jinja_env.filters["short_name"] = short_bottle_name
@@ -770,6 +892,7 @@ app.jinja_env.filters["glass_kind"] = glass_kind
 app.jinja_env.filters["glass_label"] = format_glass_label
 app.jinja_env.filters["liquid_tone"] = recipe_liquid_tone
 app.jinja_env.filters["drink_style"] = recipe_drink_style
+app.jinja_env.filters["drink_garnish"] = recipe_drink_garnish
 
 
 # ---------------------------------------------------------------------------

@@ -679,6 +679,12 @@
         .drink-thumb.is-specimen[data-tone="espresso"] { --tone-glow: rgba(138, 92, 66, 0.16); border-color: rgba(155, 108, 79, 0.18); }
         .drink-thumb.is-specimen[data-tone="cream"] { --tone-glow: rgba(221, 209, 190, 0.12); border-color: rgba(221, 209, 190, 0.16); }
         .drink-thumb.is-specimen[data-tone="crystal"] { --tone-glow: rgba(188, 205, 214, 0.13); border-color: rgba(188, 205, 214, 0.16); }
+        .drink-thumb.is-specimen[data-tone="coral"] { --tone-glow: rgba(218, 102, 118, 0.17); border-color: rgba(218, 102, 118, 0.24); }
+        .drink-thumb.is-specimen[data-tone="sunrise"] { --tone-glow: rgba(226, 116, 46, 0.17); border-color: rgba(226, 116, 46, 0.24); }
+        .drink-thumb.is-specimen[data-tone="float_ruby"] { --tone-glow: rgba(196, 128, 48, 0.17); border-color: rgba(196, 128, 48, 0.24); }
+        .drink-thumb.is-specimen[data-tone="swizzle"] { --tone-glow: rgba(136, 162, 74, 0.16); border-color: rgba(136, 162, 74, 0.24); }
+        .drink-thumb.is-specimen[data-tone="layered_b52"] { --tone-glow: rgba(196, 126, 68, 0.17); border-color: rgba(196, 126, 68, 0.24); }
+        .drink-thumb.is-specimen[data-tone="copper"] { --tone-glow: rgba(208, 118, 68, 0.19); border-color: rgba(218, 134, 82, 0.28); }
 
         .drink-thumb.is-specimen::after {
             display: none;
@@ -1068,6 +1074,46 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body>
+    <svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
+        <defs>
+            <linearGradient id="grad-sunrise" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#ec8d2c"/>
+                <stop offset="46%" stop-color="#df5d2b"/>
+                <stop offset="76%" stop-color="#b5282c"/>
+                <stop offset="100%" stop-color="#9b1e25"/>
+            </linearGradient>
+            <linearGradient id="grad-ny-sour" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#8b1b29"/>
+                <stop offset="25%" stop-color="#9e2432"/>
+                <stop offset="38%" stop-color="#c89328"/>
+                <stop offset="100%" stop-color="#b67e1d"/>
+            </linearGradient>
+            <linearGradient id="grad-swizzle" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#912d1d"/>
+                <stop offset="24%" stop-color="#9e4324"/>
+                <stop offset="38%" stop-color="#7d9f4a"/>
+                <stop offset="100%" stop-color="#658837"/>
+            </linearGradient>
+            <linearGradient id="grad-b52" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#d46e24"/>
+                <stop offset="30%" stop-color="#cf6b24"/>
+                <stop offset="35%" stop-color="#dccab0"/>
+                <stop offset="62%" stop-color="#cdb799"/>
+                <stop offset="68%" stop-color="#4e2b1b"/>
+                <stop offset="100%" stop-color="#361c11"/>
+            </linearGradient>
+            <linearGradient id="grad-copper" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#7b391d"/>
+                <stop offset="32%" stop-color="#d17c4c"/>
+                <stop offset="66%" stop-color="#a14f2a"/>
+                <stop offset="100%" stop-color="#6b2e16"/>
+            </linearGradient>
+            <linearGradient id="grad-irish" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#623c28"/>
+                <stop offset="100%" stop-color="#381f13"/>
+            </linearGradient>
+        </defs>
+    </svg>
     {% if not hide_topbar %}
     <header class="topbar">
         <a href="{{ '/' if current_username else '/explore' }}" class="wordmark" aria-label="Bomu home">

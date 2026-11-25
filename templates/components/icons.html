@@ -35,6 +35,29 @@
             <path d="M14 21.5V24" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
             <path d="M10 24.5h8" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
         </svg>
+    {%- elif kind == "copper_mug" -%}
+        <svg class="{{ class_name }}" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+            <path d="M7 7.5h11v14a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 7 21.5v-14Z" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/>
+            <path d="M18 10.5h2.4a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H18" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+            <path d="M9.8 11v9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" opacity="0.5"/>
+        </svg>
+    {%- elif kind == "wine" -%}
+        <svg class="{{ class_name }}" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+            <path d="M9 5.5h10l.8 4.4c.5 4.3-1.9 7.6-5.8 7.6s-6.3-3.3-5.8-7.6L9 5.5Z" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/>
+            <path d="M14 17.5V24M10 24h8" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+            <path d="M8.8 10.5h10.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" opacity="0.55"/>
+        </svg>
+    {%- elif kind == "warm_mug" -%}
+        <svg class="{{ class_name }}" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+            <path d="M7 6.5h11l-1 11.5a1.4 1.4 0 0 1-1.4 1.3H9.4A1.4 1.4 0 0 1 8 18L7 6.5Z" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/>
+            <path d="M17.8 9.5h2.2a2 2 0 0 1 2 2v3.5a2 2 0 0 1-2 2h-2.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+            <path d="M12.5 19.3V24M9 24h7" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+        </svg>
+    {%- elif kind == "shot" -%}
+        <svg class="{{ class_name }}" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+            <path d="M9 9.5h10l-1 12.6a1.2 1.2 0 0 1-1.2 1.1h-5.6a1.2 1.2 0 0 1-1.2-1.1L9 9.5Z" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/>
+            <path d="M9.9 20h8.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" opacity="0.55"/>
+        </svg>
     {%- else -%}
         <svg class="{{ class_name }}" viewBox="0 0 28 28" fill="none" aria-hidden="true">
             <path d="M6.5 7.5h15l-1.5 15.5a1.5 1.5 0 0 1-1.5 1.4h-9A1.5 1.5 0 0 1 8 23L6.5 7.5Z" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/>
@@ -141,7 +164,7 @@
     {%- endif -%}
 {%- endmacro %}
 
-{% macro cocktail_specimen(glass, tone="amber", class_name="specimen-svg") -%}
+{% macro cocktail_specimen(glass, tone="amber", garnish="none", class_name="specimen-svg") -%}
     {%- set kind = glass|glass_kind -%}
     {%- set palettes = {
         "ruby": ("#a62929", "#ee6457", "rgba(182, 46, 46, 0.16)"),
@@ -151,55 +174,129 @@
         "amber": ("#9a5321", "#d98d4e", "rgba(166, 92, 36, 0.16)"),
         "espresso": ("#523221", "#9b6c4f", "rgba(110, 68, 44, 0.18)"),
         "cream": ("#b8a387", "#e8dcc7", "rgba(210, 189, 158, 0.15)"),
-        "crystal": ("#88999e", "#dce6e8", "rgba(180, 200, 206, 0.14)")
+        "crystal": ("#88999e", "#dce6e8", "rgba(180, 200, 206, 0.14)"),
+        "coral": ("#c85a68", "#f59aa4", "rgba(218, 102, 118, 0.17)"),
+        "sunrise": ("url(#grad-sunrise)", "#f7b25a", "rgba(226, 116, 46, 0.17)"),
+        "float_ruby": ("url(#grad-ny-sour)", "#e05c64", "rgba(196, 128, 48, 0.17)"),
+        "swizzle": ("url(#grad-swizzle)", "#d97c52", "rgba(136, 162, 74, 0.16)"),
+        "layered_b52": ("url(#grad-b52)", "#f79f4d", "rgba(196, 126, 68, 0.17)"),
+        "copper": ("url(#grad-copper)", "#eab58c", "rgba(208, 118, 68, 0.19)")
     } -%}
     {%- set pal = palettes.get(tone, palettes["amber"]) -%}
     {%- set fill = pal[0] -%}
     {%- set hi = pal[1] -%}
     {%- set glow = pal[2] -%}
+    {%- set anchors = {
+        "coupe":      {"rx": 30.2, "ry": 12.5, "lx": 9.8,  "rx2": 30.2, "rimY": 12.5, "liqY": 15.2, "liqW": 20.4, "pickX": 25.2, "pickY": 8.8,  "pickEndX": 19.6, "pickEndY": 18.2},
+        "martini":    {"rx": 30.8, "ry": 11.5, "lx": 8.6,  "rx2": 31.4, "rimY": 11.5, "liqY": 14.3, "liqW": 18.2, "pickX": 25.5, "pickY": 8.2,  "pickEndX": 19.2, "pickEndY": 17.8},
+        "highball":   {"rx": 26.2, "ry": 7.8,  "lx": 13.7, "rx2": 26.3, "rimY": 7.5,  "liqY": 13.5, "liqW": 12.3, "pickX": 24.5, "pickY": 5.5,  "pickEndX": 19.2, "pickEndY": 15.8},
+        "flute":      {"rx": 24.4, "ry": 7.8,  "lx": 15.4, "rx2": 24.6, "rimY": 7.5,  "liqY": 11.5, "liqW": 8.7,  "pickX": 23.5, "pickY": 5.5,  "pickEndX": 19.8, "pickEndY": 13.5},
+        "hurricane":  {"rx": 26.2, "ry": 8.5,  "lx": 13.7, "rx2": 26.3, "rimY": 8.5,  "liqY": 13.5, "liqW": 11.4, "pickX": 24.5, "pickY": 6.2,  "pickEndX": 19.5, "pickEndY": 15.5},
+        "rocks":      {"rx": 29.0, "ry": 11.6, "lx": 10.8, "rx2": 29.2, "rimY": 11.5, "liqY": 16.8, "liqW": 18.0, "pickX": 25.8, "pickY": 8.4,  "pickEndX": 19.8, "pickEndY": 19.4},
+        "copper_mug": {"rx": 25.0, "ry": 11.5, "lx": 11.8, "rx2": 25.2, "rimY": 11.5, "liqY": 11.5, "liqW": 13.6, "pickX": 24.0, "pickY": 8.0,  "pickEndX": 18.5, "pickEndY": 16.0},
+        "wine":       {"rx": 26.4, "ry": 8.6,  "lx": 13.7, "rx2": 26.3, "rimY": 8.5,  "liqY": 14.5, "liqW": 15.8, "pickX": 24.5, "pickY": 6.5,  "pickEndX": 19.5, "pickEndY": 16.0},
+        "warm_mug":   {"rx": 25.0, "ry": 9.6,  "lx": 11.8, "rx2": 25.2, "rimY": 9.5,  "liqY": 13.8, "liqW": 12.8, "pickX": 24.0, "pickY": 7.0,  "pickEndX": 18.5, "pickEndY": 16.0},
+        "shot":       {"rx": 25.6, "ry": 14.0, "lx": 14.2, "rx2": 25.8, "rimY": 14.0, "liqY": 16.8, "liqW": 11.4, "pickX": 24.0, "pickY": 11.5, "pickEndX": 19.5, "pickEndY": 19.5}
+    } -%}
+    {%- set a = anchors.get(kind, anchors["rocks"]) -%}
     <svg class="{{ class_name }}" viewBox="0 0 40 40" fill="none" aria-hidden="true">
         <circle cx="20" cy="21" r="14" fill="{{ glow }}"/>
         {%- if kind == "coupe" -%}
-            <path d="M9.6 15.2H30.4l-.4 1C28.6 20.3 24.9 22.4 20 22.4c-4.9 0-8.6-2.1-10-6.2l-.4-1Z" fill="{{ fill }}" fill-opacity="0.78"/>
-            <path d="M9.8 15.2Q20 16.4 30.2 15.2" stroke="{{ hi }}" stroke-opacity="0.92" stroke-width="1.2" stroke-linecap="round"/>
+            <path d="M9.6 15.2H30.4l-.4 1C28.6 20.3 24.9 22.4 20 22.4c-4.9 0-8.6-2.1-10-6.2l-.4-1Z" fill="{{ fill }}" fill-opacity="0.80"/>
+            <path d="M9.8 15.2Q20 16.4 30.2 15.2" stroke="{{ hi }}" stroke-opacity="0.92" stroke-width="1.15" stroke-linecap="round"/>
             <path d="M8.5 12.5h23l-1.3 3.3C28.8 20.6 25 23 20 23s-8.8-2.4-10.2-7.2L8.5 12.5Z" stroke="#ede4d5" stroke-opacity="0.82" stroke-width="1.35" stroke-linejoin="round"/>
             <path d="M20 23v10.5M14 33.5h12" stroke="#ede4d5" stroke-opacity="0.82" stroke-width="1.35" stroke-linecap="round"/>
-            <path d="M26.5 11.2c1.3-2 3.7-1.8 4.3.4" stroke="{{ hi }}" stroke-opacity="0.9" stroke-width="1.2" stroke-linecap="round"/>
         {%- elif kind == "martini" -%}
-            <path d="M10.8 14.3h18.4L20 23l-9.2-8.7Z" fill="{{ fill }}" fill-opacity="0.78"/>
+            <path d="M10.8 14.3h18.4L20 23l-9.2-8.7Z" fill="{{ fill }}" fill-opacity="0.80"/>
             <path d="M11 14.3h18" stroke="{{ hi }}" stroke-opacity="0.92" stroke-width="1.15" stroke-linecap="round"/>
             <path d="M8 11.5h24L20 23.5 8 11.5Z" stroke="#ede4d5" stroke-opacity="0.82" stroke-width="1.35" stroke-linejoin="round"/>
             <path d="M20 23.5v10M14 33.5h12" stroke="#ede4d5" stroke-opacity="0.82" stroke-width="1.35" stroke-linecap="round"/>
-            <path d="m25.5 8.5-7 9.7" stroke="#ede4d5" stroke-opacity="0.65" stroke-width="1.1" stroke-linecap="round"/>
-            <circle cx="22.4" cy="12.8" r="1.6" fill="{{ hi }}" fill-opacity="0.88"/>
         {%- elif kind == "highball" -%}
-            <path d="M13.85 13.5h12.3l-1.25 16.7H15.1l-1.25-16.7Z" fill="{{ fill }}" fill-opacity="0.78"/>
+            <path d="M13.85 13.5h12.3l-1.25 16.7H15.1l-1.25-16.7Z" fill="{{ fill }}" fill-opacity="0.80"/>
             <path d="M14 13.5Q20 14.4 26 13.5" stroke="{{ hi }}" stroke-opacity="0.92" stroke-width="1.15" stroke-linecap="round"/>
-            <rect x="16.5" y="15.2" width="5.5" height="5.2" rx="1.1" transform="rotate(-8 19.2 17.8)" stroke="#f6efe4" stroke-opacity="0.35" stroke-width="0.95"/>
-            <rect x="18" y="21.8" width="5.2" height="5" rx="1.1" transform="rotate(9 20.6 24.3)" stroke="#f6efe4" stroke-opacity="0.32" stroke-width="0.95"/>
-            <circle cx="17.2" cy="19.5" r="0.65" fill="{{ hi }}" fill-opacity="0.85"/>
-            <circle cx="22.8" cy="16.4" r="0.6" fill="{{ hi }}" fill-opacity="0.75"/>
+            <rect x="16.5" y="15.2" width="5.5" height="5.2" rx="1.1" transform="rotate(-8 19.2 17.8)" stroke="#f6efe4" stroke-opacity="0.33" stroke-width="0.95"/>
+            <rect x="18" y="21.8" width="5.2" height="5" rx="1.1" transform="rotate(9 20.6 24.3)" stroke="#f6efe4" stroke-opacity="0.30" stroke-width="0.95"/>
             <path d="M15.1 30.2h9.8" stroke="#ede4d5" stroke-opacity="0.36" stroke-width="1.05"/>
             <path d="M13.5 7.5h13l-1.4 23.9a1.4 1.4 0 0 1-1.4 1.4h-7.4a1.4 1.4 0 0 1-1.4-1.4L13.5 7.5Z" stroke="#ede4d5" stroke-opacity="0.82" stroke-width="1.35" stroke-linejoin="round"/>
         {%- elif kind == "flute" -%}
-            <path d="M15.65 11.5h8.7l-.85 8.1a3.5 3.5 0 0 1-7 0l-.85-8.1Z" fill="{{ fill }}" fill-opacity="0.78"/>
+            <path d="M15.65 11.5h8.7l-.85 8.1a3.5 3.5 0 0 1-7 0l-.85-8.1Z" fill="{{ fill }}" fill-opacity="0.80"/>
             <path d="M15.7 11.5Q20 12.2 24.3 11.5" stroke="{{ hi }}" stroke-opacity="0.92" stroke-width="1.15" stroke-linecap="round"/>
             <circle cx="19.5" cy="19.2" r="0.65" fill="{{ hi }}" fill-opacity="0.9"/>
             <circle cx="20.9" cy="16.4" r="0.65" fill="{{ hi }}" fill-opacity="0.85"/>
-            <circle cx="19.6" cy="13.8" r="0.6" fill="{{ hi }}" fill-opacity="0.8"/>
             <path d="M15.2 7.5h9.6l-1.3 12.1a3.5 3.5 0 0 1-7 0L15.2 7.5Z" stroke="#ede4d5" stroke-opacity="0.82" stroke-width="1.35" stroke-linejoin="round"/>
             <path d="M20 22.8v10.7M15 33.5h10" stroke="#ede4d5" stroke-opacity="0.82" stroke-width="1.35" stroke-linecap="round"/>
         {%- elif kind == "hurricane" -%}
-            <path d="M14.3 13.5h11.4c-.5 1.7-.8 3-.9 4.5-.2 3.4 1.8 5.6.5 8.6-1.2 2.3-3.2 3.1-5.3 3.1-2.1 0-4.1-.8-5.3-3.1-1.3-3 .7-5.2.5-8.6-.1-1.5-.4-2.8-.9-4.5Z" fill="{{ fill }}" fill-opacity="0.78"/>
+            <path d="M14.3 13.5h11.4c-.5 1.7-.8 3-.9 4.5-.2 3.4 1.8 5.6.5 8.6-1.2 2.3-3.2 3.1-5.3 3.1-2.1 0-4.1-.8-5.3-3.1-1.3-3 .7-5.2.5-8.6-.1-1.5-.4-2.8-.9-4.5Z" fill="{{ fill }}" fill-opacity="0.80"/>
             <path d="M14.4 13.5Q20 14.4 25.6 13.5" stroke="{{ hi }}" stroke-opacity="0.92" stroke-width="1.15" stroke-linecap="round"/>
             <path d="M13.5 8.5h13c.7 4-1.5 6.3-1.7 9.5-.2 3.4 2 5.6.6 8.8-1.2 2.4-3.2 3.2-5.4 3.2s-4.2-.8-5.4-3.2c-1.4-3.2.8-5.4.6-8.8-.2-3.2-2.4-5.5-1.7-9.5Z" stroke="#ede4d5" stroke-opacity="0.82" stroke-width="1.35" stroke-linejoin="round"/>
             <path d="M20 30v3.8M15 33.8h10" stroke="#ede4d5" stroke-opacity="0.82" stroke-width="1.35" stroke-linecap="round"/>
+        {%- elif kind == "copper_mug" -%}
+            <rect x="14.5" y="9.2" width="4.4" height="3.8" rx="0.9" transform="rotate(-12 16.7 11.1)" fill="#f6efe4" fill-opacity="0.16" stroke="#ede4d5" stroke-opacity="0.55" stroke-width="0.9"/>
+            <rect x="18.8" y="9.5" width="4.2" height="3.6" rx="0.9" transform="rotate(11 20.9 11.3)" fill="#f6efe4" fill-opacity="0.14" stroke="#ede4d5" stroke-opacity="0.50" stroke-width="0.9"/>
+            <path d="M11.5 11.5h14v18.8a1.7 1.7 0 0 1-1.7 1.7H13.2a1.7 1.7 0 0 1-1.7-1.7V11.5Z" fill="{{ fill }}" fill-opacity="0.92" stroke="#eab58c" stroke-width="1.35" stroke-linejoin="round"/>
+            <path d="M25.5 15.5h3a2.4 2.4 0 0 1 2.4 2.4v6.2a2.4 2.4 0 0 1-2.4 2.4h-3" stroke="#eab58c" stroke-width="1.45" stroke-linecap="round"/>
+            <path d="M15 14v15" stroke="#fde1c6" stroke-opacity="0.32" stroke-width="1.2" stroke-linecap="round"/>
+        {%- elif kind == "wine" -%}
+            <path d="M12.2 14.5h15.6c.2 5.4-2.8 9.7-7.8 9.7s-8-4.3-7.8-9.7Z" fill="{{ fill }}" fill-opacity="0.80"/>
+            <path d="M12.3 14.5Q20 15.5 27.7 14.5" stroke="{{ hi }}" stroke-opacity="0.92" stroke-width="1.15" stroke-linecap="round"/>
+            <rect x="16.4" y="16.3" width="4.2" height="4.0" rx="1" transform="rotate(-10 18.5 18.3)" stroke="#f6efe4" stroke-opacity="0.34" stroke-width="0.9"/>
+            <circle cx="23.2" cy="18.2" r="0.65" fill="{{ hi }}" fill-opacity="0.85"/>
+            <path d="M13.5 8.5h13l1.1 5.6c.7 6-2.5 10.4-7.6 10.4s-8.3-4.4-7.6-10.4L13.5 8.5Z" stroke="#ede4d5" stroke-opacity="0.82" stroke-width="1.35" stroke-linejoin="round"/>
+            <path d="M20 24.5v9M14.5 33.5h11" stroke="#ede4d5" stroke-opacity="0.82" stroke-width="1.35" stroke-linecap="round"/>
+        {%- elif kind == "warm_mug" -%}
+            {%- set warm_fill = "url(#grad-irish)" if tone == "espresso" else fill -%}
+            <path d="M12.1 13.8h12.8l-.9 11.4a1.4 1.4 0 0 1-1.4 1.3h-8.2a1.4 1.4 0 0 1-1.4-1.3l-.9-11.4Z" fill="{{ warm_fill }}" fill-opacity="0.90"/>
+            {%- if tone != "espresso" -%}
+                <path d="M12.2 13.8Q18.5 14.6 24.8 13.8" stroke="{{ hi }}" stroke-opacity="0.92" stroke-width="1.15" stroke-linecap="round"/>
+            {%- endif -%}
+            <path d="M11.5 9.5h14l-1.3 15.8a1.5 1.5 0 0 1-1.5 1.4h-8.4a1.5 1.5 0 0 1-1.5-1.4L11.5 9.5Z" stroke="#ede4d5" stroke-opacity="0.82" stroke-width="1.35" stroke-linejoin="round"/>
+            <path d="M25.2 13.5h2.7a2.2 2.2 0 0 1 2.2 2.2v4.6a2.2 2.2 0 0 1-2.2 2.2h-3.1" stroke="#ede4d5" stroke-opacity="0.82" stroke-width="1.35" stroke-linecap="round"/>
+            <path d="M18.5 26.7v5.8M13.5 32.5h10" stroke="#ede4d5" stroke-opacity="0.82" stroke-width="1.35" stroke-linecap="round"/>
+        {%- elif kind == "shot" -%}
+            <path d="M14.3 16.8h11.4l-.8 11.7H15.1l-.8-11.7Z" fill="{{ fill }}" fill-opacity="0.88"/>
+            <path d="M14.4 16.8h11.2" stroke="{{ hi }}" stroke-opacity="0.92" stroke-width="1.15" stroke-linecap="round"/>
+            <path d="M15.1 28.5h9.8" stroke="#ede4d5" stroke-opacity="0.45" stroke-width="1.15"/>
+            <path d="M14 14h12l-1.2 16.4a1.3 1.3 0 0 1-1.3 1.2h-7a1.3 1.3 0 0 1-1.3-1.2L14 14Z" stroke="#ede4d5" stroke-opacity="0.82" stroke-width="1.35" stroke-linejoin="round"/>
         {%- else -%}
-            <path d="M11 16.8h18l-1.3 11.6H12.3L11 16.8Z" fill="{{ fill }}" fill-opacity="0.78"/>
+            <path d="M11 16.8h18l-1.3 11.6H12.3L11 16.8Z" fill="{{ fill }}" fill-opacity="0.80"/>
             <path d="M11.1 16.8Q20 17.8 28.9 16.8" stroke="{{ hi }}" stroke-opacity="0.92" stroke-width="1.15" stroke-linecap="round"/>
-            <rect x="15.8" y="18.6" width="8.4" height="7.6" rx="1.5" transform="rotate(-11 20 22.4)" stroke="#f6efe4" stroke-opacity="0.44" stroke-width="1.05" fill="#ffffff" fill-opacity="0.06"/>
+            <rect x="15.8" y="18.6" width="8.4" height="7.6" rx="1.5" transform="rotate(-11 20 22.4)" stroke="#f6efe4" stroke-opacity="0.42" stroke-width="1.05" fill="#ffffff" fill-opacity="0.06"/>
             <path d="M12.3 28.4h15.4" stroke="#ede4d5" stroke-opacity="0.38" stroke-width="1.1"/>
             <path d="M10.5 11.5h19l-1.6 18.7a1.8 1.8 0 0 1-1.8 1.6H13.9a1.8 1.8 0 0 1-1.8-1.6L10.5 11.5Z" stroke="#ede4d5" stroke-opacity="0.82" stroke-width="1.35" stroke-linejoin="round"/>
+        {%- endif -%}
+        {%- if garnish == "lime_wedge" -%}
+            <path d="M {{ a.rx - 2.6 }} {{ a.ry - 0.6 }} A 3.7 3.7 0 0 1 {{ a.rx + 2.7 }} {{ a.ry + 3.0 }} L {{ a.rx - 0.5 }} {{ a.ry + 1.4 }} Z" fill="#89bc4b" fill-opacity="0.92"/>
+            <path d="M {{ a.rx - 2.6 }} {{ a.ry - 0.6 }} A 3.7 3.7 0 0 1 {{ a.rx + 2.7 }} {{ a.ry + 3.0 }}" stroke="#d5ef9d" stroke-width="1.15" stroke-linecap="round"/>
+        {%- elif garnish == "lime_wheel" -%}
+            <circle cx="{{ a.rx - 0.4 }}" cy="{{ a.ry - 0.3 }}" r="3.1" fill="#84b847" fill-opacity="0.88" stroke="#d5ef9d" stroke-width="1.15"/>
+            <path d="M {{ a.rx - 2.6 }} {{ a.ry - 0.3 }} h 4.4 M {{ a.rx - 0.4 }} {{ a.ry - 2.5 }} v 4.4" stroke="#d5ef9d" stroke-opacity="0.55" stroke-width="0.7"/>
+        {%- elif garnish == "orange_slice" -%}
+            <path d="M {{ a.rx - 3.3 }} {{ a.ry + 0.5 }} A 3.9 3.9 0 0 1 {{ a.rx + 2.9 }} {{ a.ry - 0.9 }} L {{ a.rx - 0.1 }} {{ a.ry + 1.8 }} Z" fill="#ea8a2e" fill-opacity="0.92"/>
+            <path d="M {{ a.rx - 3.3 }} {{ a.ry + 0.5 }} A 3.9 3.9 0 0 1 {{ a.rx + 2.9 }} {{ a.ry - 0.9 }}" stroke="#ffd28a" stroke-width="1.2" stroke-linecap="round"/>
+        {%- elif garnish == "mint" -%}
+            <path d="M {{ a.rx - 3.2 }} {{ a.ry + 1.2 }} C {{ a.rx - 3.4 }} {{ a.ry - 2.6 }}, {{ a.rx - 0.4 }} {{ a.ry - 4.0 }}, {{ a.rx + 0.6 }} {{ a.ry - 1.0 }} C {{ a.rx - 0.6 }} {{ a.ry + 0.8 }}, {{ a.rx - 2.0 }} {{ a.ry + 1.3 }}, {{ a.rx - 3.2 }} {{ a.ry + 1.2 }} Z" fill="#639a60" stroke="#9fd396" stroke-width="0.85" stroke-linejoin="round"/>
+            <path d="M {{ a.rx - 1.2 }} {{ a.ry + 1.0 }} C {{ a.rx + 0.2 }} {{ a.ry - 2.0 }}, {{ a.rx + 3.4 }} {{ a.ry - 2.2 }}, {{ a.rx + 3.2 }} {{ a.ry + 0.4 }} C {{ a.rx + 1.8 }} {{ a.ry + 1.4 }}, {{ a.rx + 0.2 }} {{ a.ry + 1.4 }}, {{ a.rx - 1.2 }} {{ a.ry + 1.0 }} Z" fill="#7ab374" stroke="#b6e2aa" stroke-width="0.85" stroke-linejoin="round"/>
+        {%- elif garnish == "salt_rim" -%}
+            <path d="M {{ a.lx + 0.4 }} {{ a.rimY - 0.4 }} H {{ a.rx2 - 0.4 }}" stroke="#f6f0e6" stroke-width="1.9" stroke-linecap="round" stroke-dasharray="0.6 2.1" opacity="0.95"/>
+        {%- elif garnish == "twist" -%}
+            <path d="M {{ a.rx - 2.5 }} {{ a.ry - 0.6 }} C {{ a.rx - 1.2 }} {{ a.ry - 2.9 }}, {{ a.rx + 2.2 }} {{ a.ry - 2.8 }}, {{ a.rx + 2.5 }} {{ a.ry - 0.4 }} C {{ a.rx + 2.7 }} {{ a.ry + 1.1 }}, {{ a.rx + 1.1 }} {{ a.ry + 1.8 }}, {{ a.rx + 0.5 }} {{ a.ry + 0.6 }}" stroke="#f4b94c" stroke-width="1.35" stroke-linecap="round"/>
+        {%- elif garnish == "cherry_pick" -%}
+            {%- set cx = (a.pickX + a.pickEndX) / 2 + 0.6 -%}
+            {%- set cy = (a.pickY + a.pickEndY) / 2 - 0.5 -%}
+            <path d="M {{ a.pickX }} {{ a.pickY }} L {{ a.pickEndX }} {{ a.pickEndY }}" stroke="#ede4d5" stroke-opacity="0.72" stroke-width="1.05" stroke-linecap="round"/>
+            <circle cx="{{ cx }}" cy="{{ cy }}" r="1.95" fill="#d8353a" stroke="#f69898" stroke-width="0.65"/>
+            <circle cx="{{ cx - 0.6 }}" cy="{{ cy - 0.6 }}" r="0.45" fill="#fff0ee" fill-opacity="0.85"/>
+        {%- elif garnish == "olive_pick" -%}
+            {%- set cx = (a.pickX + a.pickEndX) / 2 + 0.5 -%}
+            {%- set cy = (a.pickY + a.pickEndY) / 2 - 0.4 -%}
+            <path d="M {{ a.pickX }} {{ a.pickY }} L {{ a.pickEndX }} {{ a.pickEndY }}" stroke="#ede4d5" stroke-opacity="0.72" stroke-width="1.05" stroke-linecap="round"/>
+            <ellipse cx="{{ cx }}" cy="{{ cy }}" rx="2.0" ry="1.6" transform="rotate(-24 {{ cx }} {{ cy }})" fill="#87a14e" stroke="#b9cf7c" stroke-width="0.65"/>
+            <circle cx="{{ cx + 0.7 }}" cy="{{ cy - 0.35 }}" r="0.6" fill="#d84336"/>
+        {%- elif garnish == "foam" -%}
+            {%- set cx = 18.5 if kind == "warm_mug" else 20 -%}
+            {%- set fx0 = cx - a.liqW / 2 -%}
+            {%- set fx1 = cx + a.liqW / 2 -%}
+            <path d="M {{ fx0 + 0.2 }} {{ a.liqY + 0.4 }} Q {{ cx }} {{ a.liqY - 1.5 }} {{ fx1 - 0.2 }} {{ a.liqY + 0.4 }} Q {{ cx }} {{ a.liqY + 2.0 }} {{ fx0 + 0.2 }} {{ a.liqY + 0.4 }} Z" fill="#efe4d2" fill-opacity="0.92"/>
         {%- endif -%}
     </svg>
 {%- endmacro %}

@@ -420,9 +420,11 @@ script.
 Utility": `--bg-base` `#0b0907`, `--zest` `#dfb049`, `--sage` `#6e9f77` for
 Ready/Stocked, `--terracotta` `#d46b50`, Barlow Condensed display, Plus Jakarta
 Sans UI/tabular numerals). Page styling is inline; shared rules belong in
-`base.html`. Drink lists use `cocktail_specimen` glassware SVGs (tones via
-cached `_recipe_meta_map()`); full-bleed photos sit on Tonight's Featured Pour,
-One Away carousel, Recipe headers, and Onboarding. Bottom bars are solid
+`base.html`. Drink lists use `cocktail_specimen` glassware SVGs (10 vessels, 14
+tones/gradients, and data-driven micro-garnishes via cached `_recipe_meta_map()`,
+backed by shared `<defs>` gradients in `base.html`); full-bleed photos sit on
+Tonight's Featured Pour, One Away carousel, Recipe headers, and Onboarding. Bottom
+bars are solid `#120e0b`; Recipe includes a `1× | 2×` scaler.
 `#120e0b`; Recipe includes a `1× | 2×` scaler.
 
 **Buttons ("the pour")** are documented above `.btn` in `base.html`. `.btn` is
@@ -488,47 +490,6 @@ and status pills stay rounded.
 Copies of the newest 2 entries; every entry, oldest first, is in
 [`docs/session-log.md`](docs/session-log.md).
 
-### 2026-11-21 (fifth session) — Account recovery: single-use sign-in links and change password (Claude Code)
-
-Accounts have no email, so a friend who forgot their password was locked out
-unless Aaron edited the database. Now Aaron makes a one-time link and sends it
-over chat, which doubles as the nudge to come back. Built on branch
-`claude/distracted-spence-fcfce8`, merged with the Mixers session's work,
-migrated on Neon and pushed to `main` on Aaron's go-ahead.
-
-**Changed:** `login_links` table (both `init_db()` paths; DDL shared with
-`migrate_login_links_2026_11.py`). `login_links.py`: token, SHA-256 only,
-7 days, single use enforced by the `UPDATE`'s WHERE clause, a new link
-switches off older unused ones, readers return None with no table.
-`make_login_link.py`. `GET`/`POST /signin/<token>`: any failure shows the "ask
-Aaron for a new one" page (HTTP 410, never 500); rate-limited 15 per 10 min;
-`no-referrer`, `no-store`, `noindex`. `/account/password`: 8+ characters,
-confirm, current password except within 15 minutes of a link sign-in; linked
-under the sign-out dialog's buttons. A hint on `/login`.
-`verify_routes.py` `check_login_links()`.
-
-**Deviation from the brief:** it asked for the GET to spend the link. Chat apps
-fetch a link to build its preview, which would burn it before the friend
-tapped, so the GET only shows the page and its button POSTs.
-
-**Verified:** `verify_routes.py` on `bomu.db`, the unmigrated `bomu_live.db`
-and a migrated copy. The migration on a SQLite copy: dry run, commit, no-op
-re-run, counts unchanged. Neon, nothing written: the migration's dry run, and
-`login_links.py` in one rolled-back transaction on a TEMP table over the
-unpooled URL. In-app browser at 375 px on a scratch copy, end to end.
-**Not verified:** a real phone, or a real chat app's preview.
-
-**Gotchas hit:** Jinja escapes `'` as `&#39;`, so tests must unescape.
-`app.py` is CRLF and a text-mode rewrite flipped it. A TEMP table made through
-Neon's pooler can outlive the client: use the unpooled URL, never commit.
-
-**Open / next:**
-1. Done: Neon has `login_links` (dry run, commit, no-op re-run; empty;
-   matcher counts unchanged), and `main` carries the code.
-2. Make each friend a link and send it with their own unlock.
-3. Open one link on a real phone through the chat app it'll travel in.
-4. `#23` last-seen tracking; this change is self-contained, merge either order.
-
 ### 2026-11-22 — Mobile UI redesign via blind design-critic iterations (Antigravity)
 
 Redesigned Bomu's phone UI across 7 views (`Tonight`, `Bar: Bottles`, `Bar: Mixers`, `Add Sheet`, `Explore`, `Recipe`, `Onboarding`) through baseline + 3 blind `design-critic` rounds at `390×844` (`5.5` → `5.8` → `6.4` → `6.3`, plus `8.3` on targeted color/CTA pass), Aaron's review, and final micro-polish.
@@ -540,3 +501,19 @@ Redesigned Bomu's phone UI across 7 views (`Tonight`, `Bar: Bottles`, `Bar: Mixe
 **Gotchas:** Duplicate `drink_style` filter on `app.py` line 855 silently overwrote `recipe_drink_style`; `scroll-snap-align: start` needed `scroll-padding-inline` on horizontal carousels; `rgba(..., 0.98)` bottom bars still bled text on OLED black until made solid `#120e0b`.
 
 **Open / next:** Verify on a real phone on `www.bomu.lol` (`bomu-v12` SW); backlog `#17` Neon password, `#23` last-seen, send sign-in links.
+
+### 2026-11-24 — Cocktail specimen icon overhaul: accurate tones, gradients, garnishes, and 4 new vessels (Antigravity)
+
+Reviewed the `cocktail_specimen` list icons after Aaron flagged identical red highballs on the `/one-away` Cranberry Juice card (`Cape Codder`, `Sex on the Beach`, `Woo Woo`), prototyped a side-by-side comparison sheet first, and rolled the upgrade out across all templates.
+
+**Changed:**
+- `app.py`: expanded `glass_kind()` from 6 to 10 vessels (`copper_mug`, `wine`, `warm_mug`, `shot`, plus existing 6); fixed `_classify_liquid_tone()` to read non-optional ingredients only (rescuing 18 classics like `Old Fashioned`, `Manhattan`, and `Whiskey Sour` from the optional-cherry crimson bug) and added 6 new tones/gradients (`coral`, `sunrise`, `float_ruby`, `swizzle`, `layered_b52`, `copper`); added `_classify_drink_garnish()` and `drink_garnish` Jinja filter cached alongside `tone` and `style` in `_recipe_meta_map()`.
+- `templates/base.html`: added `--tone-glow` / border CSS for the 6 new tones and a single shared hidden `<svg><defs>` block right after `<body>` defining `grad-sunrise`, `grad-ny-sour`, `grad-swizzle`, `grad-b52`, `grad-copper`, and `grad-irish` (zero duplicate IDs per page).
+- `templates/components/icons.html`: added outline SVGs for the 4 new vessels in `glass_icon()`; upgraded `cocktail_specimen(glass, tone, garnish)` to remove hardcoded coupe twists and martini olive picks, support all 10 vessels (with `warm_mug` keeping non-espresso tones like `Hot Toddy` golden instead of coffee brown), and render at most 1 data-driven micro-garnish (`lime_wedge`, `lime_wheel`, `orange_slice`, `mint`, `salt_rim`, `twist`, `cherry_pick`, `olive_pick`, `foam`) per glass.
+- `templates/explore.html`, `templates/one_away.html`, `templates/saved.html`, `templates/tonight.html`: wired `|drink_garnish` into all 7 `cocktail_specimen(...)` call sites. **Untouched:** `matching.py`, `database.py`, schema, `bomu.db`, Neon.
+
+**Verified:** `verify_routes.py` (all routes + `171 ok, 0 failed`), `check_specs.py` (0 flags), `app.py` CRLF intact (`1868` CRLF, `0` LF-only), zero `|safe` in templates, all 171 recipes produce valid `(kind, tone, garnish)` triples (108 distinct combinations vs. ~32 before), and rendered `/one-away` and `/explore` HTML each contain 6 unique `linearGradient` IDs and new tones.
+
+**Gotchas hit:** Updating `icons.html` with a bare `{%- else -%}` target matched both `glass_icon` and `cocktail_specimen` — caught immediately and replaced cleanly; `warm_mug` needed a tone branch so `Hot Toddy` does not inherit `grad-irish`.
+
+**Open / next:** Spot-check the updated icons on live `www.bomu.lol`; backlog `#17` Neon password rotation, `#23` last-seen tracking, and sending sign-in links to friends.

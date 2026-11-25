@@ -1649,3 +1649,19 @@ Redesigned Bomu's phone UI across 7 views (`Tonight`, `Bar: Bottles`, `Bar: Mixe
 **Gotchas:** Duplicate `drink_style` filter on `app.py` line 855 silently overwrote `recipe_drink_style`; `scroll-snap-align: start` needed `scroll-padding-inline` on horizontal carousels; `rgba(..., 0.98)` bottom bars still bled text on OLED black until made solid `#120e0b`.
 
 **Open / next:** Verify on a real phone on `www.bomu.lol` (`bomu-v12` SW); backlog `#17` Neon password, `#23` last-seen, send sign-in links.
+
+### 2026-11-24 — Cocktail specimen icon overhaul: accurate tones, gradients, garnishes, and 4 new vessels (Antigravity)
+
+Reviewed the `cocktail_specimen` list icons after Aaron flagged identical red highballs on the `/one-away` Cranberry Juice card (`Cape Codder`, `Sex on the Beach`, `Woo Woo`), prototyped a side-by-side comparison sheet first, and rolled the upgrade out across all templates.
+
+**Changed:**
+- `app.py`: expanded `glass_kind()` from 6 to 10 vessels (`copper_mug`, `wine`, `warm_mug`, `shot`, plus existing 6); fixed `_classify_liquid_tone()` to read non-optional ingredients only (rescuing 18 classics like `Old Fashioned`, `Manhattan`, and `Whiskey Sour` from the optional-cherry crimson bug) and added 6 new tones/gradients (`coral`, `sunrise`, `float_ruby`, `swizzle`, `layered_b52`, `copper`); added `_classify_drink_garnish()` and `drink_garnish` Jinja filter cached alongside `tone` and `style` in `_recipe_meta_map()`.
+- `templates/base.html`: added `--tone-glow` / border CSS for the 6 new tones and a single shared hidden `<svg><defs>` block right after `<body>` defining `grad-sunrise`, `grad-ny-sour`, `grad-swizzle`, `grad-b52`, `grad-copper`, and `grad-irish` (zero duplicate IDs per page).
+- `templates/components/icons.html`: added outline SVGs for the 4 new vessels in `glass_icon()`; upgraded `cocktail_specimen(glass, tone, garnish)` to remove hardcoded coupe twists and martini olive picks, support all 10 vessels (with `warm_mug` keeping non-espresso tones like `Hot Toddy` golden instead of coffee brown), and render at most 1 data-driven micro-garnish (`lime_wedge`, `lime_wheel`, `orange_slice`, `mint`, `salt_rim`, `twist`, `cherry_pick`, `olive_pick`, `foam`) per glass.
+- `templates/explore.html`, `templates/one_away.html`, `templates/saved.html`, `templates/tonight.html`: wired `|drink_garnish` into all 7 `cocktail_specimen(...)` call sites. **Untouched:** `matching.py`, `database.py`, schema, `bomu.db`, Neon.
+
+**Verified:** `verify_routes.py` (all routes + `171 ok, 0 failed`), `check_specs.py` (0 flags), `app.py` CRLF intact (`1868` CRLF, `0` LF-only), zero `|safe` in templates, all 171 recipes produce valid `(kind, tone, garnish)` triples (108 distinct combinations vs. ~32 before), and rendered `/one-away` and `/explore` HTML each contain 6 unique `linearGradient` IDs and new tones.
+
+**Gotchas hit:** Updating `icons.html` with a bare `{%- else -%}` target matched both `glass_icon` and `cocktail_specimen` — caught immediately and replaced cleanly; `warm_mug` needed a tone branch so `Hot Toddy` does not inherit `grad-irish`.
+
+**Open / next:** Spot-check the updated icons on live `www.bomu.lol`; backlog `#17` Neon password rotation, `#23` last-seen tracking, and sending sign-in links to friends.

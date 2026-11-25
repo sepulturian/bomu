@@ -15,7 +15,7 @@
             {% set r = item.recipe %}
             <a href="/recipe/{{ r.id }}" class="drink-card">
                 <div class="drink-thumb is-specimen" data-tone="{{ r|liquid_tone }}">
-                    {{ cocktail_specimen(r.glass, r|liquid_tone) }}
+                    {{ cocktail_specimen(r.glass, r|liquid_tone, r|drink_garnish) }}
                 </div>
                 <div class="drink-meta">
                     <div class="drink-title">
@@ -61,7 +61,7 @@
                 <div class="drink-card" style="justify-content: space-between;">
                     <a href="/recipe/{{ r.id }}" style="display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 0;">
                         <div class="drink-thumb is-specimen" data-tone="{{ r|liquid_tone }}">
-                            {{ cocktail_specimen(r.glass, r|liquid_tone) }}
+                            {{ cocktail_specimen(r.glass, r|liquid_tone, r|drink_garnish) }}
                         </div>
                         <div class="drink-meta">
                             <div class="drink-title">{{ r.name }}</div>

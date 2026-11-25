@@ -223,7 +223,7 @@
            data-spirit="{{ e.spirit_group }}"
            data-style="{{ e.style_group }}">
             <div class="drink-thumb is-specimen" data-tone="{{ e.recipe|liquid_tone }}">
-                {{ cocktail_specimen(e.recipe.glass, e.recipe|liquid_tone) }}
+                {{ cocktail_specimen(e.recipe.glass, e.recipe|liquid_tone, e.recipe|drink_garnish) }}
             </div>
             <div class="drink-meta">
                 <div class="drink-title">
